@@ -19,6 +19,7 @@ import gzip
 import json
 import shutil
 import time
+from collections.abc import Callable
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -103,25 +104,59 @@ def validate_task(task: Task, run_dir: Path, log_dir: Path, test_timeout: float 
         rec["byte_mismatch"] = mismatched
         rec["changed_files"] = {"modified": modified, "deleted": deleted}
 
-    with Container(task, network=True) as base:
-        log, meta = base.run_tests(test_timeout)
-        _save_log(log_dir / f"{task.instance_id}.baseline.log.gz", log)
+    def baseline_once() -> tuple[str, dict[str, Any]]:
+        with Container(task, network=True) as base:
+            log, meta = base.run_tests(test_timeout)
         grade, _ = _grade(task, log)
-        rec["baseline"] = {**grade, **meta}
+        return log, {**grade, **meta}
 
-    with Container(task, network=True) as fin:
-        fin.push_changes(ws, before)
-        rec["model_patch"] = fin.diff()
-        log, meta = fin.run_tests(test_timeout)
-        _save_log(log_dir / f"{task.instance_id}.gold.log.gz", log)
+    def gold_once() -> tuple[str, dict[str, Any]]:
+        with Container(task, network=True) as fin:
+            fin.push_changes(ws, before)
+            rec["model_patch"] = fin.diff()
+            log, meta = fin.run_tests(test_timeout)
         grade, _ = _grade(task, log)
-        rec["gold"] = {**grade, **meta}
+        return log, {**grade, **meta}
+
+    rec["baseline"] = _stable(baseline_once, _baseline_ok,
+                              log_dir / f"{task.instance_id}.baseline.log.gz")
+    rec["gold"] = _stable(gold_once, _gold_ok, log_dir / f"{task.instance_id}.gold.log.gz")
 
     rec["reasons"] = diagnose(rec, gold_files)
     rec["verdict"] = "valid" if not rec["reasons"] else "invalid"
     rec["seconds"] = round(time.monotonic() - t0, 1)
     rmtree(ws)
     return rec
+
+
+def _baseline_ok(g: dict[str, Any]) -> bool:
+    return g["f2p_passed"] == 0 and g["p2p_passed"] == g["p2p_total"]
+
+
+def _gold_ok(g: dict[str, Any]) -> bool:
+    return bool(g["resolved"])
+
+
+def _stable(run_once: Callable[[], tuple[str, dict[str, Any]]],
+            expected: Callable[[dict[str, Any]], bool], log_path: Path,
+            reruns: int = 2) -> dict[str, Any]:
+    """Run a test stage; if it misses its expectation, re-run it to tell flaky from broken.
+
+    The first run's log and grade are what is reported. Re-runs only add a ``reruns``
+    list, and ``flaky`` is set when any re-run's pass counts differ from the first run's.
+    """
+    log, grade = run_once()
+    _save_log(log_path, log)
+    if expected(grade):
+        return grade
+    again = []
+    for _ in range(reruns):
+        _, g = run_once()
+        again.append({k: g[k] for k in ("f2p_passed", "p2p_passed", "resolved")})
+    grade["reruns"] = again
+    grade["flaky"] = any((g["f2p_passed"], g["p2p_passed"]) !=
+                         (grade["f2p_passed"], grade["p2p_passed"]) for g in again)
+    return grade
 
 
 def diagnose(rec: dict[str, Any], gold_files: list[str]) -> list[str]:
@@ -144,6 +179,8 @@ def diagnose(rec: dict[str, Any], gold_files: list[str]) -> list[str]:
                        f"{', '.join(rec['byte_mismatch'])}")
     b, g = rec["baseline"], rec["gold"]
     for label, r in (("baseline", b), ("gold", g)):
+        if r.get("flaky"):
+            reasons.append(f"flaky: {label} results changed between identical runs")
         if not r.get("test_patch_applied", True):
             reasons.append(f"{label}: the test patch did not apply")
         if r.get("timed_out"):
@@ -233,17 +270,21 @@ def validate_local_task(task: LocalTask, run_dir: Path, log_dir: Path) -> dict[s
             (ref / rel).is_file() and file_digest(ref / rel))
     ]
     runnable = task.test_files
-    for label, tree in (("baseline", base), ("gold", fin)):
-        if label == "baseline":
-            task.materialize(tree)
-        else:
-            rmtree(tree)
-            shutil.copytree(ws, tree)
-        applied, _ = git_apply(tree, task.test_patch)
-        log, timed_out = run_pytest(tree, runnable)
-        _save_log(log_dir / f"{task.instance_id.replace('@', '_')}.{label}.log.gz", log)
-        grade = specs.grade(specs.parse_pytest(log), task.fail_to_pass, task.pass_to_pass)
-        rec[label] = {**grade, "test_patch_applied": applied, "timed_out": timed_out}
+    for label, tree, ok in (("baseline", base, _baseline_ok), ("gold", fin, _gold_ok)):
+
+        def once(label: str = label, tree: Path = tree) -> tuple[str, dict[str, Any]]:
+            if label == "baseline":
+                task.materialize(tree)
+            else:
+                rmtree(tree)
+                shutil.copytree(ws, tree)
+            applied, _ = git_apply(tree, task.test_patch)
+            log, timed_out = run_pytest(tree, runnable)
+            grade = specs.grade(specs.parse_pytest(log), task.fail_to_pass, task.pass_to_pass)
+            return log, {**grade, "test_patch_applied": applied, "timed_out": timed_out}
+
+        rec[label] = _stable(once, ok,
+                             log_dir / f"{task.instance_id.replace('@', '_')}.{label}.log.gz")
     rec["reasons"] = diagnose(rec, gold_files)
     rec["verdict"] = "valid" if not rec["reasons"] else "invalid"
     rec["seconds"] = round(time.monotonic() - t0, 1)
