@@ -1,0 +1,40 @@
+[project]
+name = "terminal-agent"
+version = "0.1.0"
+description = "A minimal terminal coding agent (REPL + headless JSON) whose SWE-bench Lite harness is validated by driving its own tools with the gold patches"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Muhammad Hammas", email = "214618908+hammasbuilds@users.noreply.github.com" }
+]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+terminal-agent = "terminal_agent.cli:main"
+ta-eval = "terminal_agent.evals.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff==0.16.7",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.12,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+    "docker: needs a running Docker daemon and a pulled SWE-bench image (deselected by default)",
+]
+addopts = "-m 'not docker'"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
