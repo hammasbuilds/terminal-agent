@@ -11,11 +11,19 @@ import time
 from pathlib import Path
 from typing import Any
 
-from terminal_agent.evals import edit_study, safety_study, specs, truncation_study, validate
+from terminal_agent.evals import (
+    edit_study,
+    model_run,
+    safety_study,
+    specs,
+    truncation_study,
+    validate,
+)
 from terminal_agent.evals.local_tasks import LOCAL_DATA, load_local_tasks, mine, save_local_tasks
 from terminal_agent.evals.patches import parse_patch
 from terminal_agent.evals.stats import rate
 from terminal_agent.evals.tasks import load_tasks, select, test_section
+from terminal_agent.llm import DEFAULT_HOST, DEFAULT_MODEL, OllamaClient
 
 ROOT = Path(__file__).resolve().parents[3]
 RESULTS = ROOT / "results"
@@ -173,7 +181,7 @@ def cmd_truncation_study(args: argparse.Namespace) -> int:
 
 def cmd_safety(args: argparse.Namespace) -> int:
     out = {}
-    for name in ("risky_commands", "risky_commands_heldout"):
+    for name in ("risky_commands", "risky_commands_heldout", "risky_commands_heldout2"):
         corpus = safety_study.load_corpus(ROOT / "data" / f"{name}.jsonl")
         out[name] = safety_study.score(corpus)
     _write(RESULTS / "safety.json", out)
@@ -183,6 +191,53 @@ def cmd_safety(args: argparse.Namespace) -> int:
               f"{p['safe_friction']['rate']}; forced_rm caught "
               f"{res['forced_rm']['dangerous_caught']['rate']}, blocklist caught "
               f"{res['blocklist']['dangerous_caught']['rate']}")
+    return 0
+
+
+def valid_ids(suite: str) -> list[str]:
+    out_dir = RESULTS / "validation" / suite
+    return sorted(r["instance_id"] for r in validate.load_records(out_dir).values()
+                  if r.get("verdict") == "valid")
+
+
+def cmd_model_run(args: argparse.Namespace) -> int:
+    ids = valid_ids(args.suite)
+    if args.ids:
+        ids = [i for i in ids if i in set(args.ids)]
+    if args.limit:
+        ids = ids[: args.limit]
+    upper = len(ids) * args.max_steps
+    print(f"model arm: {args.model} on {len(ids)} validated {args.suite} task(s); "
+          f"at most {upper} model calls ({args.max_steps} steps x {len(ids)} tasks)")
+    if args.dry_run:
+        for i in ids:
+            print(f"  {i}")
+        return 0
+    if not ids:
+        print("nothing to run: validate the suite first (ta-eval validate)", file=sys.stderr)
+        return 1
+    client = OllamaClient(model=args.model, host=args.host,
+                          cache_dir=ROOT / "cache" / "ollama" / args.model.replace(":", "_"))
+    out_dir = RESULTS / "model_run" / args.model.replace(":", "_") / args.suite
+    runs = RUNS / "model" / args.suite
+    if args.suite == "swebench":
+        by_id = {t.instance_id: t for t in load_tasks()}
+        jobs: list[Any] = [by_id[i] for i in ids]
+
+        def runner(job: Any) -> dict[str, Any]:
+            return model_run.run_swebench_task(job, client, runs, args.max_steps,
+                                               args.token_budget)
+    else:
+        by_local = {t.instance_id: t for t in load_local_tasks()}
+        jobs = [by_local[i] for i in ids]
+
+        def runner(job: Any) -> dict[str, Any]:
+            return model_run.run_local_task(job, client, runs, args.max_steps,
+                                            args.token_budget)
+    records = model_run.run_all(jobs, runner, out_dir)
+    _write(RESULTS / f"model_run_{args.model.replace(':', '_')}_{args.suite}.json",
+           {"model": args.model, "max_steps": args.max_steps, "token_budget": args.token_budget,
+            "summary": model_run.aggregate(records)})
     return 0
 
 
@@ -215,6 +270,17 @@ def build_parser() -> argparse.ArgumentParser:
                    ).set_defaults(fn=cmd_truncation_study)
     sub.add_parser("safety", help="score the approval policy on the command corpora"
                    ).set_defaults(fn=cmd_safety)
+
+    r = sub.add_parser("model-run", help="run the agent with a real model on validated tasks")
+    r.add_argument("--suite", choices=["swebench", "local"], default="local")
+    r.add_argument("--model", default=DEFAULT_MODEL)
+    r.add_argument("--host", default=DEFAULT_HOST)
+    r.add_argument("--max-steps", type=int, default=30)
+    r.add_argument("--token-budget", type=int, default=12000)
+    r.add_argument("--ids", nargs="*")
+    r.add_argument("--limit", type=int, default=0, help="only the first N tasks")
+    r.add_argument("--dry-run", action="store_true", help="list the jobs and exit")
+    r.set_defaults(fn=cmd_model_run)
     return p
 
 
