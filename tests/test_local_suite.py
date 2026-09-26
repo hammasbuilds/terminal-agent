@@ -6,6 +6,7 @@ import pytest
 from terminal_agent.evals import model_run
 from terminal_agent.evals.local_tasks import (
     candidate_commits,
+    git_apply,
     load_local_tasks,
     mine_commit,
     save_local_tasks,
@@ -91,3 +92,13 @@ def test_model_run_grades_and_classifies(mined, tmp_path: Path):
     summary = model_run.aggregate([good, rec, gave_up])
     assert summary["solve_rate"]["k"] == 1 and summary["tasks"] == 3
     assert summary["outcomes"]["resolved"] == 1
+
+
+def test_git_apply_works_inside_an_enclosing_repository(mined, bugfix_repo):
+    # runs/ lives inside this repo; git used to resolve paths against the outer repo's root,
+    # skip every file and still exit 0 (found by harness validation, not by a test)
+    repo, _ = bugfix_repo
+    nested = repo / "runs" / "ws"
+    mined.materialize(nested)
+    ok, _ = git_apply(nested, mined.patch)
+    assert ok and "sum(xs) / len(xs)\n" in (nested / "src" / "calc.py").read_text()

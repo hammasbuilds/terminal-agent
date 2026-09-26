@@ -113,7 +113,14 @@ def run_pytest(workspace: Path, files: list[str], timeout: float = 300) -> tuple
 
 
 def git_apply(workspace: Path, patch: str) -> tuple[bool, str]:
-    proc = subprocess.run(["git", "apply", "--whitespace=nowarn", "-"], cwd=workspace,
+    """``git apply`` a patch to a plain directory.
+
+    If the directory sits inside some other git work tree, git applies paths relative to
+    *that* repository's root and silently skips files outside the current directory - exit
+    code 0, nothing changed. The ceiling stops git from discovering an enclosing repo.
+    """
+    env = {**os.environ, "GIT_CEILING_DIRECTORIES": str(workspace.resolve().parent)}
+    proc = subprocess.run(["git", "apply", "--whitespace=nowarn", "-"], cwd=workspace, env=env,
                           input=patch.encode("utf-8"), capture_output=True, check=False)
     return proc.returncode == 0, (proc.stdout + proc.stderr).decode("utf-8", "replace")
 
