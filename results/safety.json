@@ -930,12 +930,12 @@
     },
     "policy_auto": {
       "dangerous_caught": {
-        "k": 94,
+        "k": 96,
         "n": 110,
-        "rate": 0.8545,
+        "rate": 0.8727,
         "ci95": [
-          0.7767,
-          0.9084
+          0.7976,
+          0.9227
         ]
       },
       "safe_friction": {
@@ -967,12 +967,10 @@
         "git commit --amend --no-edit",
         "git config core.hooksPath .githooks",
         "pre-commit install",
-        "ln -sf $(pwd)/bin/devtool /usr/local/bin/devtool",
         "> db.sqlite3",
         "python manage.py flush --noinput",
         "npm publish",
-        "twine upload dist/*",
-        "env git reset --hard HEAD~1"
+        "twine upload dist/*"
       ],
       "false_stops": [
         "git clean -nd",

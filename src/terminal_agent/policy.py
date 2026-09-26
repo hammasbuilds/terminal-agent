@@ -111,6 +111,7 @@ ENV_HIJACK = re.compile(r"^(PATH|LD_PRELOAD|LD_LIBRARY_PATH|PYTHONPATH|PYTHONSTA
 OPERATORS = {";", "&&", "||", "|", "&", "(", ")", ";;", "|&", "\n"}
 REDIRECTS = {">", ">>", ">|", "&>", "&>>", ">&", "<", "<<", "<<<", "<>", "<&"}
 _SUBST = re.compile(r"\$\(|`|<\(|>\(")
+PLACEHOLDER = "__SUBSTITUTION__"
 _EXEC_PROCESS_SUBST = re.compile(
     r"(^|[;&|\s])(bash|sh|zsh|dash|ksh|python3?|perl|ruby|node|source|\.)\s+<\(")
 _HEREDOC_TO_INTERPRETER = re.compile(r"(^|[;&|\s])(python3?|perl|ruby|node|php)\s+(-\s+)?<<")
@@ -134,7 +135,7 @@ class CommandClassifier:
     # -- paths ------------------------------------------------------------------
     def outside(self, word: str) -> bool:
         """Does ``word``, read as a path, point outside the workspace?"""
-        if not word or word.startswith("-") or "://" in word:
+        if not word or word.startswith("-") or "://" in word or PLACEHOLDER in word:
             return False
         if re.match(r"^[A-Za-z]:[\\/]", word) or word.startswith("\\\\"):
             return True
@@ -160,10 +161,11 @@ class CommandClassifier:
             hit = next((f for f in CODE_RED_FLAGS if f in command.lower()), None)
             if hit:
                 rating = _dangerous(f"heredoc code calls {hit.rstrip('(.')}")
-        for inner in self._substitutions(command):
+        bodies, stripped = self._substitutions(command)
+        for inner in bodies:
             rating = rating.worse(self.rate(inner, depth + 1))
         try:
-            flat = command.replace("\r", "").replace("\n", " ; ")
+            flat = stripped.replace("\r", "").replace("\n", " ; ")
             lexer = shlex.shlex(flat, posix=True,
                                 punctuation_chars=";&|()<>")
             lexer.whitespace = " \t"
@@ -175,22 +177,37 @@ class CommandClassifier:
         return rating.worse(self._rate_tokens(tokens, command, depth))
 
     @staticmethod
-    def _substitutions(command: str) -> list[str]:
-        """Bodies of ``$( )``, backticks and process substitutions, outermost first."""
-        found: list[str] = []
-        for m in _SUBST.finditer(command):
+    def _substitutions(command: str) -> tuple[list[str], str]:
+        """Split out ``$( )``, backtick and ``<( )``/``>( )`` bodies (outermost only).
+
+        Returns the bodies, and the command with each substitution replaced by a
+        placeholder word, so the lexer sees ``ln -sf SUBST/bin/x /usr/bin/x`` instead of
+        tripping over the parentheses.
+        """
+        bodies: list[str] = []
+        out: list[str] = []
+        i = 0
+        while i < len(command):
+            m = _SUBST.match(command, i)
+            if not m:
+                out.append(command[i])
+                i += 1
+                continue
             start = m.end()
             if m.group() == "`":
                 end = command.find("`", start)
-                if end > 0:
-                    found.append(command[start:end])
-                continue
-            depth, i = 1, start
-            while i < len(command) and depth:
-                depth += {"(": 1, ")": -1}.get(command[i], 0)
-                i += 1
-            found.append(command[start : i - 1] if depth == 0 else command[start:])
-        return found
+                end = len(command) if end < 0 else end
+                bodies.append(command[start:end])
+                i = end + 1
+            else:
+                depth, j = 1, start
+                while j < len(command) and depth:
+                    depth += {"(": 1, ")": -1}.get(command[j], 0)
+                    j += 1
+                bodies.append(command[start : j - 1] if depth == 0 else command[start:])
+                i = j
+            out.append(PLACEHOLDER)
+        return bodies, "".join(out)
 
     def _rate_tokens(self, tokens: list[str], raw: str, depth: int) -> Rating:
         rating = SAFE
@@ -258,7 +275,7 @@ class CommandClassifier:
         if not words:
             return rating
         name_raw = words[0]
-        if "$" in name_raw or "`" in name_raw:
+        if "$" in name_raw or "`" in name_raw or PLACEHOLDER in name_raw:
             return _dangerous("the command name is computed at run time")
         name = _command_name(name_raw)
         args = words[1:]
@@ -268,7 +285,11 @@ class CommandClassifier:
         if name in ("sudo", "doas", "su", "runas"):
             return _dangerous(ALWAYS_DANGEROUS[name])
         if name == "env":
-            rest = [a for a in args if not (a.startswith("-") or "=" in a)]
+            rest = list(args)
+            while rest and (rest[0].startswith("-") or re.match(r"^\w+=", rest[0])):
+                opt = rest.pop(0)
+                if opt in ("-u", "--unset", "-C", "--chdir") and rest:
+                    rest.pop(0)
             hijack = [a for a in args if ENV_HIJACK.match(a)]
             if hijack:
                 return _dangerous(f"overrides {hijack[0].split('=')[0]}")
@@ -409,7 +430,7 @@ class CommandClassifier:
     def _rate_download(self, name: str, args: list[str]) -> Rating:
         upload = {"-d", "--data", "--data-binary", "--data-raw", "--data-urlencode", "-F",
                   "--form", "-T", "--upload-file", "--post-file", "--post-data", "--body-file"}
-        if any("$(" in a or "`" in a for a in args):
+        if any(PLACEHOLDER in a or "$(" in a or "`" in a for a in args):
             return _dangerous(f"{name} sends data computed by another command")
         out_flags = {"-o", "--output", "-O", "--output-document", "-P", "--directory-prefix"}
         for i, a in enumerate(args):
@@ -517,7 +538,7 @@ class CommandClassifier:
             if flag in args:
                 code = args[args.index(flag) + 1] if args.index(flag) + 1 < len(args) else ""
                 low = code.lower()
-                if "$(" in code or "`" in code:
+                if PLACEHOLDER in code or "$(" in code or "`" in code:
                     return _dangerous(f"inline {name} code is computed at run time")
                 hit = next((f for f in CODE_RED_FLAGS if f in low), None)
                 if hit:
