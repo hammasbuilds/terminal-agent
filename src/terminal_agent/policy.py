@@ -83,7 +83,8 @@ ALWAYS_DANGEROUS = {
     "diskpart": "partitions disks", "bcdedit": "edits boot configuration",
     "schtasks": "edits scheduled tasks", "at": "schedules jobs", "launchctl": "edits services",
     "sc": "controls Windows services", "ssh-keygen": "creates or overwrites keys",
-    "history": "edits shell history", "net": "manages Windows users and shares", "npx": "downloads and runs a package",
+    "history": "edits shell history",
+    "net": "manages Windows users and shares", "npx": "downloads and runs a package",
     "uvx": "downloads and runs a package", "bunx": "downloads and runs a package",
 }
 # infrastructure CLIs: these verbs destroy remote resources
