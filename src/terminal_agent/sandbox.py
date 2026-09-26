@@ -57,34 +57,40 @@ def _kill_tree(proc: subprocess.Popen[bytes]) -> None:
     proc.kill()
 
 
+def run_argv(argv: list[str], cwd: Path, env: dict[str, str] | None, timeout: float
+             ) -> ExecResult:
+    """Run a process in its own group; on timeout kill the whole tree, not just the parent.
+
+    ``subprocess.run(timeout=...)`` kills only the direct child, and a grandchild that
+    inherited the output pipe then keeps ``communicate()`` waiting forever.
+    """
+    start = time.monotonic()
+    kwargs: dict[str, object] = {}
+    if os.name == "nt":
+        kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+    else:
+        kwargs["start_new_session"] = True
+    proc = subprocess.Popen(argv, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            stdin=subprocess.DEVNULL, env=env, **kwargs)  # type: ignore[call-overload]
+    try:
+        out, _ = proc.communicate(timeout=timeout)
+        return ExecResult(proc.returncode, _decode(out), False, time.monotonic() - start)
+    except subprocess.TimeoutExpired:
+        _kill_tree(proc)
+        try:
+            out, _ = proc.communicate(timeout=10)
+        except subprocess.TimeoutExpired:
+            out = b""
+        return ExecResult(124, _decode(out), True, time.monotonic() - start)
+
+
 class LocalSandbox:
     def __init__(self, workspace: Path, env: dict[str, str] | None = None) -> None:
         self.workspace = workspace
         self.env = env
 
     def run(self, command: str, timeout: float) -> ExecResult:
-        start = time.monotonic()
-        kwargs: dict[str, object] = {}
-        if os.name == "nt":
-            kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
-        else:
-            kwargs["start_new_session"] = True
-        proc = subprocess.Popen(
-            [*local_shell(), command],
-            cwd=self.workspace,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            stdin=subprocess.DEVNULL,
-            env=self.env,
-            **kwargs,  # type: ignore[arg-type]
-        )
-        try:
-            out, _ = proc.communicate(timeout=timeout)
-            return ExecResult(proc.returncode, _decode(out), False, time.monotonic() - start)
-        except subprocess.TimeoutExpired:
-            _kill_tree(proc)
-            out, _ = proc.communicate()
-            return ExecResult(124, _decode(out), True, time.monotonic() - start)
+        return run_argv([*local_shell(), command], self.workspace, self.env, timeout)
 
 
 def file_digest(path: Path) -> str:

@@ -10,3 +10,4 @@ build/
 # scratch workspaces and model caches produced by runs
 runs/
 cache/
+runs_mine.log

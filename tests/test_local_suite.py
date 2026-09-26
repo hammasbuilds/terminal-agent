@@ -1,4 +1,7 @@
+import copy
 from pathlib import Path
+
+import pytest
 
 from terminal_agent.evals import model_run
 from terminal_agent.evals.local_tasks import (
@@ -12,16 +15,21 @@ from terminal_agent.llm import ModelTurn, ScriptedClient
 from terminal_agent.protocol import ToolCall
 
 
-def _task(bugfix_repo, tmp_path):
+@pytest.fixture(scope="module")
+def mined(bugfix_repo, tmp_path_factory):
     repo, sha = bugfix_repo
     assert sha in candidate_commits(repo)
-    task = mine_commit(repo, "calcrepo", sha, tmp_path / "scratch")
+    task = mine_commit(repo, "calcrepo", sha, tmp_path_factory.mktemp("scratch"))
     assert task is not None
     return task
 
 
-def test_mining_finds_fail_to_pass(bugfix_repo, tmp_path: Path):
-    task = _task(bugfix_repo, tmp_path)
+def _task(mined):
+    return copy.deepcopy(mined)
+
+
+def test_mining_finds_fail_to_pass(mined, tmp_path: Path):
+    task = _task(mined)
     assert task.fail_to_pass == ["tests/test_calc.py::test_mean"]
     assert task.pass_to_pass == ["tests/test_calc.py::test_clamp"]
     assert "n-1" in task.problem_statement
@@ -31,8 +39,8 @@ def test_mining_finds_fail_to_pass(bugfix_repo, tmp_path: Path):
     assert back.as_record() == task.as_record()
 
 
-def test_gold_validation_passes_all_four_checks(bugfix_repo, tmp_path: Path):
-    task = _task(bugfix_repo, tmp_path)
+def test_gold_validation_passes_all_four_checks(mined, tmp_path: Path):
+    task = _task(mined)
     rec = validate_local_task(task, tmp_path / "runs", tmp_path / "logs")
     assert rec["verdict"] == "valid", rec["reasons"]
     assert rec["baseline"]["f2p_passed"] == 0 and rec["gold"]["resolved"]
@@ -41,8 +49,8 @@ def test_gold_validation_passes_all_four_checks(bugfix_repo, tmp_path: Path):
     assert (tmp_path / "logs" / f"{task.instance_id.replace('@', '_')}.baseline.log.gz").exists()
 
 
-def test_validation_catches_a_task_whose_tests_do_not_fail(bugfix_repo, tmp_path: Path):
-    task = _task(bugfix_repo, tmp_path)
+def test_validation_catches_a_task_whose_tests_do_not_fail(mined, tmp_path: Path):
+    task = _task(mined)
     task.fail_to_pass = ["tests/test_calc.py::test_clamp"]  # passes before the fix
     rec = validate_local_task(task, tmp_path / "runs", tmp_path / "logs")
     assert rec["verdict"] == "invalid"
@@ -55,15 +63,14 @@ def _fix_script() -> ScriptedClient:
         ModelTurn("", [ToolCall("edit", {"path": "src/calc.py",
                                          "old_string": "(len(xs) - 1)",
                                          "new_string": "len(xs)"})]),
-        ModelTurn("", [ToolCall("run_tests", {})]),
         ModelTurn("", [ToolCall("finish", {"summary": "fixed mean"})]),
     ])
 
 
-def test_model_run_grades_and_classifies(bugfix_repo, tmp_path: Path):
-    task = _task(bugfix_repo, tmp_path)
+def test_model_run_grades_and_classifies(mined, tmp_path: Path):
+    task = _task(mined)
     good = model_run.run_local_task(task, _fix_script(), tmp_path / "m", 10, 12000)
-    assert good["outcome"] == "resolved" and good["agent"]["steps"] == 4
+    assert good["outcome"] == "resolved" and good["agent"]["steps"] == 3
     assert good["edit_status"] == {"ok": 1}
     wrong_place = ScriptedClient([
         ModelTurn("", [ToolCall("write_file", {"path": "src/other.py", "content": "x = 1\n"})]),

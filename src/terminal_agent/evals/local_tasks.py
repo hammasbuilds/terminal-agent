@@ -26,6 +26,7 @@ from typing import Any
 from terminal_agent.evals import specs
 from terminal_agent.evals.patches import patch_test_files
 from terminal_agent.evals.tasks import rmtree
+from terminal_agent.sandbox import run_argv
 
 LOCAL_DATA = Path(__file__).resolve().parents[3] / "data" / "local_tasks.jsonl.gz"
 TEST_RE = re.compile(r"(^|/)(tests?/|test_[^/]*\.py$|[^/]*_test\.py$|conftest\.py$)")
@@ -107,14 +108,8 @@ def test_env(workspace: Path) -> dict[str, str]:
 
 def run_pytest(workspace: Path, files: list[str], timeout: float = 300) -> tuple[str, bool]:
     """Run pytest on ``files`` with this interpreter; return (log, timed_out)."""
-    try:
-        proc = subprocess.run([sys.executable, *TEST_ARGS, *files], cwd=workspace,
-                              env=test_env(workspace), capture_output=True, timeout=timeout,
-                              check=False)
-    except subprocess.TimeoutExpired as exc:
-        out = (exc.stdout or b"") + (exc.stderr or b"")
-        return out.decode("utf-8", "replace"), True
-    return (proc.stdout + proc.stderr).decode("utf-8", "replace").replace("\r\n", "\n"), False
+    res = run_argv([sys.executable, *TEST_ARGS, *files], workspace, test_env(workspace), timeout)
+    return res.output, res.timed_out
 
 
 def git_apply(workspace: Path, patch: str) -> tuple[bool, str]:

@@ -30,10 +30,10 @@ def _git(repo: Path, *args: str) -> str:
                           text=True).stdout
 
 
-@pytest.fixture
-def bugfix_repo(tmp_path: Path) -> tuple[Path, str]:
+@pytest.fixture(scope="module")
+def bugfix_repo(tmp_path_factory: pytest.TempPathFactory) -> tuple[Path, str]:
     """A two-commit repo: the second commit fixes ``mean`` and adds its test."""
-    repo = tmp_path / "calcrepo"
+    repo = tmp_path_factory.mktemp("repo") / "calcrepo"
     (repo / "src").mkdir(parents=True)
     (repo / "tests").mkdir()
     (repo / "src" / "calc.py").write_bytes(BUGGY.encode())
