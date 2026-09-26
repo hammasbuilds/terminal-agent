@@ -70,7 +70,7 @@ def validate_task(task: Task, run_dir: Path, log_dir: Path, test_timeout: float 
     gold_files = [f.path for f in parse_patch(task.patch)]
 
     with Container(task) as c:
-        rec["head_matches_base"] = c.head() == task.base_commit
+        rec["head_matches_base"] = c.tree_matches(task.base_commit)
         export = c.export(ws)
         rec["export"] = asdict(export)
         before = snapshot(ws)
@@ -103,13 +103,13 @@ def validate_task(task: Task, run_dir: Path, log_dir: Path, test_timeout: float 
         rec["byte_mismatch"] = mismatched
         rec["changed_files"] = {"modified": modified, "deleted": deleted}
 
-    with Container(task) as base:
+    with Container(task, network=True) as base:
         log, meta = base.run_tests(test_timeout)
         _save_log(log_dir / f"{task.instance_id}.baseline.log.gz", log)
         grade, _ = _grade(task, log)
         rec["baseline"] = {**grade, **meta}
 
-    with Container(task) as fin:
+    with Container(task, network=True) as fin:
         fin.push_changes(ws, before)
         rec["model_patch"] = fin.diff()
         log, meta = fin.run_tests(test_timeout)
@@ -127,7 +127,7 @@ def validate_task(task: Task, run_dir: Path, log_dir: Path, test_timeout: float 
 def diagnose(rec: dict[str, Any], gold_files: list[str]) -> list[str]:
     reasons = []
     if not rec.get("head_matches_base"):
-        reasons.append("export: image HEAD is not the task's base_commit")
+        reasons.append("export: the image's tree is not the task's base_commit")
     skipped = set(rec["export"]["skipped_symlinks"]) | set(rec["export"]["skipped_invalid"])
     if skipped & set(gold_files):
         reasons.append("export: a file the patch touches could not be exported")

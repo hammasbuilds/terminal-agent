@@ -98,16 +98,24 @@ class ExportReport:
 
 
 class Container:
-    """A throwaway container from the task image. Only ever removes itself."""
+    """A throwaway container from the task image. Only ever removes itself.
 
-    def __init__(self, task: Task, memory: str = "3g") -> None:
+    The agent's container has no network (``network=False``); grading containers keep
+    Docker's default network, as the official harness does, because some PASS_TO_PASS
+    tests (requests' connect-timeout tests) need a routable network to time out rather
+    than fail fast.
+    """
+
+    def __init__(self, task: Task, memory: str = "3g", network: bool = False) -> None:
         self.task = task
         self.name = f"ta-{task.instance_id.lower().replace('__', '-')}-{uuid.uuid4().hex[:6]}"
         self.memory = memory
+        self.network = network
         self.started = False
 
     def __enter__(self) -> Container:
-        docker(["run", "-d", "--name", self.name, "--memory", self.memory, "--network", "none",
+        net = [] if self.network else ["--network", "none"]
+        docker(["run", "-d", "--name", self.name, "--memory", self.memory, *net,
                 self.task.image, "tail", "-f", "/dev/null"], timeout=300)
         self.started = True
         return self
@@ -130,9 +138,22 @@ class Container:
         if code != 0:
             raise RuntimeError(f"could not write {path} in {self.name}: {out[-300:]}")
 
-    def head(self) -> str:
-        code, out = self.sh(f"git -C {WORKDIR} rev-parse HEAD")
-        return out.strip() if code == 0 else ""
+    def tree_matches(self, commit: str) -> bool:
+        """Is HEAD's content that of ``commit``?
+
+        The official images add a "SWE-bench" commit on top of base_commit that changes
+        only file modes, so comparing HEAD's hash with base_commit would reject every
+        image. Compare (path, blob) pairs instead, which ignores modes.
+        """
+        def tree(rev: str) -> set[tuple[str, str]] | None:
+            code, out = self.sh(f"git -C {WORKDIR} ls-tree -r {rev}")
+            if code != 0:
+                return None
+            rows = (line.split(None, 3) for line in out.splitlines() if line.strip())
+            return {(r[3], r[2]) for r in rows if len(r) == 4}
+
+        head, base = tree("HEAD"), tree(commit)
+        return head is not None and head == base
 
     def export(self, dest: Path) -> ExportReport:
         """Extract the tracked tree at HEAD to ``dest`` (bytes preserved, no .git)."""

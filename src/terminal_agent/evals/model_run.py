@@ -69,7 +69,7 @@ def run_swebench_task(task: Task, client: ChatClient, run_dir: Path, max_steps: 
         result = agent.run(TASK_PROMPT.format(problem=task.problem_statement))
         agent.logger.close()
     modified, deleted = changed_files(before, snapshot(ws))
-    with Container(task) as ev:
+    with Container(task, network=True) as ev:
         ev.push_changes(ws, before)
         patch = ev.diff()
         log, meta = ev.run_tests()
