@@ -55,9 +55,12 @@ READ_ONLY = {
     "rg", "ag", "echo", "printf", "which", "where", "type", "file", "stat", "du", "df", "tree",
     "sort", "uniq", "cut", "tr", "diff", "cmp", "comm", "basename", "dirname", "realpath",
     "readlink", "date", "whoami", "uname", "true", "false", "test", "[", "jq", "nl", "column",
-    "md5sum", "sha1sum", "sha256sum", "cd", "sleep", "seq", "yes", "ps",
+    "md5sum", "sha1sum", "sha256sum", "cd", "sleep", "seq", "yes", "ps", "printenv", "mypy",
 }
 TEST_RUNNERS = {"pytest", "py.test", "runtests.py", "test"}
+# (command, first argument) pairs that only run tests or linters
+TEST_VERBS = {("npm", "test"), ("cargo", "test"), ("go", "test"), ("go", "vet"),
+              ("ruff", "check"), ("tox", "-l")}
 ALWAYS_DANGEROUS = {
     "dd": "raw disk/file writes", "fdisk": "partitions disks", "wipefs": "wipes disks",
     "shred": "destroys files", "format": "formats a disk", "mount": "remounts filesystems",
@@ -76,10 +79,21 @@ ALWAYS_DANGEROUS = {
     ".": "runs a file as shell code", "iex": "runs a string as code",
     "invoke-expression": "runs a string as code", "irm": "downloads for execution",
     "remove-item": "deletes files", "rd": "deletes directories",
+    "blkdiscard": "discards a disk's blocks", "vssadmin": "deletes shadow copies",
+    "diskpart": "partitions disks", "bcdedit": "edits boot configuration",
+    "schtasks": "edits scheduled tasks", "at": "schedules jobs", "launchctl": "edits services",
+    "sc": "controls Windows services", "ssh-keygen": "creates or overwrites keys",
+    "history": "edits shell history", "net": "manages Windows users and shares", "npx": "downloads and runs a package",
+    "uvx": "downloads and runs a package", "bunx": "downloads and runs a package",
 }
+# infrastructure CLIs: these verbs destroy remote resources
+INFRA = {"kubectl", "terraform", "aws", "gcloud", "az", "helm", "pulumi", "doctl", "gsutil"}
+INFRA_DESTRUCTIVE = {"delete", "destroy", "rb", "rm", "uninstall", "terminate", "drain",
+                     "apply", "scale", "remove", "purge", "down", "replace", "patch"}
 PACKAGE_MANAGERS = {"pip", "pip3", "apt", "apt-get", "yum", "dnf", "brew", "conda", "choco",
-                    "winget", "npm", "pnpm", "yarn", "gem", "cargo", "mamba", "pipx"}
-INSTALL_VERBS = {"install", "uninstall", "remove", "add", "i", "update", "upgrade", "reinstall"}
+                    "winget", "npm", "pnpm", "yarn", "gem", "cargo", "mamba", "pipx", "go"}
+INSTALL_VERBS = {"install", "uninstall", "remove", "add", "i", "update", "upgrade", "reinstall",
+                 "get", "exec", "dlx"}
 SHELLS = {"bash", "sh", "zsh", "dash", "ksh", "fish", "cmd", "pwsh", "powershell"}
 INTERPRETERS = {"python", "python3", "python2", "perl", "ruby", "node", "php", "deno", "bun"}
 WRAPPERS = {"command", "builtin", "exec", "nohup", "nice", "time", "stdbuf", "busybox",
@@ -98,6 +112,7 @@ REDIRECTS = {">", ">>", ">|", "&>", "&>>", ">&", "<", "<<", "<<<", "<>", "<&"}
 _SUBST = re.compile(r"\$\(|`|<\(|>\(")
 _EXEC_PROCESS_SUBST = re.compile(
     r"(^|[;&|\s])(bash|sh|zsh|dash|ksh|python3?|perl|ruby|node|source|\.)\s+<\(")
+_HEREDOC_TO_INTERPRETER = re.compile(r"(^|[;&|\s])(python3?|perl|ruby|node|php)\s+(-\s+)?<<")
 DELETERS = {"rm", "unlink", "shred", "rmdir", "del", "erase", "remove-item"}
 
 
@@ -112,9 +127,8 @@ def _mutating(reason: str) -> Rating:
 class CommandClassifier:
     """Rates a shell command string. ``root`` is the workspace as the shell sees it."""
 
-    def __init__(self, root: str = "/workspace", home: str = "/root") -> None:
+    def __init__(self, root: str = "/workspace") -> None:
         self.root = root.rstrip("/") or "/"
-        self.home = home
 
     # -- paths ------------------------------------------------------------------
     def outside(self, word: str) -> bool:
@@ -141,6 +155,10 @@ class CommandClassifier:
         rating = SAFE
         if _EXEC_PROCESS_SUBST.search(command):
             rating = _dangerous("runs a downloaded or generated script via <( )")
+        if _HEREDOC_TO_INTERPRETER.search(command):
+            hit = next((f for f in CODE_RED_FLAGS if f in command.lower()), None)
+            if hit:
+                rating = _dangerous(f"heredoc code calls {hit.rstrip('(.')}")
         for inner in self._substitutions(command):
             rating = rating.worse(self.rate(inner, depth + 1))
         try:
@@ -280,9 +298,17 @@ class CommandClassifier:
             return self._rate_shell(name, args, piped, depth)
         if name in INTERPRETERS:
             return self._rate_interpreter(name, args, piped, depth)
+        verb0 = next((a for a in args if not a.startswith("-")), "")
+        if (name, verb0) in TEST_VERBS and "--fix" not in args:
+            return SAFE
+        if name in INFRA:
+            if any(a in INFRA_DESTRUCTIVE for a in args):
+                return _dangerous(f"{name} changes or destroys remote infrastructure")
+            return _mutating(f"runs {name}")
         if name in PACKAGE_MANAGERS:
             verb = next((a for a in args if not a.startswith("-")), "")
-            if verb in INSTALL_VERBS or (name in ("npm", "pnpm", "yarn") and "-g" in args):
+            if verb in INSTALL_VERBS or (name in ("npm", "pnpm", "yarn") and "-g" in args) or (
+                    name == "pipx" and verb == "run"):
                 return _dangerous(f"{name} {verb} changes installed packages")
             if name in ("pip", "pip3") and verb in ("list", "show", "freeze", "check"):
                 return SAFE
@@ -312,6 +338,9 @@ class CommandClassifier:
             return _dangerous(f"docker {sub} changes containers or the host")
         if name in ("curl", "wget"):
             return self._rate_download(name, args)
+        if name == "tar" and any(a in ("-P", "--absolute-names") for a in args):
+            return _dangerous("tar --absolute-names can write anywhere")
+
         if name == "chmod":
             if any(a.startswith("-") and "R" in a for a in args) or "--recursive" in args:
                 return _dangerous("recursive permission change")
@@ -379,6 +408,14 @@ class CommandClassifier:
     def _rate_download(self, name: str, args: list[str]) -> Rating:
         upload = {"-d", "--data", "--data-binary", "--data-raw", "--data-urlencode", "-F",
                   "--form", "-T", "--upload-file", "--post-file", "--post-data", "--body-file"}
+        if any("$(" in a or "`" in a for a in args):
+            return _dangerous(f"{name} sends data computed by another command")
+        out_flags = {"-o", "--output", "-O", "--output-document", "-P", "--directory-prefix"}
+        for i, a in enumerate(args):
+            flag, _, val = a.partition("=")
+            target = val if val else (args[i + 1] if i + 1 < len(args) else "")
+            if flag in out_flags and self.outside(target):
+                return _dangerous(f"{name} writes a download outside the workspace ({target})")
         for a in args:
             flag = a.split("=", 1)[0]
             if flag in upload or (a.startswith("-d") and len(a) > 2 and name == "curl"):
@@ -458,6 +495,10 @@ class CommandClassifier:
         return _mutating(f"runs the script {script_files[0]}")
 
     def _rate_interpreter(self, name: str, args: list[str], piped: bool, depth: int) -> Rating:
+        if name in ("perl", "ruby") and any(
+                a.startswith("-") and not a.startswith("--") and "i" in a for a in args):
+            return self._paths_rating([a for a in args if not a.startswith("-")][1:],
+                                      f"{name} -i edits files in place", destructive=False)
         if not args or args == ["-"]:
             if piped:
                 return _dangerous(f"pipes input into {name}, which runs it as code")
