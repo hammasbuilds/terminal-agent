@@ -37,6 +37,7 @@ class ToolResult:
 class ToolConfig:
     read_max_lines: int = 1000
     read_max_line_chars: int = 2000
+    read_max_chars: int = 6000  # one read window never exceeds this, so it cannot blow the budget
     output_max_chars: int = 8000
     truncate_mode: TruncateMode = "digest"
     shell_timeout: float = 120.0
@@ -130,13 +131,20 @@ class Toolbox:
         window = lines[offset - 1 : offset - 1 + limit]
         clipped = 0
         shown = []
+        budget = self.config.read_max_chars
+        used = 0
         for line in window:
             if len(line) > self.config.read_max_line_chars:
                 clipped += 1
                 line = line[: self.config.read_max_line_chars] + " [line truncated]"
+            # stop before the char budget so a dense window cannot exceed the token budget;
+            # always keep at least the first line so a huge single line still returns something
+            if shown and used + len(line) + 1 > budget:
+                break
             shown.append(line)
+            used += len(line) + 1
         body = "\n".join(shown)
-        end = offset + len(window) - 1
+        end = offset + len(shown) - 1
         meta = {"total_lines": total, "first": offset, "last": end, "clipped_lines": clipped}
         if offset > 1 or end < total:
             header = (f"[{path}: lines {offset}-{end} of {total}. "
@@ -290,6 +298,9 @@ class Toolbox:
         )
 
     def run_shell(self, command: str, timeout: int | None = None) -> ToolResult:
+        if timeout is not None and timeout <= 0:
+            return ToolResult(False, f"timeout must be a positive number of seconds, got {timeout}",
+                              {"error": "bad_arguments"})
         limit = float(timeout) if timeout else self.config.shell_timeout
         limit = min(limit, self.config.test_timeout)
         return self._exec(command, limit)

@@ -63,11 +63,33 @@ def _first_line_lstrip(old: str, new: str) -> tuple[str, str]:
     return head.lstrip(" \t") + sep + rest, new2
 
 
+def _shift_second_line(old: str, new: str) -> tuple[str, str]:
+    """Indent only the SECOND non-blank line by 4 spaces, breaking relative structure.
+
+    This is not a uniform paste slip - it is the model misremembering nesting (a line moved
+    into or out of a block). A whitespace-tolerant matcher must NOT apply it; the study
+    counts how often the fuzzy tool refuses (right) vs applies a wrong result.
+    """
+    def bump(text: str) -> str:
+        lines = text.split("\n")
+        seen = 0
+        for i, ln in enumerate(lines):
+            if ln.strip():
+                seen += 1
+                if seen == 2:
+                    lines[i] = "    " + ln
+                    break
+        return "\n".join(lines)
+    o2, n2 = bump(old), bump(new)
+    return (o2, n2) if o2 != old else (old, new)
+
+
 PERTURBATIONS: dict[str, Callable[[str, str], tuple[str, str]]] = {
     "trailing_ws_dropped": lambda o, n: (_map_lines(o, str.rstrip), _map_lines(n, str.rstrip)),
     "tabs_expanded": lambda o, n: (o.expandtabs(4), n.expandtabs(4)),
     "first_line_unindented": _first_line_lstrip,
     "snippet_dedented": _dedent_pair,
+    "one_line_reindented": _shift_second_line,
 }
 
 

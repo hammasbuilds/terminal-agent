@@ -32,7 +32,8 @@ def test_edit_study_skips_perturbations_that_change_nothing():
     patch = ("diff --git a/m.py b/m.py\n--- a/m.py\n+++ b/m.py\n@@ -1,2 +1,2 @@\n"
              " a = 1\n-b = 2\n+b = 3\n")
     (row,) = edit_study.study_task(_task(patch), {"m.py": pre})
-    assert row["perturbations"] == {}  # nothing to perturb: no whitespace in the snippet
+    # only the structural perturbation applies to this whitespace-free 2-line hunk
+    assert set(row["perturbations"]) <= {"one_line_reindented"}
 
 
 def test_truncation_study_head_hides_the_summary():

@@ -15,6 +15,7 @@ import shutil
 import signal
 import subprocess
 import tarfile
+import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -59,29 +60,37 @@ def _kill_tree(proc: subprocess.Popen[bytes]) -> None:
 
 def run_argv(argv: list[str], cwd: Path, env: dict[str, str] | None, timeout: float
              ) -> ExecResult:
-    """Run a process in its own group; on timeout kill the whole tree, not just the parent.
+    """Run a process in its own group; on timeout kill the tree and return what it wrote.
 
-    ``subprocess.run(timeout=...)`` kills only the direct child, and a grandchild that
-    inherited the output pipe then keeps ``communicate()`` waiting forever.
+    Output goes to a real temp file, not a pipe. A pipe stays open as long as *any*
+    descendant holds its write end, so a backgrounded grandchild makes ``communicate()``
+    block long past the timeout and lose everything; a file never blocks the parent.
     """
+    if timeout <= 0:
+        raise ValueError(f"timeout must be positive, got {timeout}")
     start = time.monotonic()
+    deadline = start + timeout
     kwargs: dict[str, object] = {}
     if os.name == "nt":
         kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
     else:
         kwargs["start_new_session"] = True
-    proc = subprocess.Popen(argv, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                            stdin=subprocess.DEVNULL, env=env, **kwargs)  # type: ignore[call-overload]
-    try:
-        out, _ = proc.communicate(timeout=timeout)
-        return ExecResult(proc.returncode, _decode(out), False, time.monotonic() - start)
-    except subprocess.TimeoutExpired:
-        _kill_tree(proc)
-        try:
-            out, _ = proc.communicate(timeout=10)
-        except subprocess.TimeoutExpired:
-            out = b""
-        return ExecResult(124, _decode(out), True, time.monotonic() - start)
+    timed_out = False
+    with tempfile.TemporaryFile() as out:
+        proc = subprocess.Popen(argv, cwd=cwd, stdout=out, stderr=subprocess.STDOUT,
+                                stdin=subprocess.DEVNULL, env=env, **kwargs)  # type: ignore[call-overload]
+        while proc.poll() is None:
+            if time.monotonic() >= deadline:
+                _kill_tree(proc)
+                timed_out = True
+                with contextlib.suppress(subprocess.TimeoutExpired):
+                    proc.wait(timeout=5)
+                break
+            time.sleep(0.05)
+        out.seek(0)
+        data = out.read()
+    code = 124 if timed_out else (proc.returncode if proc.returncode is not None else 124)
+    return ExecResult(code, _decode(data), timed_out, time.monotonic() - start)
 
 
 class LocalSandbox:
@@ -113,14 +122,16 @@ def changed_files(before: dict[str, str], after: dict[str, str]) -> tuple[list[s
     return modified, deleted
 
 
-def tar_files(root: Path, rel_paths: list[str]) -> bytes:
+def tar_files(root: Path, rel_paths: list[str], modes: dict[str, int] | None = None) -> bytes:
+    """Tar the given files. ``modes`` gives a per-path octal mode to preserve (e.g. +x)."""
     buf = io.BytesIO()
+    modes = modes or {}
     with tarfile.open(fileobj=buf, mode="w") as tar:
         for rel in rel_paths:
             data = (root / rel).read_bytes()
             info = tarfile.TarInfo(rel)
             info.size = len(data)
-            info.mode = 0o644
+            info.mode = modes.get(rel, 0o644)
             tar.addfile(info, io.BytesIO(data))
     return buf.getvalue()
 
@@ -151,12 +162,21 @@ class DockerSandbox:
         now = snapshot(self.workspace)
         modified, deleted = changed_files(self._synced, now)
         if modified:
+            # Windows loses the executable bit; keep whatever the container already had so
+            # overwriting a file (e.g. sympy's bin/test) does not make it non-executable.
+            modes = {f: 0o755 for f in self._container_executables(modified)}
             docker(["exec", "-i", self.container, "tar", "-x", "-C", self.workdir],
-                   input_bytes=tar_files(self.workspace, modified))
+                   input_bytes=tar_files(self.workspace, modified, modes))
         if deleted:
             docker(["exec", self.container, "rm", "-f", "--",
                     *[f"{self.workdir}/{d}" for d in deleted]])
         self._synced = now
+
+    def _container_executables(self, rel_paths: list[str]) -> list[str]:
+        script = "".join(f'test -x "{self.workdir}/{r}" && printf "%s\\0" "{r}"; '
+                         for r in rel_paths)
+        proc = docker(["exec", self.container, "sh", "-c", script], check=False)
+        return [r for r in proc.stdout.decode("utf-8", "replace").split("\0") if r]
 
     def pull(self) -> None:
         """Copy files a command changed inside the container back to the workspace."""
@@ -164,10 +184,22 @@ class DockerSandbox:
                        "--porcelain", "-z", "--untracked-files=all"], check=False)
         if proc.returncode != 0:
             return
-        entries = [e for e in proc.stdout.decode("utf-8", "replace").split("\0") if e]
+        # porcelain -z: a rename/copy is two NUL fields ("R  <new>\0<old>\0"), so the old
+        # path must be consumed explicitly, not read as its own status entry.
+        fields = proc.stdout.decode("utf-8", "replace").split("\0")
         present, gone = [], []
-        for entry in entries:
+        i = 0
+        while i < len(fields):
+            entry = fields[i]
+            i += 1
+            if not entry:
+                continue
             code, rel = entry[:2], entry[3:]
+            if code[:1] in ("R", "C") or code[1:2] in ("R", "C"):
+                orig = fields[i] if i < len(fields) else ""
+                i += 1
+                if orig and not orig.endswith("/"):
+                    gone.append(orig)
             if not rel or rel.endswith("/"):
                 continue
             (gone if "D" in code else present).append(rel)

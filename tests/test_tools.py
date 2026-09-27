@@ -26,13 +26,22 @@ def call(box: Toolbox, name: str, **args):
 
 def test_read_file_windows_long_files_with_a_paging_header(box):
     first = call(box, "read_file", path="big.txt")
-    assert first.ok and first.output.startswith("[big.txt: lines 1-1000 of 2500.")
-    assert "offset=1001" in first.output and first.meta["truncated"]
-    last = call(box, "read_file", path="big.txt", offset=2001)
-    assert last.output.startswith("[big.txt: lines 2001-2500 of 2500]")
+    assert first.ok and first.output.startswith("[big.txt: lines 1-")
+    assert first.meta["truncated"] and f"offset={first.meta['last'] + 1}" in first.output
+    # a read window never exceeds the char budget, so it cannot blow the token budget
+    assert len(first.output) <= box.config.read_max_chars + 200
+    assert first.meta["last"] < 2500  # not the whole file
+    last = call(box, "read_file", path="big.txt", offset=2400)
+    assert last.output.startswith("[big.txt: lines 2400-2500 of 2500]")
     assert "line 2500" in last.output
     small = call(box, "read_file", path="pkg/a.py")
     assert small.output == "def f():\n    return 1"
+
+
+def test_read_file_one_huge_line_still_returns_something(box, tmp_path):
+    (tmp_path / "huge.py").write_bytes(("x = " + "9" * 20000 + "\n").encode())
+    res = call(box, "read_file", path="huge.py")
+    assert res.ok and res.meta["clipped_lines"] == 1 and "[line truncated]" in res.output
 
 
 def test_read_file_errors(box):
@@ -110,3 +119,21 @@ def test_run_shell_timeout_kills_the_process(box):
 def test_run_shell_reports_exit_code(box):
     res = call(box, "run_shell", command="exit 3")
     assert not res.ok and res.meta["exit_code"] == 3 and res.output.startswith("[exit code 3]")
+
+
+def test_run_shell_backgrounded_child_does_not_hang_past_the_timeout(box):
+    # a backgrounded grandchild used to hold the stdout pipe open, so run_shell returned
+    # ~12 s after a 2 s timeout and lost output (reviewer issue 9)
+    import time as _t
+    py = Path(sys.executable).as_posix()
+    start = _t.monotonic()
+    res = box.run_shell(f'"{py}" -c "import time; time.sleep(30)" & '
+                        f'"{py}" -c "import time; time.sleep(30)"', timeout=2)
+    assert not res.ok and res.meta["timed_out"]
+    assert _t.monotonic() - start < 9  # not the ~30 s the child would otherwise run
+
+
+def test_run_shell_rejects_a_non_positive_timeout(box):
+    res = box.run_shell("echo hi", timeout=-5)
+    assert not res.ok and res.meta["error"] == "bad_arguments"
+    assert box.run_shell("echo hi", timeout=0).meta["error"] == "bad_arguments"

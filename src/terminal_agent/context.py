@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Literal
 
 CHARS_PER_TOKEN = 3.2
@@ -84,7 +84,6 @@ class CompactionReport:
     dropped: int = 0
     squeezed: int = 0
     over_budget: bool = False
-    notes: list[str] = field(default_factory=list)
 
     @property
     def changed(self) -> bool:
@@ -108,19 +107,24 @@ class ContextManager:
         self.keep_recent = keep_recent
         self.stub_min_chars = stub_min_chars
 
+    _KEEP = "\x00keep"
+
     def fit(self, messages: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], CompactionReport]:
         msgs = [dict(m) for m in messages]
         report = CompactionReport(conversation_tokens(msgs), 0)
         if report.tokens_before <= self.budget:
             report.tokens_after = report.tokens_before
             return msgs, report
-        head = self._protected_head(msgs)
-        recent_start = max(head, len(msgs) - self.keep_recent)
+        self._mark_protected(msgs)
 
-        for i in range(head, recent_start):
+        # 1. stub old, large tool outputs that are neither protected nor in the recent tail
+        tail_start = max(0, len(msgs) - self.keep_recent)
+        for i in range(len(msgs)):
             if conversation_tokens(msgs) <= self.budget:
                 break
             m = msgs[i]
+            if m.get(self._KEEP) or i >= tail_start:
+                continue
             content = m.get("content") or ""
             if m.get("role") == "tool" and len(content) >= self.stub_min_chars:
                 tool = m.get("tool_name", "tool")
@@ -130,42 +134,49 @@ class ContextManager:
                 )
                 report.stubbed += 1
 
+        # 2. drop the oldest non-protected assistant turn (with its tool results)
         while conversation_tokens(msgs) > self.budget:
-            start = self._protected_head(msgs)
-            end = max(start, len(msgs) - self.keep_recent)
-            if end <= start:
+            tail_start = max(0, len(msgs) - self.keep_recent)
+            start = next((i for i in range(len(msgs))
+                          if not msgs[i].get(self._KEEP) and i < tail_start
+                          and msgs[i].get("role") != "tool"), None)
+            if start is None:
                 break
-            # drop one assistant turn together with the tool results that answer it
             j = start + 1
-            while j < end and msgs[j].get("role") == "tool":
+            while j < len(msgs) and msgs[j].get("role") == "tool" and not msgs[j].get(self._KEEP):
                 j += 1
-            del msgs[start:j]
             report.dropped += j - start
+            del msgs[start:j]
         if report.dropped:
-            msgs.insert(
-                self._protected_head(msgs),
-                {"role": "user", "content": f"[{report.dropped} earlier messages were removed "
-                                            "to fit the context budget]"},
-            )
+            at = next((i for i in range(len(msgs)) if not msgs[i].get(self._KEEP)), len(msgs))
+            msgs.insert(at, {"role": "user",
+                             "content": f"[{report.dropped} earlier messages were removed "
+                                        "to fit the context budget]"})
 
+        # 3. squeeze the largest remaining *unprotected* message (never the task/system prompt)
         while conversation_tokens(msgs) > self.budget:
-            idx = max(range(len(msgs)), key=lambda k: len(msgs[k].get("content") or ""))
-            content = msgs[idx].get("content") or ""
-            if len(content) < 800:
+            candidates = [k for k in range(len(msgs)) if not msgs[k].get(self._KEEP)
+                          and len(msgs[k].get("content") or "") >= 800]
+            if not candidates:
                 break
-            msgs[idx]["content"], _ = truncate(content, len(content) // 2)
+            idx = max(candidates, key=lambda k: len(msgs[k].get("content") or ""))
+            msgs[idx]["content"], _ = truncate(msgs[idx]["content"], len(msgs[idx]["content"]) // 2)
             report.squeezed += 1
 
+        for m in msgs:
+            m.pop(self._KEEP, None)
         report.tokens_after = conversation_tokens(msgs)
         report.over_budget = report.tokens_after > self.budget
         return msgs, report
 
-    @staticmethod
-    def _protected_head(msgs: list[dict[str, Any]]) -> int:
-        """System prompt plus the first user message (the task) are never compacted."""
-        n = 0
+    def _mark_protected(self, msgs: list[dict[str, Any]]) -> None:
+        """Never compact: the system prompt, the first user message, and the latest one.
+
+        The latest user message is the task currently being worked on - in a REPL that is a
+        *different* message from the first one, and dropping it loses what the agent is doing.
+        """
         if msgs and msgs[0].get("role") == "system":
-            n = 1
-        if len(msgs) > n and msgs[n].get("role") == "user":
-            n += 1
-        return n
+            msgs[0][self._KEEP] = True
+        users = [i for i, m in enumerate(msgs) if m.get("role") == "user"]
+        for i in {users[0], users[-1]} if users else set():
+            msgs[i][self._KEEP] = True

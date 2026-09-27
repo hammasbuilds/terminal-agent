@@ -6,14 +6,15 @@ separately so their effect can be measured:
 
 * ``crlf`` - always on. A CRLF file shown to the model as LF text would otherwise never
   match, which is a harness bug, not a model failure.
-* ``rstrip`` / ``indent`` - opt-in (``fuzzy=True``). Line-wise matching that ignores
-  trailing whitespace, or all leading/trailing whitespace with the replacement re-indented.
-  Still requires a unique match.
+* ``rstrip`` / ``indent`` - opt-in (``fuzzy=True``). ``rstrip`` ignores trailing whitespace;
+  ``indent`` tolerates the block being pasted at a different indentation *as a whole* but
+  requires the relative indentation between its lines to match exactly, so a snippet whose
+  structure differs from the file (a line moved into or out of a block) is refused rather
+  than silently applied. Both still require a unique match.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Literal
 
@@ -89,17 +90,47 @@ def _shift(lines: list[str], src: str, dst: str) -> list[str]:
             for line in lines]
 
 
-def _line_match(content: str, old: str, new: str,
-                norm: Callable[[str], str], reindent: bool, strategy: str) -> EditOutcome:
+def _common_lead(lines: list[str]) -> str:
+    """Longest whitespace prefix common to every non-blank line."""
+    indents = [_indent(ln) for ln in lines if ln.strip()]
+    if not indents:
+        return ""
+    prefix = indents[0]
+    for ind in indents[1:]:
+        while not ind.startswith(prefix):
+            prefix = prefix[:-1]
+    return prefix
+
+
+def _dedent_key(block: list[str]) -> list[str]:
+    """Block with its common leading indent removed, trailing whitespace dropped.
+
+    Preserves *relative* indentation between lines, so two blocks match only when they
+    have the same structure - a line moved into or out of a nested block no longer matches.
+    """
+    lead = _common_lead(block)
+    out = []
+    for ln in block:
+        body = ln[len(lead):] if ln.startswith(lead) else ln.lstrip(" \t")
+        out.append(body.rstrip())
+    return out
+
+
+def _line_match(content: str, old: str, new: str, strategy: str) -> EditOutcome:
     old_lines, _ = _split_old(old)
     if not any(line.strip() for line in old_lines):
         return EditOutcome("not_found", strategy=strategy)
     file_lines = content.splitlines(keepends=True)
     bodies = [ln.rstrip("\r\n") for ln in file_lines]
-    keys = [norm(b) for b in bodies]
-    want = [norm(line) for line in old_lines]
-    k = len(want)
-    hits = [i for i in range(len(keys) - k + 1) if keys[i : i + k] == want]
+    k = len(old_lines)
+    if strategy == "rstrip":
+        want = [ln.rstrip() for ln in old_lines]
+        hits = [i for i in range(len(bodies) - k + 1)
+                if [b.rstrip() for b in bodies[i : i + k]] == want]
+    else:  # indent: compare dedented (structure-preserving) keys
+        want = _dedent_key(old_lines)
+        hits = [i for i in range(len(bodies) - k + 1)
+                if _dedent_key(bodies[i : i + k]) == want]
     if not hits:
         return EditOutcome("not_found", strategy=strategy)
     if len(hits) > 1:
@@ -107,10 +138,8 @@ def _line_match(content: str, old: str, new: str,
     i = hits[0]
     eol = detect_eol(content)
     new_lines, new_trailing = _split_old(new)
-    if reindent:
-        first_old = next(line for line in old_lines if line.strip())
-        first_file = next(bodies[i + j] for j, line in enumerate(old_lines) if line.strip())
-        new_lines = _shift(new_lines, _indent(first_old), _indent(first_file))
+    if strategy == "indent":
+        new_lines = _shift(new_lines, _common_lead(old_lines), _common_lead(bodies[i : i + k]))
     last_eol = file_lines[i + k - 1][len(bodies[i + k - 1]):]
     replacement = eol.join(new_lines)
     if new_lines and (new_trailing or last_eol):
@@ -138,11 +167,8 @@ def apply_edit(content: str, old: str, new: str, expected: int = 1,
             return crlf
     if not fuzzy or expected != 1:
         return outcome
-    for strategy, norm, reindent in (
-        ("rstrip", str.rstrip, False),
-        ("indent", str.strip, True),
-    ):
-        result = _line_match(content, old, new, norm, reindent, strategy)
+    for strategy in ("rstrip", "indent"):
+        result = _line_match(content, old, new, strategy)
         if result.status != "not_found":
             return result
     return outcome

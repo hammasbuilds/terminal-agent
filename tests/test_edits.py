@@ -71,3 +71,27 @@ def test_indent_fuzzy_shifts_lines_indented_less_than_the_first():
     out = apply_edit(src, old, new, fuzzy=True)
     assert out.ok and out.strategy == "indent"
     assert out.content == "def f(x):\n    if x:\n        return 2\n    raise TypeError(x)\n"
+
+
+def test_fuzzy_indent_refuses_a_structurally_different_snippet():
+    # a line the model misremembers as inside the `if` must NOT match a file where it is
+    # outside (reviewer issue 8: the old str.strip norm ignored relative indentation)
+    src = "def f(a):\n    if a:\n        return 1\n    return 2\n"
+    old = "if a:\n    return 1\n    return 2\n"      # return 2 wrongly nested in the if
+    new = "if a:\n    return 10\n    return 2\n"
+    assert apply_edit(src, old, new, fuzzy=True).status == "not_found"
+
+
+def test_fuzzy_indent_does_not_merge_tabs_and_spaces():
+    src = "class A:\n\tdef g(self):\n\t\tif x:\n\t\t\treturn 1\n\t\treturn 2\n"
+    old = "    def g(self):\n        if x:\n            return 1\n        return 2\n"
+    new = "    def g(self):\n        if x:\n            return 3\n        return 2\n"
+    assert apply_edit(src, old, new, fuzzy=True).status == "not_found"
+
+
+def test_fuzzy_indent_still_applies_a_uniformly_dedented_block():
+    src = "class A:\n    def m(self):\n        return 1\n"
+    out = apply_edit(src, "def m(self):\n    return 1\n", "def m(self):\n    return 2\n",
+                     fuzzy=True)
+    assert out.ok and out.strategy == "indent"
+    assert out.content == "class A:\n    def m(self):\n        return 2\n"

@@ -130,3 +130,30 @@ def test_digest_truncation_lists_failures_first():
     assert truncate("short", 2000, "digest") == ("short", 0)
     plain, _ = truncate("x" * 5000, 1000, "digest")  # nothing looks like a failure
     assert "[failure lines]" not in plain and "chars truncated" in plain
+
+
+def test_compaction_protects_the_latest_task_not_just_the_first():
+    # a second REPL task sits in the middle; compaction must keep it (reviewer issue 7)
+    cm = ContextManager(budget_tokens=1000, keep_recent=4)
+    msgs = [{"role": "system", "content": "sys"}, {"role": "user", "content": "TASK ONE"}]
+    for i in range(6):
+        msgs += [{"role": "assistant", "content": "",
+                  "tool_calls": [{"function": {"name": "read_file", "arguments": {"i": i}}}]},
+                 {"role": "tool", "tool_name": "read_file", "content": "x" * 400}]
+    msgs.append({"role": "user", "content": "TASK TWO: rename foo to bar"})
+    for i in range(6):
+        msgs += [{"role": "assistant", "content": "",
+                  "tool_calls": [{"function": {"name": "grep", "arguments": {"i": i}}}]},
+                 {"role": "tool", "tool_name": "grep", "content": "y" * 400}]
+    fitted, _ = cm.fit(msgs)
+    kept = [m["content"] for m in fitted if m.get("role") == "user"]
+    assert "TASK TWO: rename foo to bar" in kept and "TASK ONE" in kept
+
+
+def test_compaction_never_squeezes_the_protected_task():
+    # a single huge task must be returned intact, not truncated 8043 -> 2058 (reviewer issue 6)
+    cm = ContextManager(budget_tokens=1000, keep_recent=4)
+    task = "ISSUE " + "z" * 7000 + " KEY DETAIL " + "z" * 1000 + " END"
+    fitted, rep = cm.fit([{"role": "system", "content": "s"}, {"role": "user", "content": task}])
+    assert fitted[1]["content"] == task and rep.squeezed == 0
+    assert "KEY DETAIL" in fitted[1]["content"]

@@ -74,7 +74,7 @@ def test_gold_client_pages_long_files_creates_and_deletes(tmp_path: Path):
     assert (tmp_path / "new.py").read_text() == "created = True\n"
     assert not (tmp_path / "old.py").exists()
     assert [r.final_status for r in client.records] == ["ok", "ok"]
-    assert res.tool_calls["read_file"] == 3  # 2400 lines in 1000-line windows
+    assert res.tool_calls["read_file"] >= 3  # 2400 dense lines paged under the char budget
 
 
 def test_pytest_and_sympy_and_django_parsers():
