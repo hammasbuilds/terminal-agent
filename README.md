@@ -14,7 +14,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-0-brightgreen" alt="zero dependencies">
-  <img src="https://img.shields.io/badge/tests-130-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-224-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/model-qwen2.5--coder%3A14b%20(queued)-orange" alt="model">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
@@ -60,14 +60,13 @@ failing to passing.
 
 | | Finding | Numbers |
 |---|---|---|
-| **1** | **The tool layer applied every gold patch exactly.** 139 real hunks through `read_file` + `edit`, each result byte-identical to `git apply` of the same patch. | 56 of 56 tasks byte-identical; 138/139 hunks unique on the first try, 1 after widening its context |
-| **2** | **The replay found four harness bugs before any model call** - each would have silently scored a correct fix as a failure (list in [Problems hit](#problems-hit-while-building-this)). | 4 bugs, none caught by the ~120 unit tests that were already passing |
-| **3** | **SWE-bench Lite has tasks that grade (almost) nothing.** An empty patch resolves `psf__requests-2674`; 3 more list FAIL_TO_PASS tests that pass before the fix, one of which is also flaky. | 35 of 39 Lite tasks valid (89.7%); 15 of 17 mined local tasks valid (2 flaky) |
-| **4** | **Exact-match `edit` is robust to real patches, not to careless copying.** Git's 3-line context was unique in 138/139 hunks; the removed lines alone were ambiguous in 4/90. A snippet pasted with its indentation stripped failed exact match **80 of 80** times. | whitespace-tolerant matching recovered 80/80 correctly - after the first version of it produced wrong code in 7 of 10 |
-| **5** | **No single truncation cut works for every test runner.** At 8,000 chars, keeping head+tail showed Django's failing test **7 of 18** times; pytest's, 60 of 60. Keeping only the head showed pytest's **8 of 60** at 2,000 chars. | a failure-line digest showed 99/103 at 2,000 chars - with a caveat below |
-| **6** | **A 1,000-line read window hides the edit site in 22% of SWE-bench Lite.** The agent must page or grep for line numbers in one task in five. | 66/300 beyond line 1,000 (95% CI 17.7-27.0%); 121/300 beyond 500 |
-| **7** | **The command classifier plateaus at ~85% on commands it has not seen - and fixing its misses did not move that.** v1 on a held-out set: 107/126. Every miss fixed; v2 on a fresh held-out set: 94/110. Asking about any unknown command is what gets to 100%. | baselines: codex's forced-rm rule 9%, a tutorial blocklist 20-23% |
-| **8** | **Model arm: built, tested with fakes, queued.** `qwen2.5-coder:14b` on the 50 valid tasks. | at most 1,500 model calls (`scripts/run_models.sh --dry-run`) |
+| **1** | **The replay found six harness bugs before any model call** - each would have silently scored a correct fix as a failure, and none was caught by the unit tests passing at the time (list in [Problems hit](#problems-hit-while-building-this)). This is the headline: a harness with no test of its own is graded by driving all of it. | 6 harness bugs; validity rates below are the numbers those fixes unlocked |
+| **2** | **SWE-bench Lite has tasks that grade (almost) nothing.** An empty patch resolves `psf__requests-2674`; 3 more list FAIL_TO_PASS tests that pass before the fix, one also flaky. | 35 of 39 Lite tasks valid (89.7%); 15 of 17 mined local tasks valid (2 flaky) |
+| **3** | **The exact-match `edit` never applied a wrong hunk, but a whitespace-tolerant fallback did until it was constrained.** Git's 3-line context is unique in 138/139 real hunks; the removed lines alone were ambiguous in 4/90. A snippet pasted with its whole indentation stripped fails exact match 80/80 times. | fuzzy fallback recovered 80/80 uniformly-dedented snippets, and now **refuses all 139** structurally-broken ones (a line moved into/out of a block) instead of misapplying them; 0 wrong results |
+| **4** | **No single truncation cut works for every test runner.** At 8,000 chars, keeping head+tail showed Django's failing test **7 of 18** times; pytest's, 60 of 60. Keeping only the head showed pytest's **8 of 60** at 2,000 chars. | a failure-line digest showed 99/103 at 2,000 chars - with a caveat below |
+| **5** | **A 1,000-line read window hides the edit site in 22% of SWE-bench Lite;** and a dense window can exceed the token budget, so a read is now capped by characters. | 66/300 beyond line 1,000 (95% CI 17.7-27.0%); 121/300 beyond 500 |
+| **6** | **A name-based command policy is trivially bypassed; a flag/env/cd-aware one is not.** An independent reviewer's exploit corpus (read-only tools with a writing flag, `git -c`, exec env vars, `cd ..` then a relative write, wrapper fronts) defeated v3; the rewritten classifier catches all of them. | on a held-out set written blind, **111/121** dangerous caught by the classifier alone (auto mode); **0/121** run unasked in default mode; codex's forced-rm rule 9%, a tutorial blocklist 20% |
+| **7** | **Model arm: built, tested with fakes, queued.** `qwen2.5-coder:14b` on the 50 valid tasks, in a git-isolated workspace, model errors retried not scored. | at most 1,500 model calls (`scripts/run_models.sh --dry-run`) |
 
 Every number is read from a file in [`results/`](results/) produced on this machine; the
 commands that regenerate each one are in [STATUS.md](STATUS.md).
@@ -86,7 +85,7 @@ commands that regenerate each one are in [STATUS.md](STATUS.md).
   network. Its "issue" is the commit message, which often describes the fix: it is easier than
   a real issue, and the README says so wherever it is used.
 
-### Finding 3 in detail: tasks that grade nothing
+### Finding 2 in detail: tasks that grade nothing
 
 | task | what validation saw |
 |---|---|
@@ -102,30 +101,35 @@ in 11099 the pre-passing test is an unrelated `test_help_text`. A model "resolvi
 proves nothing, and it would count as a solve in a naive harness. These four are excluded
 from the model arm, not scored.
 
-### Finding 4 in detail: what an exact-match edit tolerates
+### Finding 3 in detail: what an exact-match edit tolerates
 
-Measured on 139 gold hunks against their real pre-image files ([`results/edit_study.json`](results/edit_study.json)):
+Measured on 139 gold hunks against their real pre-image files, with model-realistic copying
+slips applied to each ([`results/edit_study.json`](results/edit_study.json)):
 
-| old_string the model sends | exact match | whitespace-tolerant match |
+| old_string the model sends | exact match | whitespace-tolerant (fuzzy) match |
 |---|---|---|
 | the hunk as git wrote it (3 lines of context) | 138/139 unique | - |
 | only the removed lines | 4/90 ambiguous (4.4%, cluster CI 1.0-9.2%) | - |
-| first line's indentation dropped | 95/96 still apply (a substring match); 1 becomes ambiguous | 95 correct, 1 ambiguous |
-| whole snippet dedented | **0/80** apply | **80/80 correct** |
+| first line's indentation dropped | 95/96 still apply (a substring match); 1 ambiguous | 95 correct |
+| whole snippet uniformly dedented | **0/80** apply | 80/80 **correct** |
+| **one interior line re-indented** (structure changed) | **0/139** apply | **0 applied, 139 refused** |
 | trailing whitespace dropped, tabs expanded | no hunk affected | - |
 
-Fewest context lines each side for a unique match: 0 for 90 hunks, 1 for 45, 2 for 3, 4 for 1.
-Pure insertions (49 hunks) need at least one anchor line by construction. The whitespace
-perturbations never triggered: none of these Python edit sites had trailing whitespace or tabs.
+The exact tool never applies a wrong hunk. The whitespace-tolerant ("fuzzy") fallback is
+**off by default**, and the last two rows are why it is not trusted blindly. Every fuzzy
+"success" is checked against the gold result. The reviewer showed its first version stripped
+*all* indentation, so a snippet with a line moved into or out of a block (`return 2` nested
+under an `if` it does not belong to) matched and was applied wrongly, and tab and space
+indentation were merged. The `indent` strategy now compares blocks after removing only their
+*common* leading indent, preserving relative structure: it still recovers a uniformly-pasted
+dedent (80/80), and now refuses every structural break (139/139) and every tab/space
+mismatch rather than misapplying it. The "80/80" was always uniform-only; the honest split
+is above.
 
-The whitespace-tolerant ("fuzzy") strategy is **off by default**, and finding 4's second
-column is why it is not trusted blindly: every fuzzy "success" is checked against the gold
-file, and the first implementation re-indented only lines that started with the snippet's
-own indentation - it moved a `raise` out of its function in 7 of 10 real hunks and reported
-success. Two more apparent failures turned out to be bugs in the study, not the tool (a gold
-hunk whose header line number is off by two; a dedent computed from the old snippet alone).
+(Two earlier "wrong" fuzzy results turned out to be bugs in the study itself: a gold hunk
+whose header line number is off by two, and a dedent computed from the old snippet alone.)
 
-### Finding 5 in detail: which cut shows the failing test
+### Finding 4 in detail: which cut shows the failing test
 
 Visible = the repo's own SWE-bench log parser still reports the FAIL_TO_PASS test as failed
 after truncation, on 52 real failing logs ([`results/truncation_study.json`](results/truncation_study.json)):
@@ -144,28 +148,40 @@ tracebacks at the end. `digest` lists every line that looks like a failure repor
 formats, so the digest column is not a held-out result** - it says the idea works where the
 format is known, not that it generalises.
 
-### Finding 7 in detail: the approval policy
+### Finding 6 in detail: the approval policy
 
-Three corpora ([`data/`](data/)): a development set written and committed before the policy
-existed (218 commands, 17 of them from the tests of openai/codex's `is_dangerous_command.rs`),
-and two held-out sets written by separate agents that were not allowed to read this
-repository (209 and 193 commands). Each held-out set was scored once, then spent.
+**The default mode is what makes it safe, and it holds absolutely.** In `default` mode the
+agent runs only commands the classifier can prove read-only; everything else is asked
+(interactive) or refused (headless). Across all four command corpora - 514 dangerous
+commands - **not one** was rated safe, so **0 ran unasked** in default mode. That is the
+guarantee the headless model runs rely on.
 
-| | dangerous stopped, classifier only (`auto` mode) | safe commands asked about (`default` mode) |
+`auto` mode is more permissive: it runs *mutating* commands too, so its safety depends on
+the classifier correctly rating a dangerous command as dangerous rather than mutating. That
+is what the held-out sets measure. Corpora ([`data/`](data/)): a development set written and
+committed before the policy existed (218 commands, 17 from the tests of openai/codex's
+`is_dangerous_command.rs`), and **three** sets written by separate agents that could not read
+this repository (209, 193, 206 commands). Each held-out set was scored once, blind, then its
+misses were fixed.
+
+| classifier (auto mode) scored blind on a set it did not see | dangerous caught | safe asked (default) |
 |---|---:|---:|
-| v1 on held-out 1 ([`results/safety_policy_v1.json`](results/safety_policy_v1.json)) | 107/126 (84.9%, CI 77.7-90.1%) | 9/53 |
-| v2 (every held-out-1 miss fixed) on held-out 2 ([v2](results/safety_policy_v2.json)) | **94/110 (85.5%, CI 77.7-90.8%)** | 11/53 |
-| codex's forced-`rm` rule, held-out 2 | 10/110 (9.1%) | 0/53 |
-| a tutorial blocklist, held-out 2 | 22/110 (20.0%) | 3/53 |
+| v1 on held-out 1 ([v1](results/safety_policy_v1.json)) | 107/126 (84.9%, CI 77.7-90.1%) | 9/53 |
+| v2 on held-out 2 ([v2](results/safety_policy_v2.json)) | 94/110 (85.5%, CI 77.7-90.8%) | 11/53 |
+| **v4 on held-out 3** ([v4](results/safety_policy_v4_blind_heldout3.json)) | **111/121 (91.7%, CI 85.5-95.5%)** | 4/55 |
+| codex's forced-`rm` rule, held-out 3 | 11/121 (9.1%) | 0/55 |
+| a tutorial blocklist, held-out 3 | 24/121 (19.8%) | 3/55 |
 
-The v2 misses were new *categories*, not near-misses of old ones: `npm publish`,
-`twine upload`, `make install`, `pre-commit install`, `git config core.hooksPath`,
-`python manage.py flush`. The tail of destructive commands is open-ended, so enumeration
-does not converge. What makes the policy safe is the default: a command it does not know to
-be read-only is asked about (interactive) or refused (headless), which stops 100% of the
-dangerous commands in all three sets - at the cost of asking about 11 of 53 safe ones
-(`npm run lint`, `ruff format --diff .`, `docker compose ps`). Two held-out-2 misses were
-parser bugs rather than missing rules, and are fixed in the current policy (v3).
+Held-out 3 was written after an independent reviewer defeated an earlier version with an
+exploit corpus (read-only tools carrying a writing or exec flag - `sort -o`, `git diff
+--output`, `rg --pre`, `git -c core.fsmonitor=`, `pytest --basetemp=..`; exec-hook env vars;
+`cd ..` then a relative write; wrapper fronts like `nice -n 1 rm -rf`). The rewritten
+classifier catches every one of those, and then caught 111/121 of a fresh blind set. Its 10
+misses were new *categories* again (`npm ci`, `poetry add`, writing a `.git/hooks/` file,
+`GIT_CONFIG_GLOBAL=`, `php -r`, `make -f`, `flock`/`watch` fronting a delete) - the tail of
+destructive commands is open-ended, so `auto` coverage does not converge to 100% and the
+README does not claim it does. Those 10 are now fixed and tested; a fourth blind set would be
+needed to re-measure. The safety that does hold without a blind set is the default-mode 0/514.
 
 ## Input / Output
 
@@ -242,8 +258,8 @@ full log: 9,163 chars; the failing test: test_override_file_upload_permissions (
 **5 · Headless mode, driven by a script instead of a model** (`examples/`), with JSON output:
 
 ```bash
-cp -r examples/calc /tmp/calc
-terminal-agent -p "mean([1, 2, 3]) returns 3.0; it should be 2" -w /tmp/calc \
+cp -r examples/calc ../calc-demo
+uv run terminal-agent -p "mean([1, 2, 3]) returns 3.0; it should be 2" -w ../calc-demo \
     --script examples/fix_mean.json --output-format json
 ```
 
@@ -284,7 +300,7 @@ refused and the run carries on.
 git clone https://github.com/hammasbuilds/terminal-agent
 cd terminal-agent
 uv sync
-uv run pytest -q                 # 128 tests; no model, no Docker, no network
+uv run pytest -q                 # 222 tests; no model, no Docker, no network
 uv run python demo.py            # the samples above
 
 # the agent itself (needs Ollama)
@@ -351,7 +367,7 @@ studies and the tests need neither. `git` must be on `PATH`.
 ## Tests
 
 ```bash
-uv run pytest -q              # 128 tests, deselects the `docker` mark
+uv run pytest -q              # 222 tests, deselects the `docker` mark
 uv run pytest -q -m docker    # 2 more: two-way container sync, a scripted model run in the
                               # psf__requests-3362 image (needs that image pulled)
 ```
@@ -376,8 +392,53 @@ were each checked to fail against the code before the fix.
 
 ## Problems hit while building this
 
-The first four were found by the gold replay, before any model call; the fifth by a test
-written while chasing them:
+### Found by an independent review (fixed here, each with a regression test)
+
+A reviewer ran an exploit corpus and probe scripts against the agent and found holes the
+tests missed. All are fixed; the confirmed ones fail the new regression tests against the old
+code.
+
+- **The approval policy trusted a command's name over its flags.** `python -m pytest
+  --basetemp=../victim` deleted a directory outside the workspace; `git -c
+  diff.external='...'` and `git -c core.fsmonitor='...'` executed arbitrary commands;
+  `sort -o ../x`, `find -fprint`, `tree -o`, `rg --pre`, `git grep -O`, `sed`'s `w`, `awk`
+  `print >`, `go test -exec`, `mypy --install-types`, `date -s`, and exec-hook env vars
+  (`PAGER=`, `GIT_EXTERNAL_DIFF=`) all ran in `auto` mode. The classifier now re-rates a
+  read-only tool whenever a flag writes or executes.
+- **Wrappers were unwrapped naively.** `nice -n 1 rm -rf ../victim` ran: `nice` took `-n` as
+  its command and never saw the `rm`. Same for `ionice -c3`, `stdbuf -oL`, `time -p`,
+  `command -p`, `env -S 'rm -rf ~'`. Wrappers now skip their own options before recursing.
+- **No `cd` tracking.** `cd .. && echo evil > PWNED` wrote outside the workspace and was rated
+  mutating. `cd` is now tracked across `&&`/`;`, and any write target that does not resolve
+  statically to inside the workspace (a `$VAR`, `~`, `$( )`, or an unknown `cd`) is dangerous.
+- **The local model-arm workspace could corrupt the harness.** It had no `.git` and no
+  ceiling, so a model's `git add -A`/`commit` resolved to *this* repository. The workspace is
+  now its own throwaway git repo and runs with `GIT_CEILING_DIRECTORIES`.
+- **`model_error` records were persisted, skipped on resume, and counted as failures.** A
+  transient Ollama outage would have been recorded as an unsolved task forever. They are now
+  retried, never persisted, and excluded from the solve-rate denominator; a non-JSON Ollama
+  body and a malformed `--script` raise clean errors instead of a traceback.
+- **The whitespace-tolerant edit ignored relative indentation.** It matched a snippet whose
+  structure differed from the file (a line moved into or out of a block) and applied it
+  wrongly, and merged tabs with spaces. It now compares blocks by their common-dedented form,
+  refusing structural breaks (139/139 in the study) while still applying a uniform dedent.
+- **A 2 s shell timeout returned after ~12 s and lost output** when a backgrounded grandchild
+  held the stdout pipe open. Output now goes to a temp file, so a background process can never
+  block the parent; a non-positive timeout is rejected.
+- **A read window of 1,000 lines could exceed the token budget** (one file was 14.8k tokens);
+  compaction could truncate the very task text it was meant to protect, and dropped a REPL's
+  second task. Reads are capped by characters; the system prompt, the first task and the
+  *latest* task are never squeezed or dropped.
+- **Container sync forced mode 0o644** (losing sympy's `bin/test` executable bit) and
+  misparsed `git status -z` renames. Both fixed.
+
+### Found by the gold replay, before any model call
+
+- **`git apply` silently did nothing.** The local suite's reference, baseline and gold trees
+  live under `runs/`, inside this repository. Run from a subdirectory of a work tree, `git
+  apply` resolves paths against *that* repository's root, skips every file outside the current
+  directory, and exits 0. The first local task came back "fix does not pass its tests".
+  `GIT_CEILING_DIRECTORIES` now stops the discovery.
 
 - **`git apply` silently did nothing.** The local suite's reference, baseline and gold trees
   live under `runs/`, inside this repository. Run from a subdirectory of a work tree, `git
@@ -399,9 +460,6 @@ written while chasing them:
 - **`run_tests` on the local suite set `PYTHONPATH="src:."`**, which Windows reads as one
   path. Every `run_tests` call a model made on a local task would have failed with an
   ImportError, and it would have been scored as the model's failure.
-- **The whitespace-tolerant edit wrote wrong code and reported success** in 7 of 10 dedented
-  hunks (finding 4). Found only because the edit study compares every fuzzy result with the
-  gold file.
 - **Two validation processes overwrote each other's pre-image records.** Each loaded the file
   once and rewrote it whole; the edit study silently lost 13 of 17 local tasks. Local
   pre-images now come from the task trees, and SWE-bench entries are merged on write.

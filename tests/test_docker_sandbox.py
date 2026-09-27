@@ -61,3 +61,27 @@ def test_model_run_on_docker_task_with_a_scripted_fix(task, tmp_path: Path):
     rec = model_run.run_swebench_task(task, client, tmp_path, 5, 12000)
     assert rec["outcome"] == "resolved" and rec["grade"]["resolved"]
     assert rec["model_patch"].startswith("diff --git")
+
+
+def test_git_status_z_rename_is_parsed_and_synced(task, tmp_path):
+    ws = tmp_path / "ws"
+    with Container(task) as c:
+        c.export(ws)
+        sb = DockerSandbox(c.name, ws, prelude=specs.PRELUDE)
+        # a rename produces a two-field "R  new\0old" record in `git status -z`
+        sb.run("git mv requests/api.py requests/api_renamed.py", 60)
+        assert (ws / "requests" / "api_renamed.py").exists()
+        assert not (ws / "requests" / "api.py").exists()  # the old path was pulled as gone
+
+
+def test_pushed_file_keeps_its_executable_bit(task, tmp_path):
+    ws = tmp_path / "ws"
+    with Container(task) as c:
+        c.export(ws)
+        c.sh("chmod +x /testbed/setup.py")
+        sb = DockerSandbox(c.name, ws, prelude=specs.PRELUDE)
+        sb._synced = snapshot(ws)  # pretend nothing synced yet
+        (ws / "setup.py").write_bytes((ws / "setup.py").read_bytes() + b"\n# edit\n")
+        sb.push()
+        _, out = c.sh("test -x /testbed/setup.py && echo EXECUTABLE")
+        assert "EXECUTABLE" in out  # overwriting did not strip the +x bit
