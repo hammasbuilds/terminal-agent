@@ -30,7 +30,7 @@ therefore held-out sets 1-3, which are already blind and now stated accurately.
 | 2 | wrappers took a flag as the command (`nice -n 1 rm -rf`, `env -S`) | wrappers skip their own options; `env -S` re-parses | same |
 | 3 | no `cd`/computed-path tracking | `cd` tracked; unresolvable write target = outside | `test_cd_then_write_inside_vs_outside` |
 | 4 | local model workspace could corrupt the harness repo via git | workspace git-init'd + `GIT_CEILING_DIRECTORIES` | `test_git_commands_in_a_local_workspace_cannot_touch_the_enclosing_repo` |
-| 5 | model_error persisted, skipped on resume, counted in denominator; bad JSON uncaught | retry, never persist, exclude from denominator; wrap JSON | `test_model_errors_are_retried_...`, `test_model_error_excluded_...`, `test_non_json_ollama_body...` |
+| 5 | model_error persisted, skipped on resume, counted in denominator; bad JSON uncaught | retry; a persistent one counts as unsolved (both rates reported); wrap JSON | `test_model_errors_are_retried_...`, `test_persistent_model_error_counts_as_unsolved...`, `test_non_json_ollama_body...` |
 | 6 | 1000-line read window over budget; squeeze cut the task text | read capped by chars; task/system prompt never squeezed | `test_read_file_*`, `test_compaction_never_squeezes_the_protected_task` |
 | 7 | compaction dropped a REPL's second task | protect the latest user message too | `test_compaction_protects_the_latest_task_not_just_the_first` |
 | 8 | fuzzy edit stripped all indentation, misapplied structural changes | match on common-dedented blocks; refuse structural breaks | `test_fuzzy_indent_refuses_a_structurally_different_snippet`, `..._does_not_merge_tabs...` |
