@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import re
 import shutil
 import time
 from collections.abc import Callable
@@ -227,7 +228,7 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
     reason_counts: dict[str, int] = {}
     for r in ran:
         for reason in r.get("reasons", []):
-            key = reason.split(":")[0] + ": " + reason.split(":")[1].split("(")[0].strip()
+            key = re.sub(r"\d+(/\d+)?", "N", reason.split("(")[0].strip())
             reason_counts[key] = reason_counts.get(key, 0) + 1
     return {
         "tasks_attempted": len(ran),
