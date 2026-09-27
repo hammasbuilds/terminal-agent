@@ -5,6 +5,7 @@ import pytest
 
 from terminal_agent.agent import build_agent
 from terminal_agent.cli import main
+from terminal_agent.evals.cli import main as ta_eval
 from terminal_agent.llm import ModelTurn, ScriptedClient
 from terminal_agent.protocol import ToolCall
 from terminal_agent.repl import make_terminal_approver, run_repl
@@ -76,3 +77,8 @@ def test_repl_commands_and_approval(tmp_path: Path):
     assert "/reset" in text and "read_file" in text and "unknown command /bogus" in text
     assert "[needs approval] run_shell: make" in text and "built" in text
     assert len(agent.messages) == 1  # /reset cleared the conversation
+
+
+def test_ta_eval_reports_unknown_ids_without_a_traceback(capsys):
+    assert ta_eval(["validate", "--suite", "swebench", "--ids", "no__such-1"]) == 2
+    assert "unknown instance id(s): no__such-1" in capsys.readouterr().err

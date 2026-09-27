@@ -313,7 +313,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    return int(args.fn(args))
+    try:
+        return int(args.fn(args))
+    except KeyError as exc:  # unknown instance id
+        print(f"error: {exc.args[0]}", file=sys.stderr)
+        return 2
+    except (FileNotFoundError, RuntimeError) as exc:  # missing data, docker not running
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":
