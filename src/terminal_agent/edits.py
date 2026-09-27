@@ -69,6 +69,26 @@ def _indent(line: str) -> str:
     return line[: len(line) - len(line.lstrip(" \t"))]
 
 
+def _shift(lines: list[str], src: str, dst: str) -> list[str]:
+    """Re-indent ``lines`` by the difference between ``src`` and ``dst``, uniformly.
+
+    The shift applies to every line, including ones indented *less* than the snippet's
+    first line. (Replacing only lines that start with ``src`` - the first version of
+    this - left a dedented ``raise`` at column 0 in 7 of 10 real hunks.)
+    """
+    if src == dst:
+        return lines
+    if dst.endswith(src):
+        pad = dst[: len(dst) - len(src)]
+        return [pad + line if line.strip() else line for line in lines]
+    if src.endswith(dst):
+        cut = len(src) - len(dst)
+        prefix = src[:cut]
+        return [line[cut:] if line.startswith(prefix) else line for line in lines]
+    return [dst + line[len(src):] if line.startswith(src) and line.strip() else line
+            for line in lines]
+
+
 def _line_match(content: str, old: str, new: str,
                 norm: Callable[[str], str], reindent: bool, strategy: str) -> EditOutcome:
     old_lines, _ = _split_old(old)
@@ -90,12 +110,7 @@ def _line_match(content: str, old: str, new: str,
     if reindent:
         first_old = next(line for line in old_lines if line.strip())
         first_file = next(bodies[i + j] for j, line in enumerate(old_lines) if line.strip())
-        src, dst = _indent(first_old), _indent(first_file)
-        if src != dst:
-            new_lines = [
-                dst + line[len(src):] if line.startswith(src) and line.strip() else line
-                for line in new_lines
-            ]
+        new_lines = _shift(new_lines, _indent(first_old), _indent(first_file))
     last_eol = file_lines[i + k - 1][len(bodies[i + k - 1]):]
     replacement = eol.join(new_lines)
     if new_lines and (new_trailing or last_eol):

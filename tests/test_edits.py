@@ -60,3 +60,14 @@ def test_detect_eol():
     assert detect_eol("a\r\nb\r\n") == "\r\n"
     assert detect_eol("a\nb") == "\n"
     assert detect_eol("") == "\n"
+
+
+def test_indent_fuzzy_shifts_lines_indented_less_than_the_first():
+    # a dedented snippet whose first line is nested deeper than a later line: the first
+    # fuzzy implementation left the later line at column 0 (7 of 10 real hunks)
+    src = "def f(x):\n    if x:\n        return 1\n    raise ValueError(x)\n"
+    old = "    return 1\nraise ValueError(x)\n"
+    new = "    return 2\nraise TypeError(x)\n"
+    out = apply_edit(src, old, new, fuzzy=True)
+    assert out.ok and out.strategy == "indent"
+    assert out.content == "def f(x):\n    if x:\n        return 2\n    raise TypeError(x)\n"
