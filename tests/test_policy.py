@@ -89,3 +89,88 @@ def test_parser_regressions_found_by_the_second_held_out_set(cmd):
 
 def test_substitution_in_arguments_does_not_break_read_only_commands():
     assert C.rate("git log $(git rev-parse HEAD)").risk == "safe"
+
+
+# --- regressions for the approval bypasses the reviewer confirmed by execution ---
+
+@pytest.mark.parametrize("cmd", [
+    # read-only tools with a write/exec flag (issue 1)
+    "python -m pytest --basetemp=../victim",
+    "pytest --basetemp=/tmp/x",
+    "sort -o ../x /dev/null",
+    "sort -o ~/.bashrc f",
+    "uniq /dev/null ../../outside.txt",
+    "git diff --output=../../outside.txt",
+    "git diff --output ../out",
+    "find . -fprint ../../outside.txt",
+    "tree -o ~/.bashrc",
+    "rg --pre 'sh' foo",
+    "rg --pre=./evil.sh x",
+    "git grep -O'rm -rf ~' foo",
+    "git -c core.fsmonitor='touch ../PWNED' status",
+    "git -c diff.external='rm -rf ~' diff",
+    "git config core.hooksPath .githooks",
+    "mypy --install-types --non-interactive .",
+    "go test -exec 'rm -rf ~' ./...",
+    "date -s '2001-01-01'",
+    "sed 's/x/y/w ../../outside.txt' file",
+    "awk '{print > \"../../o\"}' f",
+    "tar --checkpoint=1 --checkpoint-action=exec='rm -rf ~' -cf x.tar .",
+    "chmod u+s ./tool",
+    # exec-env-var prefixes (issue 1)
+    "PAGER='rm -rf ~' git log",
+    "GIT_EXTERNAL_DIFF='rm -rf ~' git diff",
+    "GIT_SSH_COMMAND='x' git status",
+    "LESSOPEN='|rm -rf ~ %s' less x",
+    # wrapper bypass (issue 2)
+    "nice -n 1 rm -rf ../victim",
+    "ionice -c3 rm -rf ~",
+    "stdbuf -oL rm -rf ~",
+    "time -p rm -rf ~",
+    "command -p rm -rf ~",
+    "env -S 'rm -rf ~'",
+    "env -S'rm -rf ~'",
+    "busybox rm -rf /",
+    # cd / computed-path tracking (issue 3)
+    "cd .. && echo evil > PWNED",
+    "cd ~ && rm .bashrc",
+    "cd ~ && echo evil > .bashrc",
+    "cd /etc && rm hosts",
+    "echo evil > $(echo ~)/.bashrc",
+    "echo evil > $PWD/../../outside.txt",
+    "cp x $OLDPWD/../y",
+    "printf '%s' x >> ../../o",
+    "tee -a ../../o < in",
+    # git working-tree / history destroyers surfaced by the probe
+    "git checkout HEAD~3 file.py",
+    "git switch --discard-changes main",
+    "git commit --amend -m x",
+    "git stash pop",
+])
+def test_reviewer_bypasses_are_now_dangerous(cmd):
+    assert C.rate(cmd).risk == "dangerous", f"{cmd} -> {C.rate(cmd)}"
+
+
+@pytest.mark.parametrize("cmd", [
+    "sort f",                       # read use of a write-capable tool stays safe
+    "sort -o out.txt f",            # writing INSIDE the workspace is mutating, not dangerous
+    "pytest --basetemp=.pytest",    # inside the workspace
+    "git diff --output=out.diff",   # inside
+    "nice -n 5 make",               # wrapper in front of a workspace command
+    "cd src && cat app.py",         # cd then a read
+    "cd subdir && echo x > note.txt",  # cd stays inside -> mutating write
+    "env FOO=bar pytest -q",        # a plain env assignment is fine
+    "tree -L 2",
+    "rg TODO src/",
+    "git config --get user.name",
+    "python -m pytest -q tests/",
+])
+def test_flag_aware_rules_do_not_over_flag_inside_workspace(cmd):
+    assert C.rate(cmd).risk != "dangerous", f"{cmd} -> {C.rate(cmd)}"
+
+
+def test_cd_then_write_inside_vs_outside(tmp_path):
+    # a cd that stays inside keeps writes mutating; a cd that leaves makes them dangerous
+    assert C.rate("cd subdir && echo x > y").risk == "mutating"
+    assert C.rate("cd .. && echo x > y").risk == "dangerous"
+    assert C.rate("cd $UNKNOWN && echo x > y").risk == "dangerous"  # unresolvable cwd

@@ -1,12 +1,19 @@
 """Approval policy: which tool calls run unasked, which need a human, which never run.
 
-Shell commands are tokenised (``shlex`` with shell punctuation), split into simple
-commands at ``; && || | & ( )`` and newlines, unwrapped (``sudo``, ``env``, ``timeout``,
-``xargs``, ``bash -c '...'``, ``trap '...'``, ``$( ... )`` ...) and each simple command is
-rated ``safe`` (read-only or a test run), ``mutating`` or ``dangerous``. The command's
-rating is the worst of its parts. Anything the classifier cannot parse, or whose command
-name is computed at run time (``$cmd``, ``$(echo rm)``), is ``dangerous``: failing closed is
-the only honest answer to a command it cannot read.
+Shell commands are tokenised (``shlex`` with shell punctuation), split into simple commands
+at ``; && || | & ( )`` and newlines, unwrapped (``sudo``, ``env``, ``timeout``, ``xargs``,
+``nice``, ``bash -c '...'``, ``trap '...'``, ``$( ... )`` ...) and each simple command is
+rated ``safe`` (read-only or a test run), ``mutating`` or ``dangerous``. The command's rating
+is the worst of its parts.
+
+Two design rules keep it from being defeated by a flag:
+
+* **A command name is not a promise.** A read-only tool with an option that writes a file
+  (``sort -o``, ``git diff --output=``, ``find -fprint``) or runs a helper program
+  (``rg --pre``, ``git grep -O``, ``git -c core.fsmonitor=...``) is not safe.
+* **A write target must resolve, statically, to inside the workspace.** ``cd`` is tracked
+  across ``&&``/``;``; a path built from ``$VAR``, ``~``, ``$( )`` or an unknown ``cd`` is
+  treated as outside. Failing closed is the only honest answer to a path it cannot read.
 """
 
 from __future__ import annotations
@@ -24,6 +31,9 @@ from terminal_agent.protocol import ToolCall
 Risk = Literal["safe", "mutating", "dangerous"]
 _ORDER = {"safe": 0, "mutating": 1, "dangerous": 2}
 MAX_DEPTH = 6
+
+# cwd sentinel: the shell's working directory is not statically known
+UNKNOWN_CWD = "\x00unknown"
 
 
 class Decision(Enum):
@@ -52,15 +62,33 @@ SAFE = Rating("safe", "read-only")
 
 READ_ONLY = {
     "ls", "dir", "pwd", "cat", "head", "tail", "less", "more", "wc", "grep", "egrep", "fgrep",
-    "rg", "ag", "echo", "printf", "which", "where", "type", "file", "stat", "du", "df", "tree",
-    "sort", "uniq", "cut", "tr", "diff", "cmp", "comm", "basename", "dirname", "realpath",
-    "readlink", "date", "whoami", "uname", "true", "false", "test", "[", "jq", "nl", "column",
-    "md5sum", "sha1sum", "sha256sum", "cd", "sleep", "seq", "yes", "ps", "printenv", "mypy",
+    "rg", "ag", "echo", "printf", "which", "where", "type", "file", "stat", "du", "df",
+    "basename", "dirname", "realpath", "readlink", "whoami", "uname", "true", "false", "test",
+    "[", "jq", "cmp", "diff", "hexdump", "xxd", "od", "strings", "printenv", "env",
+    "sha1sum", "sha256sum", "md5sum", "cksum", "yes", "seq", "sleep", "ps", "id", "groups",
+    "tty", "hostname", "arch", "nproc", "getconf", "locale", "cal",
+    "cd", "pushd", "popd", "dirs", "date",
 }
-TEST_RUNNERS = {"pytest", "py.test", "runtests.py", "test"}
-# (command, first argument) pairs that only run tests or linters
-TEST_VERBS = {("npm", "test"), ("cargo", "test"), ("go", "test"), ("go", "vet"),
-              ("ruff", "check"), ("tox", "-l")}
+# text utilities that read stdin/files but can also *write* a named output file
+TEXTUTIL_WRITE_OPT = {
+    "sort": {"-o", "--output"},
+    "tree": {"-o", "--output"},
+    "gzip": {"-o"},
+    "shuf": {"-o", "--output"},
+    "csplit": {"-f", "--prefix", "-b", "--suffix-format"},
+}
+# uniq / split write their *positional* output; comm/join/cut/paste/nl/fold/fmt do not
+TEXTUTIL_READONLY = {"cut", "paste", "nl", "fold", "fmt", "expand", "unexpand", "column",
+                     "comm", "join", "rev", "tac", "tr", "sort", "uniq", "tree", "shuf", "look"}
+
+TEST_RUNNERS = {"pytest", "py.test", "runtests.py"}
+# (command, first positional) pairs that only run tests or linters (read-only) -
+# unless a fix/exec option is present (checked below)
+TEST_VERBS = {("npm", "test"), ("cargo", "test"), ("cargo", "check"), ("cargo", "clippy"),
+              ("go", "test"), ("go", "vet"), ("ruff", "check"), ("tox", "-l"), ("pnpm", "test"),
+              ("yarn", "test")}
+RUFF_WRITE = {"--fix", "--fix-only", "--unsafe-fixes"}
+
 ALWAYS_DANGEROUS = {
     "dd": "raw disk/file writes", "fdisk": "partitions disks", "wipefs": "wipes disks",
     "shred": "destroys files", "format": "formats a disk", "mount": "remounts filesystems",
@@ -83,11 +111,10 @@ ALWAYS_DANGEROUS = {
     "diskpart": "partitions disks", "bcdedit": "edits boot configuration",
     "schtasks": "edits scheduled tasks", "at": "schedules jobs", "launchctl": "edits services",
     "sc": "controls Windows services", "ssh-keygen": "creates or overwrites keys",
-    "history": "edits shell history",
-    "net": "manages Windows users and shares", "npx": "downloads and runs a package",
-    "uvx": "downloads and runs a package", "bunx": "downloads and runs a package",
+    "history": "edits shell history", "net": "manages Windows users and shares",
+    "npx": "downloads and runs a package", "uvx": "downloads and runs a package",
+    "bunx": "downloads and runs a package",
 }
-# infrastructure CLIs: these verbs destroy remote resources
 INFRA = {"kubectl", "terraform", "aws", "gcloud", "az", "helm", "pulumi", "doctl", "gsutil"}
 INFRA_DESTRUCTIVE = {"delete", "destroy", "rb", "rm", "uninstall", "terminate", "drain",
                      "apply", "scale", "remove", "purge", "down", "replace", "patch"}
@@ -97,17 +124,32 @@ INSTALL_VERBS = {"install", "uninstall", "remove", "add", "i", "update", "upgrad
                  "get", "exec", "dlx"}
 SHELLS = {"bash", "sh", "zsh", "dash", "ksh", "fish", "cmd", "pwsh", "powershell"}
 INTERPRETERS = {"python", "python3", "python2", "perl", "ruby", "node", "php", "deno", "bun"}
-WRAPPERS = {"command", "builtin", "exec", "nohup", "nice", "time", "stdbuf", "busybox",
-            "ionice", "chronic"}
+# wrapper -> options that take a value (so the wrapped command starts after them)
+WRAPPERS = {
+    "command": set(), "builtin": set(), "exec": {"-a"}, "nohup": set(),
+    "nice": {"-n", "--adjustment"}, "ionice": {"-c", "--class", "-n", "--classdata", "-p"},
+    "time": {"-o", "--output", "-f", "--format"}, "stdbuf": {"-i", "-o", "-e"},
+    "chrt": {"-p"}, "setsid": set(), "chronic": set(), "setarch": set(), "busybox": set(),
+}
+WRITE_WRAPPER_OPT = {"-o", "--output"}  # time -o FILE writes; check the value
 KEYWORDS = {"if", "then", "else", "elif", "fi", "do", "done", "while", "until", "case", "esac",
             "{", "}", "!", "[[", "]]", "function", "select"}
 GIT_READ = {"status", "diff", "log", "show", "blame", "rev-parse", "ls-files", "grep",
             "describe", "shortlog", "reflog", "cat-file", "ls-tree", "whatchanged", "version"}
+GIT_EXEC_OPT = {"-O", "--open-files-in-pager", "--ext-diff"}  # run a pager / external diff
+GIT_WRITE_OPT = {"-o", "--output"}
 CODE_RED_FLAGS = ("rmtree", "remove(", "unlink", "rmsync", "rmdir", "system(", "subprocess",
                   "popen", "exec(", "spawn", "child_process", "os.kill", "chmod", "truncate",
-                  "urlopen", "requests.", "socket")
+                  "urlopen", "requests.", "socket", "shutil", "pathlib", "os.remove",
+                  "getattr(", "__import__", "importlib", "eval(", "compile(", "os.environ",
+                  "ctypes", "marshal", "pickle")
+# environment variables whose value NAMES a program that gets executed
+ENV_EXEC = {"PAGER", "GIT_PAGER", "MANPAGER", "GIT_EXTERNAL_DIFF", "GIT_DIFF_OPTS", "LESSOPEN",
+            "LESSCLOSE", "GIT_EDITOR", "EDITOR", "VISUAL", "GIT_SEQUENCE_EDITOR", "GIT_SSH",
+            "GIT_SSH_COMMAND", "GIT_ASKPASS", "SSH_ASKPASS", "BROWSER", "GIT_PROXY_COMMAND",
+            "SHELL", "BASH_ENV", "ENV", "PROMPT_COMMAND", "PS1", "FIGNORE", "GIT_CONFIG"}
 ENV_HIJACK = re.compile(r"^(PATH|LD_PRELOAD|LD_LIBRARY_PATH|PYTHONPATH|PYTHONSTARTUP|"
-                        r"BASH_ENV|ENV|PROMPT_COMMAND|NODE_OPTIONS)=")
+                        r"BASH_ENV|ENV|PROMPT_COMMAND|NODE_OPTIONS|DYLD_INSERT_LIBRARIES)=")
 OPERATORS = {";", "&&", "||", "|", "&", "(", ")", ";;", "|&", "\n"}
 REDIRECTS = {">", ">>", ">|", "&>", "&>>", ">&", "<", "<<", "<<<", "<>", "<&"}
 _SUBST = re.compile(r"\$\(|`|<\(|>\(")
@@ -126,27 +168,66 @@ def _mutating(reason: str) -> Rating:
     return Rating("mutating", reason)
 
 
+def _opt(token: str) -> str:
+    """The option name of ``--out=x`` / ``-oL`` / ``-o`` (best effort)."""
+    base = token.split("=", 1)[0]
+    if base.startswith("--"):
+        return base
+    if len(base) > 2 and base[1] != "-":  # attached short value, e.g. -n5 / -oL
+        return base[:2]
+    return base
+
+
 class CommandClassifier:
     """Rates a shell command string. ``root`` is the workspace as the shell sees it."""
 
     def __init__(self, root: str = "/workspace") -> None:
         self.root = root.rstrip("/") or "/"
 
-    # -- paths ------------------------------------------------------------------
-    def outside(self, word: str) -> bool:
-        """Does ``word``, read as a path, point outside the workspace?"""
+    # -- paths ---------------------------------------------------------------------
+    def _resolve(self, word: str, cwd: str) -> str | None:
+        """Absolute posix path a word points at, or None if not statically resolvable."""
         if not word or word.startswith("-") or "://" in word or PLACEHOLDER in word:
-            return False
+            return None
+        if word == "/dev/null" or word.startswith(("/dev/std", "/dev/fd/")):
+            return self.root  # a harmless pseudo-file; treat as "inside"
+        if "$" in word or "`" in word or word.startswith("~"):
+            return None
         if re.match(r"^[A-Za-z]:[\\/]", word) or word.startswith("\\\\"):
-            return True
-        if word.startswith("~"):
-            return True
-        if word.startswith("$"):
-            return bool(re.match(r"^\$\{?(HOME|USERPROFILE|APPDATA)\b", word))
-        if word == "/dev/null" or word.startswith("/dev/std") or word.startswith("/dev/fd/"):
+            return "\x00outside"
+        w = word.replace("\\", "/")
+        if w.startswith("/"):
+            return posixpath.normpath(w)
+        if cwd == UNKNOWN_CWD:
+            return None
+        return posixpath.normpath(posixpath.join(cwd, w))
+
+    def outside(self, word: str, cwd: str | None = None) -> bool:
+        """True when ``word`` as a *write* target is outside the workspace or unresolvable."""
+        base = self.root if cwd is None else cwd
+        if not word or word.startswith("-"):
             return False
-        norm = posixpath.normpath(posixpath.join(self.root, word.replace("\\", "/")))
-        return not (norm == self.root or norm.startswith(self.root + "/"))
+        resolved = self._resolve(word, base)
+        if resolved == self.root:
+            return False
+        if resolved is None or resolved == "\x00outside":
+            return True
+        return not (resolved == self.root or resolved.startswith(self.root + "/"))
+
+    def _cd_target(self, words: list[str], cwd: str) -> str:
+        """cwd after a ``cd`` simple command (UNKNOWN_CWD if it cannot be resolved)."""
+        rest = list(words)
+        while rest and (rest[0] in KEYWORDS or re.match(r"^[A-Za-z_]\w*=", rest[0])):
+            rest.pop(0)
+        if not rest or _command_name(rest[0]) not in ("cd", "pushd"):
+            return cwd
+        args = [a for a in rest[1:] if not a.startswith("-")]
+        if not args:  # `cd` with no argument goes home
+            return UNKNOWN_CWD
+        resolved = self._resolve(args[0], cwd)
+        if resolved is None or resolved == "\x00outside":
+            return UNKNOWN_CWD
+        return resolved
 
     # -- entry point ---------------------------------------------------------------
     def rate(self, command: str, depth: int = 0) -> Rating:
@@ -166,8 +247,7 @@ class CommandClassifier:
             rating = rating.worse(self.rate(inner, depth + 1))
         try:
             flat = stripped.replace("\r", "").replace("\n", " ; ")
-            lexer = shlex.shlex(flat, posix=True,
-                                punctuation_chars=";&|()<>")
+            lexer = shlex.shlex(flat, posix=True, punctuation_chars=";&|()<>")
             lexer.whitespace = " \t"
             lexer.whitespace_split = True
             lexer.commenters = ""
@@ -178,12 +258,7 @@ class CommandClassifier:
 
     @staticmethod
     def _substitutions(command: str) -> tuple[list[str], str]:
-        """Split out ``$( )``, backtick and ``<( )``/``>( )`` bodies (outermost only).
-
-        Returns the bodies, and the command with each substitution replaced by a
-        placeholder word, so the lexer sees ``ln -sf SUBST/bin/x /usr/bin/x`` instead of
-        tripping over the parentheses.
-        """
+        """Split out ``$( )``, backtick and ``<( )``/``>( )`` bodies (outermost only)."""
         bodies: list[str] = []
         out: list[str] = []
         i = 0
@@ -209,20 +284,21 @@ class CommandClassifier:
             out.append(PLACEHOLDER)
         return bodies, "".join(out)
 
-    def _rate_tokens(self, tokens: list[str], raw: str, depth: int) -> Rating:
-        rating = SAFE
-        segments: list[list[str]] = [[]]
-        after_pipe: list[bool] = [False]
-        redirect_targets: list[tuple[str, str]] = []
+    def _split_units(
+        self, tokens: list[str]
+    ) -> list[tuple[list[str], list[tuple[str, str]], bool]]:
+        """Ordered simple commands: (words, redirects, is-piped-into)."""
+        units: list[tuple[list[str], list[tuple[str, str]], bool]] = []
+        words: list[str] = []
+        redirects: list[tuple[str, str]] = []
+        piped = False
         i = 0
         while i < len(tokens):
             tok = tokens[i]
             if tok in OPERATORS or "\n" in tok:
-                if tok == "&":
-                    rating = rating.worse(_dangerous("backgrounds a process that outlives "
-                                                     "the timeout"))
-                segments.append([])
-                after_pipe.append(tok in ("|", "|&"))
+                units.append((words, redirects, piped))
+                words, redirects = [], []
+                piped = tok in ("|", "|&")
                 i += 1
                 continue
             if tok in REDIRECTS or (tok.isdigit() and i + 1 < len(tokens)
@@ -231,46 +307,50 @@ class CommandClassifier:
                     i += 1
                     tok = tokens[i]
                 target = tokens[i + 1] if i + 1 < len(tokens) else ""
-                redirect_targets.append((tok, target))
+                redirects.append((tok, target))
                 i += 2
                 continue
-            segments[-1].append(tok)
+            words.append(tok)
             i += 1
+        units.append((words, redirects, piped))
+        return units
 
+    def _rate_tokens(self, tokens: list[str], raw: str, depth: int) -> Rating:
+        rating = SAFE
         if re.search(r"\w*\s*\(\s*\)\s*\{", raw):
             rating = rating.worse(_dangerous("defines a shell function (fork-bomb shape)"))
-        for op, target in redirect_targets:
-            if op in ("<", "<<", "<<<", "<&"):
-                continue
-            if op == ">&" and target.isdigit():
-                continue
-            if target.startswith("/dev/tcp") or target.startswith("/dev/udp"):
-                rating = rating.worse(_dangerous("redirects to a network socket"))
-            elif target.startswith("/dev/sd") or target.startswith("/dev/nvme"):
-                rating = rating.worse(_dangerous("writes to a raw disk"))
-            elif self.outside(target):
-                rating = rating.worse(_dangerous(f"writes outside the workspace ({target})"))
-            else:
-                rating = rating.worse(_mutating(f"writes {target}"))
-        for words, piped in zip(segments, after_pipe, strict=True):
+        if "&" in tokens:  # a lone & backgrounds a process that outlives the timeout
+            rating = rating.worse(_dangerous("backgrounds a process that outlives the timeout"))
+        cwd = self.root
+        for words, redirects, piped in self._split_units(tokens):
+            for op, target in redirects:
+                rating = rating.worse(self._rate_redirect(op, target, cwd))
             if words:
-                rating = rating.worse(self._rate_simple(words, piped, depth))
+                rating = rating.worse(self._rate_simple(words, piped, depth, cwd))
+            cwd = self._cd_target(words, cwd)
         return rating
 
-    # -- one simple command ---------------------------------------------------------
-    def _rate_simple(self, words: list[str], piped: bool, depth: int) -> Rating:
+    def _rate_redirect(self, op: str, target: str, cwd: str) -> Rating:
+        if op in ("<", "<<", "<<<", "<&") or (op == ">&" and target.isdigit()):
+            return SAFE
+        if target.startswith(("/dev/tcp", "/dev/udp")):
+            return _dangerous("redirects to a network socket")
+        if target.startswith(("/dev/sd", "/dev/nvme")):
+            return _dangerous("writes to a raw disk")
+        if self.outside(target, cwd):
+            return _dangerous(f"writes outside the workspace ({target})")
+        return _mutating(f"writes {target}")
+
+    # -- one simple command --------------------------------------------------------
+    def _rate_simple(self, words: list[str], piped: bool, depth: int, cwd: str) -> Rating:
         words = list(words)
         while words and words[0] in KEYWORDS:
             words.pop(0)
-        if not words:
-            return SAFE
-        if words[0] in ("for", "in", "case"):
+        if not words or words[0] in ("for", "in", "case"):
             return SAFE
         rating = SAFE
-        # leading VAR=value assignments
         while words and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", words[0]):
-            if ENV_HIJACK.match(words[0]):
-                rating = rating.worse(_dangerous(f"overrides {words[0].split('=')[0]}"))
+            rating = rating.worse(self._rate_assignment(words[0]))
             words.pop(0)
         if not words:
             return rating
@@ -278,37 +358,40 @@ class CommandClassifier:
         if "$" in name_raw or "`" in name_raw or PLACEHOLDER in name_raw:
             return _dangerous("the command name is computed at run time")
         name = _command_name(name_raw)
-        args = words[1:]
-        return rating.worse(self._rate_named(name, args, piped, depth))
+        return rating.worse(self._rate_named(name, words[1:], piped, depth, cwd))
 
-    def _rate_named(self, name: str, args: list[str], piped: bool, depth: int) -> Rating:
+    def _rate_assignment(self, token: str) -> Rating:
+        name = token.split("=", 1)[0]
+        if ENV_HIJACK.match(token):
+            return _dangerous(f"overrides {name}")
+        if name in ENV_EXEC:
+            return _dangerous(f"{name} names a program that gets executed")
+        return SAFE
+
+    def _rate_named(self, name: str, args: list[str], piped: bool, depth: int,
+                    cwd: str) -> Rating:
         if name in ("sudo", "doas", "su", "runas"):
             return _dangerous(ALWAYS_DANGEROUS[name])
         if name == "env":
-            rest = list(args)
-            while rest and (rest[0].startswith("-") or re.match(r"^\w+=", rest[0])):
-                opt = rest.pop(0)
-                if opt in ("-u", "--unset", "-C", "--chdir") and rest:
-                    rest.pop(0)
-            hijack = [a for a in args if ENV_HIJACK.match(a)]
-            if hijack:
-                return _dangerous(f"overrides {hijack[0].split('=')[0]}")
-            return self._rate_simple(rest, piped, depth + 1) if rest else SAFE
+            return self._rate_env(args, piped, depth, cwd)
         if name == "export":
-            hijack = [a for a in args if ENV_HIJACK.match(a)]
-            return _dangerous(f"overrides {hijack[0].split('=')[0]}") if hijack else SAFE
+            rating = SAFE
+            for a in args:
+                if "=" in a:
+                    rating = rating.worse(self._rate_assignment(a))
+            return rating
         if name in WRAPPERS:
-            return self._rate_simple(args, piped, depth + 1) if args else SAFE
+            return self._rate_wrapper(name, args, piped, depth, cwd)
         if name in ("timeout", "watch", "xargs"):
-            rest = _skip_options(args, takes_value={"-n", "-s", "-k", "-a", "-I", "-d", "-L",
-                                                    "-P", "--signal", "--interval"})
+            rest = _skip_options(args, {"-n", "-s", "-k", "-a", "-I", "-d", "-L", "-P",
+                                        "--signal", "--interval"})
             if name == "timeout" and rest:
                 rest = rest[1:]  # the duration
-            if name == "xargs" and not rest:
+            if not rest:
                 return SAFE
             if name == "xargs" and _command_name(rest[0]) in DELETERS:
                 return _dangerous("xargs deletes every listed path")
-            return self._rate_simple(rest, piped, depth + 1) if rest else SAFE
+            return self._rate_simple(rest, piped, depth + 1, cwd)
         if name == "trap":
             action = next((a for a in args if a != "--"), "")
             return self.rate(action, depth + 1) if action and not action.startswith("-") else SAFE
@@ -319,22 +402,16 @@ class CommandClassifier:
         if name in SHELLS:
             return self._rate_shell(name, args, piped, depth)
         if name in INTERPRETERS:
-            return self._rate_interpreter(name, args, piped, depth)
+            return self._rate_interpreter(name, args, piped, depth, cwd)
         verb0 = next((a for a in args if not a.startswith("-")), "")
-        if (name, verb0) in TEST_VERBS and "--fix" not in args:
-            return SAFE
+        if (name, verb0) in TEST_VERBS:
+            return self._rate_test_verb(name, verb0, args)
         if name in INFRA:
             if any(a in INFRA_DESTRUCTIVE for a in args):
                 return _dangerous(f"{name} changes or destroys remote infrastructure")
             return _mutating(f"runs {name}")
         if name in PACKAGE_MANAGERS:
-            verb = next((a for a in args if not a.startswith("-")), "")
-            if verb in INSTALL_VERBS or (name in ("npm", "pnpm", "yarn") and "-g" in args) or (
-                    name == "pipx" and verb == "run"):
-                return _dangerous(f"{name} {verb} changes installed packages")
-            if name in ("pip", "pip3") and verb in ("list", "show", "freeze", "check"):
-                return SAFE
-            return _mutating(f"runs {name}")
+            return self._rate_pkg(name, args)
         if name == "uv":
             sub = args[:2]
             if sub[:1] == ["pip"] and len(sub) > 1 and sub[1] in INSTALL_VERBS | {"sync"}:
@@ -343,57 +420,205 @@ class CommandClassifier:
                 return _dangerous("uv changes installed packages")
             return _mutating("runs uv")
         if name == "git":
-            return self._rate_git(args)
+            return self._rate_git(args, cwd)
+        if name == "date":
+            return _dangerous("date -s sets the system clock") if any(
+                a in ("-s", "--set") or a.startswith("--set=") for a in args) else SAFE
+        if name == "mypy":
+            return _dangerous("mypy --install-types installs packages") if any(
+                a.startswith("--install-types") for a in args) else SAFE
         if name == "rm":
-            return self._rate_rm(args)
+            return self._rate_rm(args, cwd)
         if name in ("rmdir", "del", "erase"):
             if any(a.lower() in ("/s", "/q", "-p", "--parents") for a in args) or any(
                     "*" in a for a in args):
                 return _dangerous(f"{name} removes trees or wildcards")
-            return self._paths_rating(args, f"{name} deletes", destructive=True)
+            return self._paths_rating(args, f"{name} deletes", cwd)
         if name == "find":
-            return self._rate_find(args, depth)
+            return self._rate_find(args, depth, cwd)
         if name == "docker":
             sub = next((a for a in args if not a.startswith("-")), "")
             if sub in ("ps", "images", "logs", "inspect", "version", "info"):
                 return SAFE
             return _dangerous(f"docker {sub} changes containers or the host")
         if name in ("curl", "wget"):
-            return self._rate_download(name, args)
-        if name == "tar" and any(a in ("-P", "--absolute-names") for a in args):
-            return _dangerous("tar --absolute-names can write anywhere")
-
+            return self._rate_download(name, args, cwd)
+        if name == "tar":
+            return self._rate_tar(args, cwd)
         if name == "chmod":
             if any(a.startswith("-") and "R" in a for a in args) or "--recursive" in args:
                 return _dangerous("recursive permission change")
-            return self._paths_rating(args, "changes permissions", destructive=False)
+            modes = [a for a in args if not a.startswith("-")]
+            if any(re.search(r"[ugoa]*[+=][rwxXt]*s", m) or re.match(r"[2467]\d{3}$", m)
+                   for m in modes):
+                return _dangerous("sets a setuid/setgid bit")
+            return self._paths_rating(args, "changes permissions", cwd)
         if name == "sed":
-            inplace = any(a == "-i" or a.startswith("-i") or a.startswith("--in-place")
-                          for a in args)
-            if not inplace:
-                return SAFE
-            return self._paths_rating(args[1:], "edits files in place", destructive=False)
-        if name == "awk":
-            program = " ".join(args)
-            if "system(" in program or ("|" in program and "getline" in program):
-                return _dangerous("awk runs shell commands")
-            return SAFE
-        if name in ("cp", "mv", "ln", "tee", "touch", "mkdir", "install", "patch", "tar",
-                    "unzip", "zip", "gzip", "gunzip"):
-            return self._paths_rating(args, f"{name} writes files", destructive=False)
-        if name in READ_ONLY:
-            return SAFE
+            return self._rate_sed(args, cwd)
+        if name == "awk" or name == "gawk":
+            return self._rate_awk(args)
+        if name in ("rg", "ag") and self._has_exec_search_opt(args):
+            return _dangerous(f"{name} runs a helper program per file")
+        if name in TEXTUTIL_READONLY or name in TEXTUTIL_WRITE_OPT:
+            return self._rate_textutil(name, args, cwd)
+        if name in ("cp", "mv", "ln", "tee", "touch", "mkdir", "install", "unzip", "zip",
+                    "gunzip", "patch"):
+            return self._paths_rating(args, f"{name} writes files", cwd)
         if name in TEST_RUNNERS:
+            return self._rate_pytest_module(args, cwd)
+        if name in READ_ONLY:
             return SAFE
         return _mutating(f"'{name}' is not a known read-only command")
 
-    def _paths_rating(self, args: list[str], what: str, destructive: bool) -> Rating:
-        outside = [a for a in args if self.outside(a)]
+    # -- unwrappers ----------------------------------------------------------------
+    def _rate_env(self, args: list[str], piped: bool, depth: int, cwd: str) -> Rating:
+        rating = SAFE
+        i = 0
+        while i < len(args):
+            a = args[i]
+            if a == "--":
+                i += 1
+                break
+            if a in ("-S", "--split-string") and i + 1 < len(args):
+                return self.rate(args[i + 1], depth + 1)  # env -S re-splits into a command
+            if a.startswith(("-S", "--split-string=")):
+                return self.rate(a.split("=", 1)[-1] if "=" in a else a[2:], depth + 1)
+            if a in ("-i", "--ignore-environment", "-0", "--null"):
+                i += 1
+                continue
+            if a in ("-u", "--unset", "-C", "--chdir") and i + 1 < len(args):
+                i += 2
+                continue
+            if "=" in a and not a.startswith("-"):
+                rating = rating.worse(self._rate_assignment(a))
+                i += 1
+                continue
+            break
+        rest = args[i:]
+        return rating.worse(self._rate_simple(rest, piped, depth + 1, cwd)) if rest else rating
+
+    def _rate_wrapper(self, name: str, args: list[str], piped: bool, depth: int,
+                      cwd: str) -> Rating:
+        value_opts = WRAPPERS[name]
+        rating = SAFE
+        i = 0
+        while i < len(args) and args[i].startswith("-") and args[i] != "--":
+            opt = args[i]
+            base = _opt(opt)
+            if name == "time" and base in WRITE_WRAPPER_OPT:  # time -o FILE writes
+                val = opt.split("=", 1)[1] if "=" in opt else (
+                    args[i + 1] if i + 1 < len(args) else "")
+                rating = rating.worse(_mutating(f"{name} writes {val}") if not self.outside(
+                    val, cwd) else _dangerous(f"{name} writes outside the workspace ({val})"))
+                i += 1 if "=" in opt else 2
+                continue
+            if base in value_opts and "=" not in opt and len(opt) <= len(base):
+                i += 2  # option plus its separate value
+            else:
+                i += 1  # a flag, or a short option with its value attached
+        if i < len(args) and args[i] == "--":
+            i += 1
+        rest = args[i:]
+        if name == "exec" and not rest:
+            return rating
+        if name == "busybox" and rest:
+            pass  # busybox <applet> -> applet is the command
+        return rating.worse(self._rate_simple(rest, piped, depth + 1, cwd)) if rest else rating
+
+    # -- families ------------------------------------------------------------------
+    def _rate_test_verb(self, name: str, verb: str, args: list[str]) -> Rating:
+        if name == "ruff" and any(a in RUFF_WRITE for a in args):
+            return _mutating("ruff --fix rewrites files")
+        if name == "go" and verb == "test" and any(
+                a == "-exec" or a.startswith("-exec=") for a in args):
+            return _dangerous("go test -exec runs an arbitrary program")
+        if name in ("npm", "pnpm", "yarn") and "-g" in args:
+            return _dangerous(f"{name} -g changes global packages")
+        return SAFE
+
+    def _rate_pkg(self, name: str, args: list[str]) -> Rating:
+        verb = next((a for a in args if not a.startswith("-")), "")
+        if verb in INSTALL_VERBS or (name in ("npm", "pnpm", "yarn") and "-g" in args) or (
+                name == "pipx" and verb == "run"):
+            return _dangerous(f"{name} {verb} changes installed packages")
+        if name in ("pip", "pip3") and verb in ("list", "show", "freeze", "check"):
+            return SAFE
+        if name == "go" and verb in ("install", "get"):
+            return _dangerous("go install changes installed packages")
+        return _mutating(f"runs {name}")
+
+    def _rate_textutil(self, name: str, args: list[str], cwd: str) -> Rating:
+        write_opts = TEXTUTIL_WRITE_OPT.get(name, set())
+        positionals = []
+        i = 0
+        while i < len(args):
+            a = args[i]
+            if a == "--":
+                positionals.extend(x for x in args[i + 1:])
+                break
+            base = _opt(a)
+            if base in write_opts:
+                val = a.split("=", 1)[1] if "=" in a else (args[i + 1] if i + 1 < len(args) else "")
+                return _dangerous(f"{name} writes outside the workspace ({val})") \
+                    if self.outside(val, cwd) else _mutating(f"{name} writes {val}")
+            if a.startswith("-"):
+                i += 1
+                continue
+            positionals.append(a)
+            i += 1
+        # uniq/split take an OUTPUT positional (the last one, when there are two)
+        if name in ("uniq", "split") and len(positionals) >= 2:
+            out = positionals[-1]
+            return _dangerous(f"{name} writes outside the workspace ({out})") \
+                if self.outside(out, cwd) else _mutating(f"{name} writes {out}")
+        return SAFE
+
+    def _has_exec_search_opt(self, args: list[str]) -> bool:
+        for a in args:
+            base = _opt(a)
+            if base in ("--pre", "--pre-glob", "--hostname-bin"):
+                return True
+        return False
+
+    def _rate_sed(self, args: list[str], cwd: str) -> Rating:
+        inplace = any(a == "-i" or a.startswith(("-i", "--in-place")) for a in args)
+        scripts = [a for a in args if not a.startswith("-")]
+        # -e/-f take the next token as the script/file; treat the joined non-options as scripts
+        joined = " ".join(scripts)
+        if re.search(r"(^|[;{}\s])[wW]\s+\S", joined) or re.search(r"s#?/[^/]*/[^/]*/[a-z0-9]*[wW]",
+                                                                   joined) or "s/.*/.*/w" in joined:
+            return _dangerous("sed writes a file with its w command")
+        if re.search(r"(^|[;{}\s])e($|[;\s])", joined) or re.search(r"/[a-z]*e[a-z]*(;|$| )",
+                                                                    joined):
+            return _dangerous("sed executes a command with its e command")
+        if not inplace:
+            return SAFE
+        targets = [a for a in scripts[1:]] if scripts else []
+        return self._paths_rating(targets, "sed edits files in place", cwd)
+
+    def _rate_awk(self, args: list[str]) -> Rating:
+        program = " ".join(args)
+        if "system(" in program or re.search(r'\|\s*(getline|"|\w)', program):
+            return _dangerous("awk runs shell commands")
+        if re.search(r'(print|printf)[^;{}]*>>?', program):
+            return _dangerous("awk writes a file with a print redirect")
+        return SAFE
+
+    def _rate_tar(self, args: list[str], cwd: str) -> Rating:
+        if any(a in ("-P", "--absolute-names") for a in args):
+            return _dangerous("tar --absolute-names can write anywhere")
+        if any(a.startswith("--checkpoint-action") or a.startswith("--to-command")
+               or a == "--use-compress-program" for a in args):
+            return _dangerous("tar runs a program via --checkpoint-action / --to-command")
+        return self._paths_rating(args, "tar writes files", cwd)
+
+    def _paths_rating(self, args: list[str], what: str, cwd: str) -> Rating:
+        outside = [a for a in args if self.outside(a, cwd)]
         if outside:
             return _dangerous(f"{what} outside the workspace ({outside[0]})")
         return _mutating(what)
 
-    def _rate_rm(self, args: list[str]) -> Rating:
+    def _rate_rm(self, args: list[str], cwd: str) -> Rating:
         opts = []
         for a in args:
             if a == "--":
@@ -408,11 +633,16 @@ class CommandClassifier:
             return _dangerous("recursive delete")
         if any("*" in a for a in args):
             return _dangerous("wildcard delete")
-        return self._paths_rating([a for a in args if a != "--"], "deletes", destructive=True)
+        return self._paths_rating([a for a in args if a != "--"], "deletes", cwd)
 
-    def _rate_find(self, args: list[str], depth: int) -> Rating:
+    def _rate_find(self, args: list[str], depth: int, cwd: str) -> Rating:
         if "-delete" in args:
             return _dangerous("find -delete removes files")
+        for w in ("-fprint", "-fprint0", "-fprintf", "-fls"):
+            if w in args:
+                target = args[args.index(w) + 1] if args.index(w) + 1 < len(args) else ""
+                return _dangerous(f"find {w} writes outside the workspace") \
+                    if self.outside(target, cwd) else _mutating(f"find {w} writes {target}")
         for flag in ("-exec", "-execdir", "-ok", "-okdir"):
             if flag in args:
                 start = args.index(flag) + 1
@@ -423,11 +653,11 @@ class CommandClassifier:
                     inner.append(a)
                 if inner and _command_name(inner[0]) in DELETERS:
                     return _dangerous("find -exec deletes every match")
-                inner_rating = self._rate_simple(inner, False, depth + 1) if inner else SAFE
+                inner_rating = self._rate_simple(inner, False, depth + 1, cwd) if inner else SAFE
                 return inner_rating.worse(_mutating("find runs a command per file"))
         return SAFE
 
-    def _rate_download(self, name: str, args: list[str]) -> Rating:
+    def _rate_download(self, name: str, args: list[str], cwd: str) -> Rating:
         upload = {"-d", "--data", "--data-binary", "--data-raw", "--data-urlencode", "-F",
                   "--form", "-T", "--upload-file", "--post-file", "--post-data", "--body-file"}
         if any(PLACEHOLDER in a or "$(" in a or "`" in a for a in args):
@@ -436,7 +666,7 @@ class CommandClassifier:
         for i, a in enumerate(args):
             flag, _, val = a.partition("=")
             target = val if val else (args[i + 1] if i + 1 < len(args) else "")
-            if flag in out_flags and self.outside(target):
+            if _opt(flag) in out_flags and self.outside(target, cwd):
                 return _dangerous(f"{name} writes a download outside the workspace ({target})")
         for a in args:
             flag = a.split("=", 1)[0]
@@ -448,16 +678,30 @@ class CommandClassifier:
                 return _dangerous(f"{name} sends a {method.upper()} request")
         return _mutating(f"{name} downloads from the network")
 
-    def _rate_git(self, args: list[str]) -> Rating:
-        # skip global options such as -C <dir> / -c k=v
+    def _rate_git(self, args: list[str], cwd: str) -> Rating:
         rest = list(args)
         while rest and rest[0].startswith("-"):
             opt = rest.pop(0)
-            if opt in ("-C", "-c", "--git-dir", "--work-tree") and rest:
-                rest.pop(0)
+            base = _opt(opt)
+            if base == "-c":  # `git -c key=value` can inject an executed hook
+                return _dangerous("git -c overrides config, which can run a program")
+            if base in ("--config-env",):
+                return _dangerous("git --config-env overrides config from the environment")
+            if base in ("-C", "--git-dir", "--work-tree", "--namespace") and "=" not in opt:
+                val = rest.pop(0) if rest else ""
+                if base == "-C" and self.outside(val, cwd):
+                    return _dangerous(f"git -C runs in {val}, outside the workspace")
         if not rest:
             return SAFE
         sub, sargs = rest[0], rest[1:]
+        if any(_opt(a) in GIT_EXEC_OPT for a in sargs):
+            return _dangerous(f"git {sub} opens results in a pager / external diff")
+        for a in sargs:
+            if _opt(a) in GIT_WRITE_OPT:
+                val = a.split("=", 1)[1] if "=" in a else (
+                    sargs[sargs.index(a) + 1] if sargs.index(a) + 1 < len(sargs) else "")
+                if self.outside(val, cwd):
+                    return _dangerous(f"git {sub} writes outside the workspace ({val})")
         if sub in GIT_READ:
             if sub == "reflog" and sargs[:1] in (["expire"], ["delete"]):
                 return _dangerous("git reflog expire destroys history")
@@ -473,16 +717,26 @@ class CommandClassifier:
         if sub == "gc" and any(a.startswith("--prune") for a in sargs):
             return _dangerous("git gc --prune destroys unreachable objects")
         if sub in ("checkout", "restore"):
-            if "--" in sargs or "." in sargs or (sub == "restore" and sargs) or "-f" in sargs:
+            pos = [a for a in sargs if not a.startswith("-")]
+            if "--" in sargs or "." in sargs or "-f" in sargs or (sub == "restore" and sargs) \
+                    or (sub == "checkout" and len(pos) >= 2):
                 return _dangerous(f"git {sub} discards working-tree changes")
             return _mutating(f"git {sub}")
+        if sub == "switch":
+            if any(a in ("--discard-changes", "-f", "--force") for a in sargs):
+                return _dangerous("git switch --discard-changes throws away changes")
+            return _mutating("git switch")
+        if sub == "commit":
+            if any(a in ("--amend",) for a in sargs):
+                return _dangerous("git commit --amend rewrites the last commit")
+            return _mutating("git commit")
         if sub == "branch":
             if any(a in ("-D", "-d", "--delete", "-M", "-m", "--move", "-f") for a in sargs):
                 return _dangerous("git branch deletes or moves a branch")
             return SAFE
         if sub == "stash":
-            if sargs[:1] in (["drop"], ["clear"]):
-                return _dangerous("git stash drop/clear discards work")
+            if sargs[:1] in (["drop"], ["clear"], ["pop"]):
+                return _dangerous("git stash drop/clear/pop discards or replaces work")
             if sargs[:1] in (["list"], ["show"]):
                 return SAFE
             return _mutating("git stash")
@@ -493,6 +747,10 @@ class CommandClassifier:
         if sub == "config":
             if any(a in ("--global", "--system") for a in sargs):
                 return _dangerous("git config writes global settings")
+            exec_keys = ("core.hookspath", "core.fsmonitor", "core.pager", "core.sshcommand",
+                         "diff.external", "sequence.editor")
+            if any(s.lower().startswith(exec_keys) for s in sargs):
+                return _dangerous("git config sets a key that runs a program")
             if any(a in ("--get", "--list", "-l", "--get-all") for a in sargs):
                 return SAFE
             return _mutating("git config")
@@ -516,11 +774,12 @@ class CommandClassifier:
             return _dangerous(f"pipes input into {name}, which runs it as code")
         return _mutating(f"runs the script {script_files[0]}")
 
-    def _rate_interpreter(self, name: str, args: list[str], piped: bool, depth: int) -> Rating:
+    def _rate_interpreter(self, name: str, args: list[str], piped: bool, depth: int,
+                          cwd: str) -> Rating:
         if name in ("perl", "ruby") and any(
                 a.startswith("-") and not a.startswith("--") and "i" in a for a in args):
             return self._paths_rating([a for a in args if not a.startswith("-")][1:],
-                                      f"{name} -i edits files in place", destructive=False)
+                                      f"{name} -i edits files in place", cwd)
         if not args or args == ["-"]:
             if piped:
                 return _dangerous(f"pipes input into {name}, which runs it as code")
@@ -530,9 +789,11 @@ class CommandClassifier:
         if args[0] == "-m" and len(args) > 1:
             mod = args[1]
             if mod in ("pytest", "unittest", "doctest", "py_compile", "compileall", "tabnanny"):
+                if mod == "pytest":
+                    return self._rate_pytest_module(args[2:], cwd)
                 return SAFE
             if mod == "pip":
-                return self._rate_named("pip", args[2:], piped, depth)
+                return self._rate_pkg("pip", args[2:])
             return _mutating(f"runs the module {mod}")
         for flag in ("-c", "-e", "-E", "--eval", "-p"):
             if flag in args:
@@ -545,6 +806,18 @@ class CommandClassifier:
                     return _dangerous(f"inline {name} code calls {hit.rstrip('(.')}")
                 return _mutating(f"runs inline {name} code")
         return _mutating(f"runs {name} {args[0]}")
+
+    def _rate_pytest_module(self, args: list[str], cwd: str) -> Rating:
+        """pytest reads and runs tests, but --basetemp / -p writes and can load plugins."""
+        for i, a in enumerate(args):
+            base = _opt(a)
+            if base in ("--basetemp", "--rootdir", "--junitxml", "--result-log",
+                        "--report-log", "--cache-clear-dir"):
+                val = a.split("=", 1)[1] if "=" in a else (args[i + 1] if i + 1 < len(args) else "")
+                if self.outside(val, cwd):
+                    return _dangerous(f"pytest writes outside the workspace ({val})")
+                return _mutating(f"pytest writes {val or base}")
+        return SAFE
 
 
 def _command_name(word: str) -> str:
@@ -576,9 +849,9 @@ class ApprovalPolicy:
     ``mode``:
       * ``default`` - read-only commands and tests run; anything else asks.
       * ``auto``    - mutating commands run too; dangerous ones still ask.
-    ``allow`` is a list of command prefixes the user trusts (``--allow "npm test"``); a
-    matching *mutating* command runs unasked. A dangerous command is never allowlisted.
-    Headless runs have no human, so the agent's approver turns every ASK into a DENY.
+    ``allow`` is a list of command prefixes the user trusts (``--allow "make"``); a matching
+    *mutating* command runs unasked. A dangerous command is never allowlisted. Headless runs
+    have no human, so the agent's approver turns every ASK into a DENY.
     """
 
     def __init__(self, workspace: Path, shell_root: str | None = None, mode: str = "default",
