@@ -127,9 +127,10 @@ def render(events: list[dict[str, Any]], full: bool = False, width: int = 600) -
                        f"{e.get('tokens_after')} est. tokens (stubbed {e.get('stubbed')}, "
                        f"dropped {e.get('dropped')}, squeezed {e.get('squeezed')})")
         elif kind == "model":
-            tok = f"{e.get('prompt_tokens')}+{e.get('completion_tokens')} tok"
+            tok = (f", {e.get('prompt_tokens')}+{e.get('completion_tokens')} tokens"
+                   if e.get("prompt_tokens") is not None else "")
             cached = " (cached)" if e.get("cached") else ""
-            out.append(f"\n[step {step}] model{cached}, {tok}")
+            out.append(f"\n[step {step}] model{cached}{tok}")
             if e.get("content"):
                 out.append("  says: " + _clip(e["content"], limit).replace("\n", "\n        "))
         elif kind == "tool_call":
