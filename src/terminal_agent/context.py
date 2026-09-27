@@ -1,7 +1,9 @@
 """Context management: token estimates, output truncation and conversation compaction.
 
-Token counts here are estimates (characters / 4). Ollama reports the real prompt count
-after each call; the trajectory logs both so the estimator's error is measurable.
+Token counts here are estimates (characters / 3.2 - deliberately pessimistic, since code
+tokenises denser than prose and an underestimate means Ollama silently drops the start of
+the prompt). Ollama reports the real prompt count after each call; the trajectory logs
+both, so the model arm measures the estimator's actual error.
 """
 
 from __future__ import annotations
@@ -10,7 +12,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-CHARS_PER_TOKEN = 4.0
+CHARS_PER_TOKEN = 3.2
 TruncateMode = Literal["head", "tail", "head_tail"]
 
 

@@ -106,7 +106,7 @@ def test_truncate_modes():
     assert tail.endswith("TAIL") and "HEAD" not in tail
     both, _ = truncate(text, 100)
     assert both.startswith("HEAD") and both.endswith("TAIL")
-    assert estimate_tokens("") == 0 and estimate_tokens("abcd" * 10) == 11
+    assert estimate_tokens("") == 0 and estimate_tokens("abcd" * 10) == 13
 
 
 def test_text_tool_call_fallback_parser():

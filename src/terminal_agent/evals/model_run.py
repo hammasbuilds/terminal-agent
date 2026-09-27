@@ -28,12 +28,13 @@ from terminal_agent.evals.local_tasks import (
 from terminal_agent.evals.patches import parse_patch
 from terminal_agent.evals.stats import rate
 from terminal_agent.evals.tasks import Container, Task, rmtree, test_section
-from terminal_agent.llm import ChatClient
+from terminal_agent.llm import DEFAULT_OPTIONS, ChatClient
 from terminal_agent.policy import ApprovalPolicy
 from terminal_agent.sandbox import DockerSandbox, LocalSandbox, changed_files, snapshot
 from terminal_agent.tools import ToolConfig
 from terminal_agent.trajectory import load, summarize
 
+NUM_CTX = int(DEFAULT_OPTIONS["num_ctx"])
 TASK_PROMPT = """Resolve the following issue in the repository in your workspace.
 
 <issue>
@@ -131,6 +132,9 @@ def _record(iid: str, repo: str, gold_patch: str, agent: dict[str, Any], modifie
         "gold_files": [f.path for f in parse_patch(gold_patch)],
         "model_patch": patch, "edit_status": dict(edit_status),
         "token_estimate_ratio": [round(a / b, 3) for a, b in est],
+        "calls_near_context_limit": sum(
+            1 for e in events if e.get("type") == "model"
+            and (e.get("prompt_tokens") or 0) >= 0.95 * NUM_CTX),
         "trajectory_summary": summarize(events).as_dict(), "seconds": round(seconds, 1),
     }
     rec["outcome"] = classify(rec)
@@ -196,6 +200,7 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
         "edit_failure_rate": rate(edit_calls - edits.get("ok", 0), edit_calls),
         "token_estimator_ratio_median": statistics.median(ratios) if ratios else None,
         "compactions": sum(r["agent"]["compactions"] for r in records),
+        "calls_near_context_limit": sum(r.get("calls_near_context_limit", 0) for r in records),
         "denied_calls": sum(len(r["agent"]["denied"]) for r in records),
         "by_repo": {k: {"resolved": v[0], "tasks": v[1]} for k, v in sorted(by_repo.items())},
     }
