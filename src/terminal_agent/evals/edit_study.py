@@ -46,7 +46,9 @@ def _common_indent(text: str) -> str:
 
 
 def _dedent_pair(old: str, new: str) -> tuple[str, str]:
-    ind = _common_indent(old)
+    # common to old AND new: a new line shallower than every old line (a function added
+    # after the one being edited) cannot be dedented by the old snippet's indent
+    ind = _common_indent(old + "\n" + new)
     if not ind:
         return old, new
     strip = lambda s: _map_lines(s, lambda ln: ln[len(ind):] if ln.startswith(ind) else ln)  # noqa: E731

@@ -133,22 +133,22 @@
       },
       "snippet_dedented": {
         "hunks_affected": {
-          "k": 82,
+          "k": 80,
           "n": 139,
           "clusters": 56,
-          "rate": 0.5899,
+          "rate": 0.5755,
           "ci95_cluster": [
-            0.5093,
-            0.6715
+            0.497,
+            0.6571
           ]
         },
-        "exact_not_found": 82,
+        "exact_not_found": 80,
         "exact_ok": 0,
         "fuzzy_correct": 80,
-        "fuzzy_wrong_result": 1,
-        "fuzzy_ambiguous": 1,
+        "fuzzy_wrong_result": 0,
+        "fuzzy_ambiguous": 0,
         "fuzzy_not_found": 0,
-        "n": 82
+        "n": 80
       }
     }
   },
@@ -438,22 +438,22 @@
       },
       "snippet_dedented": {
         "hunks_affected": {
-          "k": 38,
+          "k": 36,
           "n": 75,
           "clusters": 17,
-          "rate": 0.5067,
+          "rate": 0.48,
           "ci95_cluster": [
-            0.4074,
-            0.6094
+            0.3833,
+            0.5806
           ]
         },
-        "exact_not_found": 38,
+        "exact_not_found": 36,
         "exact_ok": 0,
         "fuzzy_correct": 36,
-        "fuzzy_wrong_result": 1,
-        "fuzzy_ambiguous": 1,
+        "fuzzy_wrong_result": 0,
+        "fuzzy_ambiguous": 0,
         "fuzzy_not_found": 0,
-        "n": 38
+        "n": 36
       }
     }
   },
@@ -1466,11 +1466,6 @@
           "exact": "ambiguous",
           "fuzzy": "ambiguous",
           "fuzzy_strategy": "exact"
-        },
-        "snippet_dedented": {
-          "exact": "not_found",
-          "fuzzy": "ambiguous",
-          "fuzzy_strategy": "indent"
         }
       }
     },
@@ -2252,11 +2247,6 @@
           "exact": "ok",
           "fuzzy": "correct",
           "fuzzy_strategy": "exact"
-        },
-        "snippet_dedented": {
-          "exact": "not_found",
-          "fuzzy": "wrong_result",
-          "fuzzy_strategy": "indent"
         }
       }
     },
