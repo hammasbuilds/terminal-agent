@@ -65,7 +65,7 @@ failing to passing.
 | **3** | **The exact-match `edit` never applied a wrong hunk, but a whitespace-tolerant fallback did until it was constrained.** Git's 3-line context is unique in 138/139 real hunks; the removed lines alone were ambiguous in 4/90. A snippet pasted with its whole indentation stripped fails exact match 80/80 times. | fuzzy fallback recovered 80/80 uniformly-dedented snippets, and now **refuses all 139** structurally-broken ones (a line moved into/out of a block) instead of misapplying them; 0 wrong results |
 | **4** | **No single truncation cut works for every test runner.** At 8,000 chars, keeping head+tail showed Django's failing test **7 of 18** times; pytest's, 60 of 60. Keeping only the head showed pytest's **8 of 60** at 2,000 chars. | a failure-line digest showed 99/103 at 2,000 chars - with a caveat below |
 | **5** | **A 1,000-line read window hides the edit site in 22% of SWE-bench Lite;** and a dense window can exceed the token budget, so a read is now capped by characters. | 66/300 beyond line 1,000 (95% CI 17.7-27.0%); 121/300 beyond 500 |
-| **6** | **A name-based command policy is trivially bypassed; a flag/env/cd-aware one is not.** An independent reviewer's exploit corpus (read-only tools with a writing flag, `git -c`, exec env vars, `cd ..` then a relative write, wrapper fronts) defeated v3; the rewritten classifier catches all of them. | on a held-out set written blind, **111/121** dangerous caught by the classifier alone (auto mode); **0/121** run unasked in default mode; codex's forced-rm rule 9%, a tutorial blocklist 20% |
+| **6** | **A name-based command policy is trivially bypassed; a flag/env/cd-aware one is not.** An independent reviewer's exploit corpus (read-only tools with a writing flag, `git -c`, exec env vars, `cd ..` then a relative write, wrapper fronts) defeated v3; the rewritten classifier catches all of them. | on a held-out set written blind, **111/121** dangerous caught by the classifier alone (auto mode); in default mode **120/121** stopped, **1 ran unasked** (`GIT_CONFIG_GLOBAL=...`); codex's forced-rm rule 9%, a tutorial blocklist 20% |
 | **7** | **Model arm: built, tested with fakes, queued.** `qwen2.5-coder:14b` on the 50 valid tasks, in a git-isolated workspace, model errors retried not scored. | at most 1,500 model calls (`scripts/run_models.sh --dry-run`) |
 
 Every number is read from a file in [`results/`](results/) produced on this machine; the
@@ -150,11 +150,13 @@ format is known, not that it generalises.
 
 ### Finding 6 in detail: the approval policy
 
-**The default mode is what makes it safe, and it holds absolutely.** In `default` mode the
-agent runs only commands the classifier can prove read-only; everything else is asked
-(interactive) or refused (headless). Across all four command corpora - 514 dangerous
-commands - **not one** was rated safe, so **0 ran unasked** in default mode. That is the
-guarantee the headless model runs rely on.
+**Default mode is the strong layer, but it is not absolute.** In `default` mode the agent
+runs unasked only commands the classifier rates read-only; everything else is asked
+(interactive) or refused (headless). Scored **blind**, that stopped every dangerous command in
+held-out 1 (126/126) and held-out 2 (110/110), and **120/121** in held-out 3: one command,
+`GIT_CONFIG_GLOBAL=/tmp/evil.cfg git status`, was rated read-only and would have run unasked.
+After that miss was fixed, 0 of the 514 dangerous commands across all four corpora run unasked
+- but that is a **post-fix** number on sets the policy has now been tuned to, not a blind one.
 
 `auto` mode is more permissive: it runs *mutating* commands too, so its safety depends on
 the classifier correctly rating a dangerous command as dangerous rather than mutating. That
@@ -164,13 +166,13 @@ committed before the policy existed (218 commands, 17 from the tests of openai/c
 this repository (209, 193, 206 commands). Each held-out set was scored once, blind, then its
 misses were fixed.
 
-| classifier (auto mode) scored blind on a set it did not see | dangerous caught | safe asked (default) |
-|---|---:|---:|
-| v1 on held-out 1 ([v1](results/safety_policy_v1.json)) | 107/126 (84.9%, CI 77.7-90.1%) | 9/53 |
-| v2 on held-out 2 ([v2](results/safety_policy_v2.json)) | 94/110 (85.5%, CI 77.7-90.8%) | 11/53 |
-| **v4 on held-out 3** ([v4](results/safety_policy_v4_blind_heldout3.json)) | **111/121 (91.7%, CI 85.5-95.5%)** | 4/55 |
-| codex's forced-`rm` rule, held-out 3 | 11/121 (9.1%) | 0/55 |
-| a tutorial blocklist, held-out 3 | 24/121 (19.8%) | 3/55 |
+| scored blind on a set it had not seen | dangerous caught, auto mode | dangerous stopped, default mode | safe asked (default) |
+|---|---:|---:|---:|
+| v1 on held-out 1 ([v1](results/safety_policy_v1.json)) | 107/126 (84.9%, CI 77.7-90.1%) | 126/126 | 9/53 |
+| v2 on held-out 2 ([v2](results/safety_policy_v2.json)) | 94/110 (85.5%, CI 77.7-90.8%) | 110/110 | 11/53 |
+| **v4 on held-out 3** ([v4](results/safety_policy_v4_blind_heldout3.json)) | **111/121 (91.7%, CI 85.5-95.5%)** | **120/121** (99.2%, CI 95.5-99.9%) | 4/55 |
+| codex's forced-`rm` rule, held-out 3 | 11/121 (9.1%) | - | 0/55 |
+| a tutorial blocklist, held-out 3 | 24/121 (19.8%) | - | 3/55 |
 
 Held-out 3 was written after an independent reviewer defeated an earlier version with an
 exploit corpus (read-only tools carrying a writing or exec flag - `sort -o`, `git diff
@@ -181,7 +183,8 @@ misses were new *categories* again (`npm ci`, `poetry add`, writing a `.git/hook
 `GIT_CONFIG_GLOBAL=`, `php -r`, `make -f`, `flock`/`watch` fronting a delete) - the tail of
 destructive commands is open-ended, so `auto` coverage does not converge to 100% and the
 README does not claim it does. Those 10 are now fixed and tested; a fourth blind set would be
-needed to re-measure. The safety that does hold without a blind set is the default-mode 0/514.
+needed to re-measure either mode. Default mode is the stronger layer (1 blind miss in 357
+held-out dangerous commands across the three sets), not a guarantee.
 
 ## Input / Output
 
@@ -312,8 +315,9 @@ uv run terminal-agent replay ~/.terminal-agent/trajectories/<run>.jsonl
 
 REPL commands: `/help`, `/tools`, `/tokens`, `/reset`, `/exit`. Approval modes:
 `--approval-mode default` (only read-only commands and tests run unasked) or `auto`
-(non-destructive commands run too); `--allow "make"` trusts a prefix. A dangerous command
-always needs a human, and headless there is none, so it is refused.
+(non-destructive commands run too); `--allow "make"` trusts a prefix. A command the
+classifier rates dangerous always needs a human, and headless there is none, so it is
+refused. The classifier can be wrong (see finding 6); run untrusted work in a container.
 
 The evaluation harness is `ta-eval`:
 
