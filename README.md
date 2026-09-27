@@ -14,7 +14,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-0-brightgreen" alt="zero dependencies">
-  <img src="https://img.shields.io/badge/tests-227-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-227%20(223%2B4%20docker)-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/model-qwen2.5--coder%3A14b%20(queued)-orange" alt="model">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
@@ -198,14 +198,15 @@ issue (the commit message):
   An isolation arm, and one classification the old rule got wrong
 hidden tests that must flip: tests/test_arms.py::test_order_and_isolation_together_are_one_cause_not_unknown
 before the fix: 0/1 FAIL_TO_PASS pass, 8/8 PASS_TO_PASS pass
-agent: finished in 13 steps, tool calls {'read_file': 4, 'edit': 8, 'finish': 1}
+agent: finished in 17 steps, tool calls {'read_file': 8, 'edit': 8, 'finish': 1}
 hunks: ['ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok']; byte-identical to git apply: True
 after the fix:  1/1 FAIL_TO_PASS pass, 8/8 PASS_TO_PASS pass
 verdict: valid
 ```
 
-Seven hunks took eight edits: one hunk's snippet occurred twice, the tool said so, and the
-script widened it - what a model is expected to do.
+Seven hunks took eight edits (one snippet occurred twice, the tool said so, and the script
+widened it) and eight reads, because the read window is now capped by characters and this
+file paged in two windows - exactly the pattern findings 3 and 5 measure.
 
 **2 · The approval policy on commands from a held-out set it was never tuned on.** Labels
 were written by someone else.
@@ -283,18 +284,21 @@ uv run terminal-agent -p "mean([1, 2, 3]) returns 3.0; it should be 2" -w ../cal
 The script's fourth turn tries `git push --force`; headless, nobody can approve it, so it is
 refused and the run carries on.
 
-**6 · The replay viewer** (`terminal-agent replay <trajectory.jsonl>`, sample 1's log):
+**6 · The replay viewer** (`terminal-agent replay <trajectory.jsonl>`, sample 1's log). The
+first read returns a capped window with a paging header, so the agent reads the tail next:
 
 ```
 [step 1] model
   -> read_file({"path": "src/flake_detective/classify.py", "offset": 1})
-  <- ok: """Decide what a test depends on, from which arm made it flip.
-
-       The rule is attribution by *exclusion*, and th ... [6524 more chars]
+  <- ok: [src/flake_detective/classify.py: lines 1-140 of 162. Call read_file with offset=141 to read more.]
+       """Decide  ... [5962 more chars]
 
 [step 2] model
-  -> edit({"path": "src/flake_detective/classify.py", "old_string": "    \"timezone\": Cause.TIMEZONE,\n    \"locale\":  ... [222 more chars])
-  <- ok: edited src/flake_detective/classify.py at line 51
+  -> read_file({"path": "src/flake_detective/classify.py", "offset": 141})
+  <- ok: [src/flake_detective/classify.py: lines 141-162 of 162]
+                   out.flakes.append(
+                       Flake(
+        ... [607 more chars]
 ```
 
 ## Quick start
@@ -303,7 +307,7 @@ refused and the run carries on.
 git clone https://github.com/hammasbuilds/terminal-agent
 cd terminal-agent
 uv sync
-uv run pytest -q                 # 223 tests; no model, no Docker, no network
+uv run pytest -q                 # 223 tests (badge counts +4 Docker); no model/Docker/network
 uv run python demo.py            # the samples above
 
 # the agent itself (needs Ollama)
@@ -439,12 +443,6 @@ code.
   misparsed `git status -z` renames. Both fixed.
 
 ### Found by the gold replay, before any model call
-
-- **`git apply` silently did nothing.** The local suite's reference, baseline and gold trees
-  live under `runs/`, inside this repository. Run from a subdirectory of a work tree, `git
-  apply` resolves paths against *that* repository's root, skips every file outside the current
-  directory, and exits 0. The first local task came back "fix does not pass its tests".
-  `GIT_CEILING_DIRECTORIES` now stops the discovery.
 
 - **`git apply` silently did nothing.** The local suite's reference, baseline and gold trees
   live under `runs/`, inside this repository. Run from a subdirectory of a work tree, `git
