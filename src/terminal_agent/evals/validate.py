@@ -241,6 +241,10 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         "hunks_first_try_ambiguous": sum(1 for h in hunks if h["first_status"] == "ambiguous"),
         "hunks_final_ok": sum(1 for h in hunks if h["final_status"] == "ok"),
         "byte_identical_tasks": sum(1 for r in ran if not r.get("byte_mismatch")),
+        "empty_patch_resolves": sorted(r["instance_id"] for r in ran
+                                       if r["baseline"].get("resolved")),
+        "flaky": sorted(r["instance_id"] for r in ran
+                        if r["baseline"].get("flaky") or r["gold"].get("flaky")),
         "invalid": {r["instance_id"]: r["reasons"] for r in ran if r["verdict"] != "valid"},
     }
 
