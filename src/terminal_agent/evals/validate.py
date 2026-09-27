@@ -45,6 +45,12 @@ def image_present(image: str) -> bool:
     return docker(["image", "inspect", image], check=False, timeout=60).returncode == 0
 
 
+def pulled_images() -> set[str]:
+    """Every local image as ``repo:tag``, in one docker call."""
+    out = docker(["images", "--format", "{{.Repository}}:{{.Tag}}"], timeout=120).stdout
+    return set(out.decode("utf-8", "replace").split())
+
+
 def _save_log(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with gzip.open(path, "wt", encoding="utf-8", newline="\n") as fh:

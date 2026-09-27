@@ -71,7 +71,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         if args.repos:
             tasks = [t for t in tasks if t.repo in args.repos]
         if args.pulled_only:
-            tasks = [t for t in tasks if validate.image_present(t.image)]
+            pulled = validate.pulled_images()
+            tasks = [t for t in tasks if t.image in pulled]
         jobs: list[Any] = tasks
     else:
         local = load_local_tasks()
