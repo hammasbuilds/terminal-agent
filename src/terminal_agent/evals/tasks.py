@@ -206,7 +206,9 @@ class Container:
         t = self.task
         files = t.test_files
         self.write("/tmp/test.patch", t.test_patch.encode("utf-8"))
-        lines = [specs.PRELUDE, f"cd {WORKDIR}", *specs.pre_test_commands(t.repo, t.version),
+        # Django reports on stderr: without the merge its results land after the end marker
+        lines = ["exec 2>&1", specs.PRELUDE, f"cd {WORKDIR}",
+                 *specs.pre_test_commands(t.repo, t.version),
                  f"git checkout {t.base_commit} -- {' '.join(files)} 2>/dev/null || true",
                  "git apply -v /tmp/test.patch || { echo '>>>>> TEST PATCH FAILED'; exit 97; }",
                  "echo '>>>>> Start Test Output'",
