@@ -149,6 +149,25 @@
         "fuzzy_ambiguous": 0,
         "fuzzy_not_found": 0,
         "n": 80
+      },
+      "one_line_reindented": {
+        "hunks_affected": {
+          "k": 139,
+          "n": 139,
+          "clusters": 56,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "exact_not_found": 139,
+        "exact_ok": 0,
+        "fuzzy_correct": 0,
+        "fuzzy_wrong_result": 0,
+        "fuzzy_ambiguous": 0,
+        "fuzzy_not_found": 139,
+        "n": 139
       }
     }
   },
@@ -301,6 +320,25 @@
         "fuzzy_ambiguous": 0,
         "fuzzy_not_found": 0,
         "n": 44
+      },
+      "one_line_reindented": {
+        "hunks_affected": {
+          "k": 64,
+          "n": 64,
+          "clusters": 39,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "exact_not_found": 64,
+        "exact_ok": 0,
+        "fuzzy_correct": 0,
+        "fuzzy_wrong_result": 0,
+        "fuzzy_ambiguous": 0,
+        "fuzzy_not_found": 64,
+        "n": 64
       }
     }
   },
@@ -454,6 +492,25 @@
         "fuzzy_ambiguous": 0,
         "fuzzy_not_found": 0,
         "n": 36
+      },
+      "one_line_reindented": {
+        "hunks_affected": {
+          "k": 75,
+          "n": 75,
+          "clusters": 17,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "exact_not_found": 75,
+        "exact_ok": 0,
+        "fuzzy_correct": 0,
+        "fuzzy_wrong_result": 0,
+        "fuzzy_ambiguous": 0,
+        "fuzzy_not_found": 75,
+        "n": 75
       }
     }
   },
@@ -470,7 +527,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "blast-radius@52657128db",
@@ -488,6 +551,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -508,6 +576,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -534,6 +607,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -559,6 +637,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -584,6 +667,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -599,7 +687,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "blast-radius@6d30a27e4a",
@@ -623,6 +717,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -638,7 +737,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "blast-radius@6d30a27e4a",
@@ -662,6 +767,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -687,6 +797,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -706,6 +821,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -732,6 +852,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -747,7 +872,13 @@
       "core": "ambiguous",
       "header_offset": 0,
       "k_min": 1,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "blast-radius@832917d975",
@@ -761,7 +892,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "blast-radius@cb57f583c7",
@@ -785,6 +922,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -805,6 +947,11 @@
           "exact": "ok",
           "fuzzy": "correct",
           "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -824,6 +971,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -850,6 +1002,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -870,6 +1027,11 @@
           "exact": "ok",
           "fuzzy": "correct",
           "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -885,7 +1047,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "blast-radius@f9d1fcb80c",
@@ -903,6 +1071,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -923,6 +1096,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -949,6 +1127,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -974,6 +1157,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -999,6 +1187,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1014,7 +1207,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "django__django-10914",
@@ -1028,7 +1227,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "django__django-11001",
@@ -1052,6 +1257,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1067,7 +1277,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "django__django-11019",
@@ -1086,6 +1302,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1111,6 +1332,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1136,6 +1362,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1161,6 +1392,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1176,7 +1412,13 @@
       "core": "ambiguous",
       "header_offset": 0,
       "k_min": 1,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "django__django-11099",
@@ -1190,7 +1432,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "django__django-11133",
@@ -1214,6 +1462,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1239,6 +1492,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1254,7 +1512,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "django__django-11283",
@@ -1278,6 +1542,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1297,6 +1566,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -1323,6 +1597,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1338,7 +1617,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "flake-detective@17e4f399cb",
@@ -1362,6 +1647,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1381,6 +1671,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -1407,6 +1702,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1422,7 +1722,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "flake-detective@310c6bec61",
@@ -1446,6 +1752,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1465,6 +1776,11 @@
         "first_line_unindented": {
           "exact": "ambiguous",
           "fuzzy": "ambiguous",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -1491,6 +1807,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1516,6 +1837,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1531,7 +1857,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "psf__requests-1963",
@@ -1555,6 +1887,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1570,7 +1907,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "psf__requests-2317",
@@ -1594,6 +1937,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1609,7 +1957,13 @@
       "core": "no_anchor",
       "header_offset": 0,
       "k_min": 1,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "psf__requests-2674",
@@ -1628,6 +1982,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1643,7 +2002,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "pylint-dev__pylint-7114",
@@ -1667,6 +2032,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1692,6 +2062,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1711,6 +2086,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -1737,6 +2117,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1762,6 +2147,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1777,7 +2167,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "pytest-dev__pytest-7373",
@@ -1801,6 +2197,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1826,6 +2227,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1841,7 +2247,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "pytest-dev__pytest-7490",
@@ -1859,6 +2271,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -1880,6 +2297,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1905,6 +2327,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1930,6 +2357,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1955,6 +2387,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -1970,7 +2407,13 @@
       "core": "no_anchor",
       "header_offset": 0,
       "k_min": 1,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "suite-auditor@63472f11f8",
@@ -1994,6 +2437,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2013,6 +2461,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -2039,6 +2492,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2064,6 +2522,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2089,6 +2552,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2114,6 +2582,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2129,7 +2602,13 @@
       "core": "no_anchor",
       "header_offset": 0,
       "k_min": 1,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "suite-auditor@949e4aa2f3",
@@ -2143,7 +2622,13 @@
       "core": "no_anchor",
       "header_offset": 0,
       "k_min": 1,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "suite-auditor@949e4aa2f3",
@@ -2167,6 +2652,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2186,6 +2676,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -2207,6 +2702,11 @@
           "exact": "ok",
           "fuzzy": "correct",
           "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2227,6 +2727,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2246,6 +2751,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -2272,6 +2782,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2297,6 +2812,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2322,6 +2842,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2337,7 +2862,13 @@
       "core": "no_anchor",
       "header_offset": 0,
       "k_min": 1,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "sympy__sympy-11897",
@@ -2361,6 +2892,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2380,6 +2916,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -2406,6 +2947,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2431,6 +2977,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2456,6 +3007,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2481,6 +3037,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2506,6 +3067,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2526,6 +3092,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2546,6 +3117,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2571,6 +3147,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2596,6 +3177,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2621,6 +3207,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2646,6 +3237,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2671,6 +3267,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2696,6 +3297,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2721,6 +3327,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2740,6 +3351,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -2766,6 +3382,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2791,6 +3412,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2816,6 +3442,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2831,7 +3462,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "sympy__sympy-19007",
@@ -2850,6 +3487,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2865,7 +3507,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "sympy__sympy-20154",
@@ -2889,6 +3537,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2914,6 +3567,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2933,6 +3591,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -2959,6 +3622,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -2974,7 +3642,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "sympy__sympy-20322",
@@ -2998,6 +3672,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -3013,7 +3692,13 @@
       "core": "no_anchor",
       "header_offset": 0,
       "k_min": 1,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "sympy__sympy-20442",
@@ -3037,6 +3722,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -3062,6 +3752,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -3087,6 +3782,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -3112,6 +3812,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -3127,7 +3832,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "urdu-nlp-toolkit@0de4128668",
@@ -3141,7 +3852,13 @@
       "core": "no_anchor",
       "header_offset": 0,
       "k_min": 1,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "urdu-nlp-toolkit@0de4128668",
@@ -3155,7 +3872,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "urdu-nlp-toolkit@0de4128668",
@@ -3179,6 +3902,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -3194,7 +3922,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "urdu-nlp-toolkit@baa2d09ff8",
@@ -3208,7 +3942,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "urdu-nlp-toolkit@d8bc1340d0",
@@ -3226,6 +3966,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -3246,6 +3991,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -3272,6 +4022,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -3287,7 +4042,13 @@
       "core": "ok",
       "header_offset": 0,
       "k_min": 0,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "urdu-nlp-toolkit@d8bc1340d0",
@@ -3306,6 +4067,11 @@
           "exact": "ok",
           "fuzzy": "correct",
           "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -3321,7 +4087,13 @@
       "core": "no_anchor",
       "header_offset": 0,
       "k_min": 1,
-      "perturbations": {}
+      "perturbations": {
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
+        }
+      }
     },
     {
       "instance_id": "urdu-nlp-toolkit@d8bc1340d0",
@@ -3340,6 +4112,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     },
@@ -3359,6 +4136,11 @@
         "first_line_unindented": {
           "exact": "ok",
           "fuzzy": "correct",
+          "fuzzy_strategy": "exact"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
           "fuzzy_strategy": "exact"
         }
       }
@@ -3385,6 +4167,11 @@
           "exact": "not_found",
           "fuzzy": "correct",
           "fuzzy_strategy": "indent"
+        },
+        "one_line_reindented": {
+          "exact": "not_found",
+          "fuzzy": "not_found",
+          "fuzzy_strategy": "exact"
         }
       }
     }
