@@ -134,5 +134,6 @@ def test_client_ignores_http_proxy_for_the_local_server(stub, monkeypatch):
         monkeypatch.setenv(var, "http://127.0.0.1:9")
     monkeypatch.delenv("NO_PROXY", raising=False)
     monkeypatch.delenv("no_proxy", raising=False)
-    turn = OllamaClient(model="m", host=stub, timeout=5).chat([{"role": "user", "content": "x"}], [])
+    client = OllamaClient(model="m", host=stub, timeout=5)
+    turn = client.chat([{"role": "user", "content": "x"}], [])
     assert turn.tool_calls[0].name == "read_file"
