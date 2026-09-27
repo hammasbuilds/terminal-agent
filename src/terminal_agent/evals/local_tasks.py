@@ -127,8 +127,10 @@ def git_apply(workspace: Path, patch: str) -> tuple[bool, str]:
 
 def local_test_command() -> str:
     """The run_tests command an agent gets on a local task (runs in the workspace)."""
+    # PYTHONPATH comes from test_env(), which the sandbox runs with; spelling it here as
+    # "src:." would be wrong on Windows, where the separator is ";"
     py = Path(sys.executable).as_posix()
-    return f'PYTHONPATH="src:." "{py}" ' + " ".join(TEST_ARGS[:-1]) + " --tb=short"
+    return f'"{py}" -m pytest -rA -p no:cacheprovider --tb=short'
 
 
 # -- mining --------------------------------------------------------------------------------

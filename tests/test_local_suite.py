@@ -64,6 +64,7 @@ def _fix_script() -> ScriptedClient:
         ModelTurn("", [ToolCall("edit", {"path": "src/calc.py",
                                          "old_string": "(len(xs) - 1)",
                                          "new_string": "len(xs)"})]),
+        ModelTurn("", [ToolCall("run_tests", {"target": "tests/test_calc.py"})]),
         ModelTurn("", [ToolCall("finish", {"summary": "fixed mean"})]),
     ])
 
@@ -71,7 +72,8 @@ def _fix_script() -> ScriptedClient:
 def test_model_run_grades_and_classifies(mined, tmp_path: Path):
     task = _task(mined)
     good = model_run.run_local_task(task, _fix_script(), tmp_path / "m", 10, 12000)
-    assert good["outcome"] == "resolved" and good["agent"]["steps"] == 3
+    assert good["outcome"] == "resolved" and good["agent"]["steps"] == 4
+    assert good["agent"]["tool_errors"] == {}  # run_tests found and ran the tests
     assert good["edit_status"] == {"ok": 1}
     wrong_place = ScriptedClient([
         ModelTurn("", [ToolCall("write_file", {"path": "src/other.py", "content": "x = 1\n"})]),
