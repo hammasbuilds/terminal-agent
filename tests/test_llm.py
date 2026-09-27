@@ -112,3 +112,17 @@ def test_non_json_ollama_body_becomes_a_model_error(stub, monkeypatch):
     monkeypatch.setattr(llm.urllib.request, "urlopen", lambda *a, **k: R())
     with pytest.raises(ModelError, match="non-JSON"):
         OllamaClient(model="m", host=stub).chat([], [])
+
+
+def test_non_dict_tool_arguments_do_not_crash_the_tool_layer():
+    # a JSON string that decodes to a list/scalar is not valid tool arguments (reviewer probe)
+    from pathlib import Path
+
+    from terminal_agent.sandbox import LocalSandbox
+    from terminal_agent.tools import Toolbox
+
+    t = turn_from_response({"message": {"tool_calls": [
+        {"function": {"name": "read_file", "arguments": "[1, 2]"}}]}})
+    assert isinstance(t.tool_calls[0].arguments, dict)
+    res = Toolbox(Path("."), LocalSandbox(Path("."))).execute(t.tool_calls[0])
+    assert not res.ok and res.meta["error"] == "bad_arguments"

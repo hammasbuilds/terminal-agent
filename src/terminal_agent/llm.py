@@ -153,7 +153,9 @@ def turn_from_response(data: dict[str, Any]) -> ModelTurn:
                 args = json.loads(args)
             except json.JSONDecodeError:
                 args = {"__unparsed__": args}
-        calls.append(ToolCall(name=str(fn.get("name", "")), arguments=args or {}, id=f"n{i}"))
+        if not isinstance(args, dict):  # a JSON list/scalar is not valid tool arguments
+            args = {"__unparsed__": json.dumps(args)}
+        calls.append(ToolCall(name=str(fn.get("name", "")), arguments=args, id=f"n{i}"))
     parsed = False
     if not calls and content:
         calls = parse_text_tool_calls(content)
