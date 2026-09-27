@@ -7,6 +7,7 @@ import gzip
 import json
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -65,7 +66,6 @@ def cmd_validate(args: argparse.Namespace) -> int:
     out_dir = RESULTS / "validation" / args.suite
     log_dir = out_dir / "logs"
     out_dir.mkdir(parents=True, exist_ok=True)
-    preimages = edit_study.load_preimages(PREIMAGES)
     if args.suite == "swebench":
         tasks = select(load_tasks(), args.ids)
         if args.repos:
@@ -90,7 +90,9 @@ def cmd_validate(args: argparse.Namespace) -> int:
             rec = validate.validate_local_task(task, RUNS / "validate-local", log_dir,
                                                args.repeat)
         pre = rec.pop("preimages", None)
-        if pre:
+        if pre and args.suite == "swebench":
+            # re-read right before writing: another validation process may have added entries
+            preimages = edit_study.load_preimages(PREIMAGES)
             preimages[task.instance_id] = pre
             edit_study.save_preimages(PREIMAGES, preimages)
         if rec.get("verdict") != "image_missing":
@@ -111,8 +113,21 @@ def _all_tasks() -> dict[str, Any]:
     return tasks
 
 
+def local_preimages() -> dict[str, dict[str, str]]:
+    """Pre-image files of the local tasks, read from the trees they carry."""
+    out: dict[str, dict[str, str]] = {}
+    with tempfile.TemporaryDirectory(prefix="ta-pre-") as tmp:
+        for task in load_local_tasks():
+            ws = Path(tmp) / "ws"
+            task.materialize(ws)
+            out[task.instance_id] = {
+                f.path: (ws / f.path).read_bytes().decode("utf-8", "surrogateescape")
+                for f in parse_patch(task.patch) if (ws / f.path).is_file()}
+    return out
+
+
 def cmd_edit_study(args: argparse.Namespace) -> int:
-    preimages = edit_study.load_preimages(PREIMAGES)
+    preimages = {**edit_study.load_preimages(PREIMAGES), **local_preimages()}
     tasks = _all_tasks()
     rows = []
     for iid, files in sorted(preimages.items()):

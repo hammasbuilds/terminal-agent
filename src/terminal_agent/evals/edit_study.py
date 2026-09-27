@@ -220,9 +220,11 @@ def load_preimages(path: Path) -> dict[str, dict[str, str]]:
 
 def save_preimages(path: Path, data: dict[str, dict[str, str]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with gzip.open(path, "wt", encoding="utf-8", newline="") as fh:
+    tmp = path.with_suffix(".tmp")
+    with gzip.open(tmp, "wt", encoding="utf-8", newline="") as fh:
         for iid in sorted(data):
             for p in sorted(data[iid]):
                 # ensure_ascii keeps surrogate-escaped (non-UTF-8) bytes representable
                 fh.write(json.dumps({"instance_id": iid, "path": p,
                                      "content": data[iid][p]}) + "\n")
+    tmp.replace(path)
