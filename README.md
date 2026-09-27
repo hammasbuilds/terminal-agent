@@ -385,7 +385,8 @@ written while chasing them:
   directory, and exits 0. The first local task came back "fix does not pass its tests".
   `GIT_CEILING_DIRECTORIES` now stops the discovery.
 - **Every SWE-bench image failed the "HEAD is base_commit" check.** The official images add
-  a commit named `SWE-bench` on top of the base that changes only file modes. The check now
+  a commit named `SWE-bench` on top of the base that changes only file modes (checked in
+  requests, sympy, django and pytest images: 531 to 6,056 files, 0 lines changed). The check now
   compares `(path, blob)` trees.
 - **An offline grading container turned timeouts into failures.** `requests`'s connect-timeout
   tests expect a routable network that never answers; with `--network none` they fail fast
