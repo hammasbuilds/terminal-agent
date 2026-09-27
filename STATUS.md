@@ -1,9 +1,26 @@
 # STATUS
 
-**READY-FOR-MODEL-RUN** - self-score **91/100** (model-arm cap: 5). An independent review of
-the previous submission scored it 76/100 and found real defects, chiefly in the approval
-policy; those are fixed and each carries a regression test. Everything that does not need a
-model is done and measured; the model arm is built, tested with scripted clients and queued.
+**READY-FOR-MODEL-RUN** - self-score **91/100** (the two independent reviews scored 76; the gap is mostly points I count optimistically on 'real data' and 'finding quality' that the model run would settle). These reviews drove three rounds of fixes; round 3's items - chiefly an over-stated honesty
+claim - are fixed and each carries a regression test. Everything that does not need a model is
+done and measured; the model arm is built, tested with scripted clients and queued.
+
+## Round 3 review - what changed
+
+| # | Round-3 finding | Fix | Test / evidence |
+|---|---|---|---|
+| 1 | README claimed **0/121** dangerous run unasked in default mode on the blind third set; the results file says **120/121** (1 unasked: `GIT_CONFIG_GLOBAL=...`). "0/514, holds absolutely" was post-tuning. | README now reports the blind default column (126/126, 110/110, **120/121**), labels 0/514 as post-fix on tuned sets, and drops "absolutely" and the "always refused" phrasing. | `results/safety_policy_v4_blind_heldout3.json` (`policy.dangerous_caught` 120/121) |
+| 2 | every ModelError dropped from the solve-rate denominator, flattering it | a persistent model_error (after retries) counts as **unsolved** in the headline rate; `solve_rate_completed_only` reported beside it | `test_persistent_model_error_counts_as_unsolved_and_both_rates_reported` |
+| 3 | `urlopen` honoured HTTP_PROXY for 127.0.0.1 (tests fail with a proxy set; users behind proxies can't reach local Ollama) | client uses an opener with an empty `ProxyHandler` | `test_client_ignores_http_proxy_for_the_local_server` |
+| 4 | README sample 1 stale (13 steps/4 reads) and sample 6 lacked the read-cap header | re-pasted real `demo.py` output (17 steps/8 reads; paging header) | `demo.py` output |
+| 5 | duplicate "git apply silently did nothing" bullet; badge 227 vs Quick start 223 | duplicate removed; badge shows `227 (223+4 docker)` | - |
+| 6 | dead `if name == "busybox": pass`; 948-line policy class | dead branch removed; rule tables moved to `policy_rules.py` (grouped by domain), classifier logic in `policy.py`; a 843-command snapshot of (risk, reason, default+auto decision) is **byte-identical** before and after | snapshot verified; 224 tests pass |
+
+A fresh **fourth** blind set was attempted (a new agent with no repo access, same procedure)
+but the corpus - which by construction contains working attack payloads (reverse shells,
+exfiltration) - tripped a content filter and was not written. The blind numbers reported are
+therefore held-out sets 1-3, which are already blind and now stated accurately.
+
+## Round 1-2 review - what changed
 
 ## What the review found and what changed
 
@@ -22,27 +39,27 @@ model is done and measured; the model arm is built, tested with scripted clients
 | 11 | stale `read_window.json` preimage count | regenerated (now 39) | n/a (data) |
 | 12 | `git status -z` renames misparsed | consume the rename's second field | `test_git_status_z_rename_is_parsed` (docker) |
 | 13 | pushed files forced to 0o644 (broke executables) | preserve the container's exec bit | covered by the docker sync test |
-| 14 | unused param/field, badge count, dangling REPL message | removed; badge 224; assistant note on model error | `test_model_error_leaves_a_well_formed_conversation` |
+| 14 | unused param/field, badge count, dangling REPL message | removed; badge 227; assistant note on model error | `test_model_error_leaves_a_well_formed_conversation` |
 
 The policy was rewritten around two rules: a command's name is not a promise (flags are
 inspected), and a write target must resolve statically to inside the workspace. A **third**
 held-out command set (206 commands, written by a fresh agent with no repo access) was scored
-once, blind: the classifier caught **111/121** dangerous commands in `auto` mode and rated
-**0/121** as safe, so 0 ran unasked in `default` mode. Its 10 misses were new categories,
-since fixed and tested.
+once, blind: the classifier caught **111/121** dangerous commands in `auto` mode, and in
+`default` mode stopped **120/121** (the one miss, `GIT_CONFIG_GLOBAL=... git status`, would
+have run unasked). Its misses were new categories, since fixed and tested.
 
 ## Self-score
 
 | Points | Criterion | Score | Reason |
 |---:|---|---:|---|
-| 15 | Works from a clean clone | 15 | Fresh clone: `uv sync --offline`, `uv run pytest -q` (222 pass, HF_HOME at an empty dir), `uv run python demo.py` all succeed; no network/model/Docker for tests or demo. |
+| 15 | Works from a clean clone | 15 | Fresh clone: `uv sync --offline`, `uv run pytest -q` (223 pass, HF_HOME at an empty dir), `uv run python demo.py` all succeed; no network/model/Docker for tests or demo. |
 | 20 | Real data, real result | 17 | Headline numbers from real SWE-bench Lite instances in the official images and real bug-fix commits, produced here. Capped: 39 of 300 Lite tasks (download-bound); solve rate needs the model arm. |
 | 15 | Finding quality | 13 | Controls and baselines (three blind command sets, two policy baselines, four truncation modes, perturbation vs gold), Wilson + task-clustered bootstrap CIs, every surprising number chased (three were bugs in my own study). Minus: truncation digest not held-out; local suite small/easy. |
-| 15 | Correctness | 14 | 227 tests on behaviour and failure modes, incl. the reviewer's exploit corpus as fixtures; each confirmed regression test fails against the old code. Minus: `auto`-mode classifier coverage is ~91% on unseen commands, not 100% (default mode is the guarantee). |
+| 15 | Correctness | 14 | 227 tests on behaviour and failure modes, incl. both reviewers' exploit corpora as fixtures; each confirmed regression test fails against the old code. Minus: `auto`-mode coverage ~91% and even `default` mode missed 1/121 on a blind set - the classifier is a filter, not a sandbox. |
 | 10 | Usability | 9 | `--help` on both CLIs; actionable errors (Ollama unreachable, model not pulled, bad script, unknown task id, bad timeout); `--script`, `examples/`. Minus: SWE-bench runs need multi-GB images the user pulls. |
 | 10 | README | 10 | House format, findings table, six real I/O samples, NOT-do section, real problems hit (now with the review's findings and honest reframing of findings 1 and 3/6). |
-| 10 | Code quality | 8 | ruff clean, typed, zero runtime deps, small modules. Minus: `policy.py` is ~760 lines (one classifier, many command families) - cohesive but large. |
-| 5 | Honesty | 5 | Every README number traces to `results/`; default-mode 0/514 stated separately from auto-mode held-out coverage; the fuzzy "80/80" is split into uniform (works) vs structural (refused); caveats on the digest and the held-out sets stated. |
+| 10 | Code quality | 9 | ruff clean, typed, zero runtime deps; rule tables split into `policy_rules.py` (verified behaviour-identical). Minus: the recursive classifier is still one class - a method-level split was judged higher-risk than its worth under 'no behaviour change'. |
+| 5 | Honesty | 4 | Every README number traces to `results/`. The round-2 "0/121 / 0/514 holds absolutely" claim was wrong (blind default was 120/121); now corrected and the post-fix vs blind distinction is explicit. Model-error rate reported both ways; fuzzy "80/80" split uniform vs structural; digest and held-out caveats stated. Minus one: that the over-claim shipped at all. |
 
 ## Queued for the model run
 
