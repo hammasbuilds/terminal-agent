@@ -16,7 +16,8 @@ from terminal_agent.sandbox import LocalSandbox, Sandbox
 from terminal_agent.tools import TOOL_SPECS, Toolbox, ToolConfig, ToolResult
 from terminal_agent.trajectory import TrajectoryLogger
 
-SYSTEM_PROMPT = """You are a coding agent working in a software repository at {workspace}.
+SYSTEM_PROMPT = """You are a coding agent working in a software repository (your workspace).
+File tool paths are relative to the repository root; shell commands run in that root.
 Use the tools to inspect and change files; do not guess at file contents.
 
 Rules:
@@ -80,7 +81,7 @@ class Agent:
         self.config = config or AgentConfig()
         self.messages: list[dict[str, Any]] = [{
             "role": "system",
-            "content": self.config.system_prompt.format(workspace=toolbox.workspace),
+            "content": self.config.system_prompt,
         }]
         self._step = 0
 
