@@ -119,9 +119,10 @@ INFRA = {"kubectl", "terraform", "aws", "gcloud", "az", "helm", "pulumi", "doctl
 INFRA_DESTRUCTIVE = {"delete", "destroy", "rb", "rm", "uninstall", "terminate", "drain",
                      "apply", "scale", "remove", "purge", "down", "replace", "patch"}
 PACKAGE_MANAGERS = {"pip", "pip3", "apt", "apt-get", "yum", "dnf", "brew", "conda", "choco",
-                    "winget", "npm", "pnpm", "yarn", "gem", "cargo", "mamba", "pipx", "go"}
+                    "winget", "npm", "pnpm", "yarn", "gem", "cargo", "mamba", "pipx", "go",
+                    "poetry", "pdm", "hatch", "rye", "nix-env"}
 INSTALL_VERBS = {"install", "uninstall", "remove", "add", "i", "update", "upgrade", "reinstall",
-                 "get", "exec", "dlx"}
+                 "get", "exec", "dlx", "ci", "sync", "lock", "rm"}
 SHELLS = {"bash", "sh", "zsh", "dash", "ksh", "fish", "cmd", "pwsh", "powershell"}
 INTERPRETERS = {"python", "python3", "python2", "perl", "ruby", "node", "php", "deno", "bun"}
 # wrapper -> options that take a value (so the wrapped command starts after them)
@@ -130,7 +131,10 @@ WRAPPERS = {
     "nice": {"-n", "--adjustment"}, "ionice": {"-c", "--class", "-n", "--classdata", "-p"},
     "time": {"-o", "--output", "-f", "--format"}, "stdbuf": {"-i", "-o", "-e"},
     "chrt": {"-p"}, "setsid": set(), "chronic": set(), "setarch": set(), "busybox": set(),
+    "flock": {"-w", "--timeout", "-E", "--conflict-exit-code"},
 }
+EDITORS = {"vim", "vi", "nvim", "view", "emacs", "emacsclient", "ex", "nano", "pico", "code",
+           "gedit", "kak", "hx", "micro"}
 WRITE_WRAPPER_OPT = {"-o", "--output"}  # time -o FILE writes; check the value
 KEYWORDS = {"if", "then", "else", "elif", "fi", "do", "done", "while", "until", "case", "esac",
             "{", "}", "!", "[[", "]]", "function", "select"}
@@ -147,7 +151,9 @@ CODE_RED_FLAGS = ("rmtree", "remove(", "unlink", "rmsync", "rmdir", "system(", "
 ENV_EXEC = {"PAGER", "GIT_PAGER", "MANPAGER", "GIT_EXTERNAL_DIFF", "GIT_DIFF_OPTS", "LESSOPEN",
             "LESSCLOSE", "GIT_EDITOR", "EDITOR", "VISUAL", "GIT_SEQUENCE_EDITOR", "GIT_SSH",
             "GIT_SSH_COMMAND", "GIT_ASKPASS", "SSH_ASKPASS", "BROWSER", "GIT_PROXY_COMMAND",
-            "SHELL", "BASH_ENV", "ENV", "PROMPT_COMMAND", "PS1", "FIGNORE", "GIT_CONFIG"}
+            "SHELL", "BASH_ENV", "ENV", "PROMPT_COMMAND", "PS1", "FIGNORE", "GIT_CONFIG",
+            "GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM", "GIT_TEMPLATE_DIR", "GIT_ATTR_SOURCE",
+            "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_INDEX_FILE"}
 ENV_HIJACK = re.compile(r"^(PATH|LD_PRELOAD|LD_LIBRARY_PATH|PYTHONPATH|PYTHONSTARTUP|"
                         r"BASH_ENV|ENV|PROMPT_COMMAND|NODE_OPTIONS|DYLD_INSERT_LIBRARIES)=")
 OPERATORS = {";", "&&", "||", "|", "&", "(", ")", ";;", "|&", "\n"}
@@ -166,6 +172,11 @@ def _dangerous(reason: str) -> Rating:
 
 def _mutating(reason: str) -> Rating:
     return Rating("mutating", reason)
+
+
+def _writes_into_git(target: str) -> bool:
+    parts = target.replace("\\", "/").split("/")
+    return ".git" in parts
 
 
 def _opt(token: str) -> str:
@@ -339,6 +350,8 @@ class CommandClassifier:
             return _dangerous("writes to a raw disk")
         if self.outside(target, cwd):
             return _dangerous(f"writes outside the workspace ({target})")
+        if _writes_into_git(target):
+            return _dangerous("writes inside .git (a git hook or config runs on the next command)")
         return _mutating(f"writes {target}")
 
     # -- one simple command --------------------------------------------------------
@@ -380,9 +393,14 @@ class CommandClassifier:
                 if "=" in a:
                     rating = rating.worse(self._rate_assignment(a))
             return rating
+        if name == "flock":
+            return self._rate_flock(args, piped, depth, cwd)
         if name in WRAPPERS:
             return self._rate_wrapper(name, args, piped, depth, cwd)
-        if name in ("timeout", "watch", "xargs"):
+        if name == "watch":
+            rest = _skip_options(args, {"-n", "--interval", "-d", "--differences"})
+            return self.rate(" ".join(rest), depth + 1) if rest else SAFE  # watch runs a string
+        if name in ("timeout", "xargs"):
             rest = _skip_options(args, {"-n", "-s", "-k", "-a", "-I", "-d", "-L", "-P",
                                         "--signal", "--interval"})
             if name == "timeout" and rest:
@@ -392,6 +410,23 @@ class CommandClassifier:
             if name == "xargs" and _command_name(rest[0]) in DELETERS:
                 return _dangerous("xargs deletes every listed path")
             return self._rate_simple(rest, piped, depth + 1, cwd)
+        if name in EDITORS:
+            if any(a in ("-c", "--command", "+", "-e", "--eval", "--batch") or a.startswith("+")
+                   or (a.startswith("-c") and len(a) > 2) for a in args):
+                return _dangerous(f"{name} runs editor commands that can execute shell code")
+            return _mutating(f"opens {name}")
+        if name == "make":
+            dry = any(a in ("-n", "--dry-run", "--just-print", "--recon", "-q", "--question")
+                      for a in args)
+            for f in ("-f", "--file", "--makefile"):
+                if f in args:
+                    val = args[args.index(f) + 1] if args.index(f) + 1 < len(args) else ""
+                    if self.outside(val, cwd) and not dry:
+                        return _dangerous(f"make -f runs a makefile outside the workspace ({val})")
+            targets = [a for a in args if not a.startswith("-") and "=" not in a]
+            if not dry and any(t in ("install", "uninstall") for t in targets):
+                return _dangerous("make install writes outside the workspace")
+            return SAFE if dry else _mutating("runs make")
         if name == "trap":
             action = next((a for a in args if a != "--"), "")
             return self.rate(action, depth + 1) if action and not action.startswith("-") else SAFE
@@ -496,6 +531,22 @@ class CommandClassifier:
             break
         rest = args[i:]
         return rating.worse(self._rate_simple(rest, piped, depth + 1, cwd)) if rest else rating
+
+    def _rate_flock(self, args: list[str], piped: bool, depth: int, cwd: str) -> Rating:
+        """flock [opts] LOCKFILE command...  or  flock [opts] -c 'command string'."""
+        i = 0
+        while i < len(args) and args[i].startswith("-"):
+            opt = args[i]
+            if _opt(opt) == "-c":  # flock -c 'string'
+                return self.rate(args[i + 1], depth + 1) if i + 1 < len(args) else SAFE
+            if _opt(opt) in WRAPPERS["flock"] and "=" not in opt and len(opt) <= 2:
+                i += 2
+            else:
+                i += 1
+        rest = args[i:]
+        if not rest:
+            return SAFE
+        return self._rate_simple(rest[1:], piped, depth + 1, cwd) if len(rest) > 1 else SAFE
 
     def _rate_wrapper(self, name: str, args: list[str], piped: bool, depth: int,
                       cwd: str) -> Rating:
@@ -795,7 +846,7 @@ class CommandClassifier:
             if mod == "pip":
                 return self._rate_pkg("pip", args[2:])
             return _mutating(f"runs the module {mod}")
-        for flag in ("-c", "-e", "-E", "--eval", "-p"):
+        for flag in ("-c", "-e", "-E", "--eval", "-p", "-r", "--run"):
             if flag in args:
                 code = args[args.index(flag) + 1] if args.index(flag) + 1 < len(args) else ""
                 low = code.lower()

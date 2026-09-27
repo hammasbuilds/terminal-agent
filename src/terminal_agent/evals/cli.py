@@ -206,7 +206,8 @@ def cmd_truncation_study(args: argparse.Namespace) -> int:
 
 def cmd_safety(args: argparse.Namespace) -> int:
     out = {}
-    for name in ("risky_commands", "risky_commands_heldout", "risky_commands_heldout2"):
+    for name in ("risky_commands", "risky_commands_heldout", "risky_commands_heldout2",
+                 "risky_commands_heldout3"):
         corpus = safety_study.load_corpus(ROOT / "data" / f"{name}.jsonl")
         out[name] = safety_study.score(corpus)
     _write(RESULTS / "safety.json", out)
