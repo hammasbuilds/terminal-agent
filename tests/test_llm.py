@@ -109,7 +109,7 @@ def test_non_json_ollama_body_becomes_a_model_error(stub, monkeypatch):
         def read(self):
             return b"<html>502 Bad Gateway</html>"
 
-    monkeypatch.setattr(llm.urllib.request, "urlopen", lambda *a, **k: R())
+    monkeypatch.setattr(llm._OPENER, "open", lambda *a, **k: R())
     with pytest.raises(ModelError, match="non-JSON"):
         OllamaClient(model="m", host=stub).chat([], [])
 
@@ -126,3 +126,13 @@ def test_non_dict_tool_arguments_do_not_crash_the_tool_layer():
     assert isinstance(t.tool_calls[0].arguments, dict)
     res = Toolbox(Path("."), LocalSandbox(Path("."))).execute(t.tool_calls[0])
     assert not res.ok and res.meta["error"] == "bad_arguments"
+
+
+def test_client_ignores_http_proxy_for_the_local_server(stub, monkeypatch):
+    # a proxy on the discard port would swallow the request if urllib honoured it
+    for var in ("HTTP_PROXY", "http_proxy", "HTTPS_PROXY", "https_proxy", "ALL_PROXY"):
+        monkeypatch.setenv(var, "http://127.0.0.1:9")
+    monkeypatch.delenv("NO_PROXY", raising=False)
+    monkeypatch.delenv("no_proxy", raising=False)
+    turn = OllamaClient(model="m", host=stub, timeout=5).chat([{"role": "user", "content": "x"}], [])
+    assert turn.tool_calls[0].name == "read_file"

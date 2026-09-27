@@ -40,6 +40,11 @@ class ModelTurn:
     parsed_from_text: bool = False
 
 
+# Ollama is a local server: ignore HTTP_PROXY/HTTPS_PROXY, which would otherwise route
+# 127.0.0.1 through a corporate proxy and fail (or leak the prompt to it).
+_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+
 class ModelError(RuntimeError):
     """The model could not be reached or returned something unusable."""
 
@@ -90,7 +95,7 @@ class OllamaClient:
             headers={"Content-Type": "application/json"},
         )
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            with _OPENER.open(req, timeout=self.timeout) as resp:
                 body = resp.read().decode("utf-8", "replace")
             try:
                 return json.loads(body)
