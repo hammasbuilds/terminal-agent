@@ -9,11 +9,17 @@ both, so the model arm measures the estimator's actual error.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
 CHARS_PER_TOKEN = 3.2
-TruncateMode = Literal["head", "tail", "head_tail"]
+TruncateMode = Literal["head", "tail", "head_tail", "digest"]
+# lines a test runner uses to report a failure, across pytest, unittest/Django and sympy
+FAILURE_LINE = re.compile(
+    r"^(FAILED|ERROR|FAIL:|ERROR:)\s|\.\.\. (FAIL|ERROR)$|^test_\S+ [FE]$|"
+    r"^_{3,} .+ _{3,}$|^E\s{3}|Error: |^\S+Error\b"
+)
 
 
 def estimate_tokens(text: str) -> int:
@@ -37,9 +43,26 @@ def truncate(text: str, max_chars: int, mode: TruncateMode = "head_tail") -> tup
     ``head_tail`` keeps the first 40% and the last 60%: a test runner prints the failing
     test's name at the top of a failure block and its summary at the very end, and
     ``head``-only truncation is exactly what hides the summary.
+
+    ``digest`` first lists the lines that look like failure reports (up to a third of the
+    budget), then fills the rest with ``head_tail``. It exists because no single cut works
+    for every runner: pytest's ``-rA`` summary is at the end, Django reports each test
+    inline as it runs.
     """
     if max_chars <= 0 or len(text) <= max_chars:
         return text, 0
+    if mode == "digest":
+        picked: list[str] = []
+        used = 0
+        for line in text.split("\n"):
+            if FAILURE_LINE.search(line) and used + len(line) + 1 <= max_chars // 3:
+                picked.append(line)
+                used += len(line) + 1
+        rest, _ = truncate(text, max_chars - used, "head_tail")
+        if not picked:
+            return rest, len(text) - (max_chars - used)
+        head = "[failure lines]\n" + "\n".join(picked) + "\n[output]\n"
+        return head + rest, len(text) - (max_chars - used)
     elided = len(text) - max_chars
     if mode == "head":
         return text[:max_chars] + f"\n[... {elided} chars truncated ...]", elided

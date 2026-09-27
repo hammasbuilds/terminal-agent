@@ -176,9 +176,16 @@ def cmd_truncation_study(args: argparse.Namespace) -> int:
                 parser = specs.parse_pytest
             row = truncation_study.study_log(log, parser, task.fail_to_pass)
             if row is not None:
-                per_log[task.instance_id] = row
-    _write(RESULTS / "truncation_study.json",
-           {"summary": truncation_study.aggregate(per_log), "per_log": per_log})
+                per_log[task.instance_id] = {**row, "repo": task.repo}
+    by_repo: dict[str, dict[str, Any]] = {}
+    for iid, row in per_log.items():
+        by_repo.setdefault(row["repo"], {})[iid] = row
+    _write(RESULTS / "truncation_study.json", {
+        "summary": truncation_study.aggregate(per_log),
+        "by_repo": {repo: truncation_study.aggregate(rows)
+                    for repo, rows in sorted(by_repo.items())},
+        "per_log": per_log,
+    })
     return 0
 
 

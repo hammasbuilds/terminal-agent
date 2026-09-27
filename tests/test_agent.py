@@ -118,3 +118,15 @@ def test_text_tool_call_fallback_parser():
     assert parse_text_tool_calls(listed)[0].name == "list_dir"
     assert parse_text_tool_calls("I will read the file now.") == []
     assert parse_text_tool_calls('{"name": 3}') == []
+
+
+def test_digest_truncation_lists_failures_first():
+    lines = [f"test_{i} (app.tests.T) ... ok" for i in range(300)]
+    lines[5] = "test_bad (app.tests.T) ... FAIL"
+    text = "\n".join(lines + ["", "Ran 300 tests", "OK"])
+    cut, elided = truncate(text, 2000, "digest")
+    assert cut.startswith("[failure lines]\ntest_bad (app.tests.T) ... FAIL")
+    assert elided > 0 and len(cut) < 2100
+    assert truncate("short", 2000, "digest") == ("short", 0)
+    plain, _ = truncate("x" * 5000, 1000, "digest")  # nothing looks like a failure
+    assert "[failure lines]" not in plain and "chars truncated" in plain

@@ -1,66 +1,66 @@
 {
   "summary": {
-    "logs": 19,
+    "logs": 51,
     "log_chars": {
-      "median": 3468,
-      "max": 18874,
-      "over_8000": 3
+      "median": 3939,
+      "max": 188875,
+      "over_8000": 11
     },
     "visible_rate": {
       "head@1000": {
-        "k": 5,
-        "n": 52,
-        "clusters": 19,
-        "rate": 0.0962,
+        "k": 15,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.1471,
         "ci95_cluster": [
-          0.0159,
-          0.2439
+          0.069,
+          0.2533
         ]
       },
       "head@2000": {
-        "k": 5,
-        "n": 52,
-        "clusters": 19,
-        "rate": 0.0962,
+        "k": 25,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.2451,
         "ci95_cluster": [
-          0.0159,
-          0.2439
+          0.1311,
+          0.398
         ]
       },
       "head@4000": {
-        "k": 22,
-        "n": 52,
-        "clusters": 19,
-        "rate": 0.4231,
+        "k": 52,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.5098,
         "ci95_cluster": [
-          0.2,
-          0.7667
+          0.3411,
+          0.7333
         ]
       },
       "head@8000": {
-        "k": 49,
-        "n": 52,
-        "clusters": 19,
-        "rate": 0.9423,
+        "k": 99,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.9706,
         "ci95_cluster": [
-          0.8444,
+          0.9252,
           1.0
         ]
       },
       "head@16000": {
-        "k": 51,
-        "n": 52,
-        "clusters": 19,
-        "rate": 0.9808,
+        "k": 101,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.9902,
         "ci95_cluster": [
-          0.9286,
+          0.9634,
           1.0
         ]
       },
       "head@32000": {
-        "k": 52,
-        "n": 52,
-        "clusters": 19,
+        "k": 102,
+        "n": 102,
+        "clusters": 51,
         "rate": 1.0,
         "ci95_cluster": [
           1.0,
@@ -68,119 +68,179 @@
         ]
       },
       "tail@1000": {
-        "k": 50,
-        "n": 52,
-        "clusters": 19,
-        "rate": 0.9615,
+        "k": 63,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.6176,
         "ci95_cluster": [
-          0.8983,
-          1.0
+          0.4312,
+          0.7841
         ]
       },
       "tail@2000": {
-        "k": 52,
-        "n": 52,
-        "clusters": 19,
-        "rate": 1.0,
+        "k": 77,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.7549,
         "ci95_cluster": [
-          1.0,
-          1.0
+          0.5545,
+          0.9167
         ]
       },
       "tail@4000": {
-        "k": 52,
-        "n": 52,
-        "clusters": 19,
-        "rate": 1.0,
+        "k": 83,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.8137,
         "ci95_cluster": [
-          1.0,
-          1.0
+          0.6071,
+          0.963
         ]
       },
       "tail@8000": {
-        "k": 52,
-        "n": 52,
-        "clusters": 19,
-        "rate": 1.0,
+        "k": 86,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.8431,
         "ci95_cluster": [
-          1.0,
-          1.0
+          0.6339,
+          0.9884
         ]
       },
       "tail@16000": {
-        "k": 52,
-        "n": 52,
-        "clusters": 19,
-        "rate": 1.0,
+        "k": 86,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.8431,
         "ci95_cluster": [
-          1.0,
-          1.0
+          0.6339,
+          0.9884
         ]
       },
       "tail@32000": {
-        "k": 52,
-        "n": 52,
-        "clusters": 19,
-        "rate": 1.0,
+        "k": 99,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.9706,
         "ci95_cluster": [
-          1.0,
+          0.9224,
           1.0
         ]
       },
       "head_tail@1000": {
-        "k": 43,
-        "n": 52,
-        "clusters": 19,
-        "rate": 0.8269,
+        "k": 52,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.5098,
         "ci95_cluster": [
-          0.6949,
-          1.0
+          0.3545,
+          0.6638
         ]
       },
       "head_tail@2000": {
-        "k": 52,
-        "n": 52,
-        "clusters": 19,
-        "rate": 1.0,
+        "k": 73,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.7157,
         "ci95_cluster": [
-          1.0,
-          1.0
+          0.5179,
+          0.8817
         ]
       },
       "head_tail@4000": {
-        "k": 52,
-        "n": 52,
-        "clusters": 19,
-        "rate": 1.0,
+        "k": 84,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.8235,
         "ci95_cluster": [
-          1.0,
-          1.0
+          0.6218,
+          0.9706
         ]
       },
       "head_tail@8000": {
-        "k": 52,
-        "n": 52,
-        "clusters": 19,
-        "rate": 1.0,
+        "k": 89,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.8725,
         "ci95_cluster": [
-          1.0,
+          0.686,
           1.0
         ]
       },
       "head_tail@16000": {
-        "k": 52,
-        "n": 52,
-        "clusters": 19,
+        "k": 97,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.951,
+        "ci95_cluster": [
+          0.8673,
+          1.0
+        ]
+      },
+      "head_tail@32000": {
+        "k": 102,
+        "n": 102,
+        "clusters": 51,
         "rate": 1.0,
         "ci95_cluster": [
           1.0,
           1.0
         ]
       },
-      "head_tail@32000": {
-        "k": 52,
-        "n": 52,
-        "clusters": 19,
+      "digest@1000": {
+        "k": 87,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.8529,
+        "ci95_cluster": [
+          0.723,
+          0.987
+        ]
+      },
+      "digest@2000": {
+        "k": 98,
+        "n": 102,
+        "clusters": 51,
+        "rate": 0.9608,
+        "ci95_cluster": [
+          0.8938,
+          1.0
+        ]
+      },
+      "digest@4000": {
+        "k": 102,
+        "n": 102,
+        "clusters": 51,
+        "rate": 1.0,
+        "ci95_cluster": [
+          1.0,
+          1.0
+        ]
+      },
+      "digest@8000": {
+        "k": 102,
+        "n": 102,
+        "clusters": 51,
+        "rate": 1.0,
+        "ci95_cluster": [
+          1.0,
+          1.0
+        ]
+      },
+      "digest@16000": {
+        "k": 102,
+        "n": 102,
+        "clusters": 51,
+        "rate": 1.0,
+        "ci95_cluster": [
+          1.0,
+          1.0
+        ]
+      },
+      "digest@32000": {
+        "k": 102,
+        "n": 102,
+        "clusters": 51,
         "rate": 1.0,
         "ci95_cluster": [
           1.0,
@@ -189,7 +249,2877 @@
       }
     }
   },
+  "by_repo": {
+    "blast-radius": {
+      "logs": 6,
+      "log_chars": {
+        "median": 3939,
+        "max": 4242,
+        "over_8000": 0
+      },
+      "visible_rate": {
+        "head@1000": {
+          "k": 1,
+          "n": 12,
+          "clusters": 6,
+          "rate": 0.0833,
+          "ci95_cluster": [
+            0.0,
+            0.3333
+          ]
+        },
+        "head@2000": {
+          "k": 1,
+          "n": 12,
+          "clusters": 6,
+          "rate": 0.0833,
+          "ci95_cluster": [
+            0.0,
+            0.3333
+          ]
+        },
+        "head@4000": {
+          "k": 9,
+          "n": 12,
+          "clusters": 6,
+          "rate": 0.75,
+          "ci95_cluster": [
+            0.2857,
+            1.0
+          ]
+        },
+        "head@8000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@16000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@32000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@1000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@2000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@4000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@8000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@16000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@32000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@1000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@2000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@4000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@8000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@16000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@32000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@1000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@2000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@4000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@8000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@16000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@32000": {
+          "k": 12,
+          "n": 12,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    "django/django": {
+      "logs": 6,
+      "log_chars": {
+        "median": 9163,
+        "max": 25919,
+        "over_8000": 3
+      },
+      "visible_rate": {
+        "head@1000": {
+          "k": 1,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.0588,
+          "ci95_cluster": [
+            0.0,
+            0.5
+          ]
+        },
+        "head@2000": {
+          "k": 2,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.1176,
+          "ci95_cluster": [
+            0.0,
+            0.6667
+          ]
+        },
+        "head@4000": {
+          "k": 3,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.1765,
+          "ci95_cluster": [
+            0.0588,
+            0.6667
+          ]
+        },
+        "head@8000": {
+          "k": 17,
+          "n": 17,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@16000": {
+          "k": 17,
+          "n": 17,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@32000": {
+          "k": 17,
+          "n": 17,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@1000": {
+          "k": 0,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "tail@2000": {
+          "k": 1,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.0588,
+          "ci95_cluster": [
+            0.0,
+            0.5
+          ]
+        },
+        "tail@4000": {
+          "k": 3,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.1765,
+          "ci95_cluster": [
+            0.02,
+            0.8333
+          ]
+        },
+        "tail@8000": {
+          "k": 5,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.2941,
+          "ci95_cluster": [
+            0.0769,
+            1.0
+          ]
+        },
+        "tail@16000": {
+          "k": 5,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.2941,
+          "ci95_cluster": [
+            0.0769,
+            1.0
+          ]
+        },
+        "tail@32000": {
+          "k": 17,
+          "n": 17,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@1000": {
+          "k": 0,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "head_tail@2000": {
+          "k": 2,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.1176,
+          "ci95_cluster": [
+            0.0,
+            0.6667
+          ]
+        },
+        "head_tail@4000": {
+          "k": 3,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.1765,
+          "ci95_cluster": [
+            0.0256,
+            0.8333
+          ]
+        },
+        "head_tail@8000": {
+          "k": 6,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.3529,
+          "ci95_cluster": [
+            0.1538,
+            1.0
+          ]
+        },
+        "head_tail@16000": {
+          "k": 12,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.7059,
+          "ci95_cluster": [
+            0.6154,
+            1.0
+          ]
+        },
+        "head_tail@32000": {
+          "k": 17,
+          "n": 17,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@1000": {
+          "k": 9,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.5294,
+          "ci95_cluster": [
+            0.3846,
+            1.0
+          ]
+        },
+        "digest@2000": {
+          "k": 13,
+          "n": 17,
+          "clusters": 6,
+          "rate": 0.7647,
+          "ci95_cluster": [
+            0.6923,
+            1.0
+          ]
+        },
+        "digest@4000": {
+          "k": 17,
+          "n": 17,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@8000": {
+          "k": 17,
+          "n": 17,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@16000": {
+          "k": 17,
+          "n": 17,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@32000": {
+          "k": 17,
+          "n": 17,
+          "clusters": 6,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    "flake-detective": {
+      "logs": 3,
+      "log_chars": {
+        "median": 885,
+        "max": 916,
+        "over_8000": 0
+      },
+      "visible_rate": {
+        "head@1000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@2000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@4000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@8000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@16000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@32000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@1000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@2000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@4000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@8000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@16000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@32000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@1000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@2000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@4000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@8000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@16000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@32000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@1000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@2000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@4000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@8000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@16000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@32000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    "psf/requests": {
+      "logs": 3,
+      "log_chars": {
+        "median": 11592,
+        "max": 18874,
+        "over_8000": 3
+      },
+      "visible_rate": {
+        "head@1000": {
+          "k": 0,
+          "n": 3,
+          "clusters": 3,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "head@2000": {
+          "k": 0,
+          "n": 3,
+          "clusters": 3,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "head@4000": {
+          "k": 0,
+          "n": 3,
+          "clusters": 3,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "head@8000": {
+          "k": 0,
+          "n": 3,
+          "clusters": 3,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "head@16000": {
+          "k": 2,
+          "n": 3,
+          "clusters": 3,
+          "rate": 0.6667,
+          "ci95_cluster": [
+            0.0,
+            1.0
+          ]
+        },
+        "head@32000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@1000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@2000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@4000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@8000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@16000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@32000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@1000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@2000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@4000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@8000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@16000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@32000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@1000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@2000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@4000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@8000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@16000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@32000": {
+          "k": 3,
+          "n": 3,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    "pylint-dev/pylint": {
+      "logs": 3,
+      "log_chars": {
+        "median": 1665,
+        "max": 4870,
+        "over_8000": 0
+      },
+      "visible_rate": {
+        "head@1000": {
+          "k": 1,
+          "n": 4,
+          "clusters": 3,
+          "rate": 0.25,
+          "ci95_cluster": [
+            0.0,
+            0.5
+          ]
+        },
+        "head@2000": {
+          "k": 3,
+          "n": 4,
+          "clusters": 3,
+          "rate": 0.75,
+          "ci95_cluster": [
+            0.0,
+            1.0
+          ]
+        },
+        "head@4000": {
+          "k": 3,
+          "n": 4,
+          "clusters": 3,
+          "rate": 0.75,
+          "ci95_cluster": [
+            0.0,
+            1.0
+          ]
+        },
+        "head@8000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@16000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@32000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@1000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@2000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@4000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@8000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@16000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@32000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@1000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@2000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@4000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@8000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@16000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@32000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@1000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@2000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@4000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@8000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@16000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@32000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    "pytest-dev/pytest": {
+      "logs": 3,
+      "log_chars": {
+        "median": 6428,
+        "max": 7857,
+        "over_8000": 0
+      },
+      "visible_rate": {
+        "head@1000": {
+          "k": 0,
+          "n": 4,
+          "clusters": 3,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "head@2000": {
+          "k": 0,
+          "n": 4,
+          "clusters": 3,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "head@4000": {
+          "k": 0,
+          "n": 4,
+          "clusters": 3,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "head@8000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@16000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@32000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@1000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@2000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@4000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@8000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@16000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@32000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@1000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@2000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@4000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@8000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@16000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@32000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@1000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@2000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@4000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@8000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@16000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@32000": {
+          "k": 4,
+          "n": 4,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    "suite-auditor": {
+      "logs": 4,
+      "log_chars": {
+        "median": 3310,
+        "max": 3468,
+        "over_8000": 0
+      },
+      "visible_rate": {
+        "head@1000": {
+          "k": 0,
+          "n": 9,
+          "clusters": 4,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "head@2000": {
+          "k": 0,
+          "n": 9,
+          "clusters": 4,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "head@4000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@8000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@16000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@32000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@1000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@2000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@4000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@8000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@16000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@32000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@1000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@2000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@4000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@8000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@16000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@32000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@1000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@2000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@4000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@8000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@16000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@32000": {
+          "k": 9,
+          "n": 9,
+          "clusters": 4,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    "sympy/sympy": {
+      "logs": 20,
+      "log_chars": {
+        "median": 3390,
+        "max": 188875,
+        "over_8000": 5
+      },
+      "visible_rate": {
+        "head@1000": {
+          "k": 8,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.32,
+          "ci95_cluster": [
+            0.1429,
+            0.5385
+          ]
+        },
+        "head@2000": {
+          "k": 15,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.6,
+          "ci95_cluster": [
+            0.3462,
+            0.8214
+          ]
+        },
+        "head@4000": {
+          "k": 24,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.96,
+          "ci95_cluster": [
+            0.8636,
+            1.0
+          ]
+        },
+        "head@8000": {
+          "k": 25,
+          "n": 25,
+          "clusters": 20,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@16000": {
+          "k": 25,
+          "n": 25,
+          "clusters": 20,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@32000": {
+          "k": 25,
+          "n": 25,
+          "clusters": 20,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@1000": {
+          "k": 5,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.2,
+          "ci95_cluster": [
+            0.0667,
+            0.381
+          ]
+        },
+        "tail@2000": {
+          "k": 16,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.64,
+          "ci95_cluster": [
+            0.4074,
+            0.8387
+          ]
+        },
+        "tail@4000": {
+          "k": 20,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.8,
+          "ci95_cluster": [
+            0.5909,
+            0.9355
+          ]
+        },
+        "tail@8000": {
+          "k": 21,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.84,
+          "ci95_cluster": [
+            0.6522,
+            0.9643
+          ]
+        },
+        "tail@16000": {
+          "k": 21,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.84,
+          "ci95_cluster": [
+            0.6522,
+            0.9643
+          ]
+        },
+        "tail@32000": {
+          "k": 22,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.88,
+          "ci95_cluster": [
+            0.7143,
+            1.0
+          ]
+        },
+        "head_tail@1000": {
+          "k": 1,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.04,
+          "ci95_cluster": [
+            0.0,
+            0.1304
+          ]
+        },
+        "head_tail@2000": {
+          "k": 11,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.44,
+          "ci95_cluster": [
+            0.25,
+            0.6667
+          ]
+        },
+        "head_tail@4000": {
+          "k": 21,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.84,
+          "ci95_cluster": [
+            0.6538,
+            0.9643
+          ]
+        },
+        "head_tail@8000": {
+          "k": 23,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.92,
+          "ci95_cluster": [
+            0.7826,
+            1.0
+          ]
+        },
+        "head_tail@16000": {
+          "k": 25,
+          "n": 25,
+          "clusters": 20,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@32000": {
+          "k": 25,
+          "n": 25,
+          "clusters": 20,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@1000": {
+          "k": 24,
+          "n": 25,
+          "clusters": 20,
+          "rate": 0.96,
+          "ci95_cluster": [
+            0.8571,
+            1.0
+          ]
+        },
+        "digest@2000": {
+          "k": 25,
+          "n": 25,
+          "clusters": 20,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@4000": {
+          "k": 25,
+          "n": 25,
+          "clusters": 20,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@8000": {
+          "k": 25,
+          "n": 25,
+          "clusters": 20,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@16000": {
+          "k": 25,
+          "n": 25,
+          "clusters": 20,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@32000": {
+          "k": 25,
+          "n": 25,
+          "clusters": 20,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    "urdunlp": {
+      "logs": 3,
+      "log_chars": {
+        "median": 6413,
+        "max": 7745,
+        "over_8000": 0
+      },
+      "visible_rate": {
+        "head@1000": {
+          "k": 0,
+          "n": 24,
+          "clusters": 3,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "head@2000": {
+          "k": 0,
+          "n": 24,
+          "clusters": 3,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "head@4000": {
+          "k": 0,
+          "n": 24,
+          "clusters": 3,
+          "rate": 0.0,
+          "ci95_cluster": [
+            0.0,
+            0.0
+          ]
+        },
+        "head@8000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@16000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head@32000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@1000": {
+          "k": 22,
+          "n": 24,
+          "clusters": 3,
+          "rate": 0.9167,
+          "ci95_cluster": [
+            0.7778,
+            1.0
+          ]
+        },
+        "tail@2000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@4000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@8000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@16000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "tail@32000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@1000": {
+          "k": 15,
+          "n": 24,
+          "clusters": 3,
+          "rate": 0.625,
+          "ci95_cluster": [
+            0.4444,
+            0.8571
+          ]
+        },
+        "head_tail@2000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@4000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@8000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@16000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "head_tail@32000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@1000": {
+          "k": 18,
+          "n": 24,
+          "clusters": 3,
+          "rate": 0.75,
+          "ci95_cluster": [
+            0.5556,
+            1.0
+          ]
+        },
+        "digest@2000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@4000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@8000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@16000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        },
+        "digest@32000": {
+          "k": 24,
+          "n": 24,
+          "clusters": 3,
+          "rate": 1.0,
+          "ci95_cluster": [
+            1.0,
+            1.0
+          ]
+        }
+      }
+    }
+  },
   "per_log": {
+    "django__django-10914": {
+      "chars": 9163,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "django/django"
+    },
+    "django__django-11019": {
+      "chars": 25919,
+      "f2p_failing_in_full_log": 12,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 12
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 12
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 12
+        },
+        "head@8000": {
+          "visible": 12,
+          "total": 12
+        },
+        "head@16000": {
+          "visible": 12,
+          "total": 12
+        },
+        "head@32000": {
+          "visible": 12,
+          "total": 12
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 12
+        },
+        "tail@2000": {
+          "visible": 0,
+          "total": 12
+        },
+        "tail@4000": {
+          "visible": 0,
+          "total": 12
+        },
+        "tail@8000": {
+          "visible": 0,
+          "total": 12
+        },
+        "tail@16000": {
+          "visible": 0,
+          "total": 12
+        },
+        "tail@32000": {
+          "visible": 12,
+          "total": 12
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 12
+        },
+        "head_tail@2000": {
+          "visible": 0,
+          "total": 12
+        },
+        "head_tail@4000": {
+          "visible": 0,
+          "total": 12
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 12
+        },
+        "head_tail@16000": {
+          "visible": 7,
+          "total": 12
+        },
+        "head_tail@32000": {
+          "visible": 12,
+          "total": 12
+        },
+        "digest@1000": {
+          "visible": 4,
+          "total": 12
+        },
+        "digest@2000": {
+          "visible": 8,
+          "total": 12
+        },
+        "digest@4000": {
+          "visible": 12,
+          "total": 12
+        },
+        "digest@8000": {
+          "visible": 12,
+          "total": 12
+        },
+        "digest@16000": {
+          "visible": 12,
+          "total": 12
+        },
+        "digest@32000": {
+          "visible": 12,
+          "total": 12
+        }
+      },
+      "repo": "django/django"
+    },
+    "django__django-11039": {
+      "chars": 12118,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "django/django"
+    },
+    "django__django-11049": {
+      "chars": 4841,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "django/django"
+    },
+    "django__django-11133": {
+      "chars": 5652,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "django/django"
+    },
+    "django__django-11179": {
+      "chars": 4864,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "django/django"
+    },
     "psf__requests-1963": {
       "chars": 10189,
       "f2p_failing_in_full_log": 1,
@@ -265,8 +3195,33 @@
         "head_tail@32000": {
           "visible": 1,
           "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
         }
-      }
+      },
+      "repo": "psf/requests"
     },
     "psf__requests-2317": {
       "chars": 11592,
@@ -343,8 +3298,33 @@
         "head_tail@32000": {
           "visible": 1,
           "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
         }
-      }
+      },
+      "repo": "psf/requests"
     },
     "psf__requests-3362": {
       "chars": 18874,
@@ -421,8 +3401,2711 @@
         "head_tail@32000": {
           "visible": 1,
           "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
         }
-      }
+      },
+      "repo": "psf/requests"
+    },
+    "pylint-dev__pylint-7114": {
+      "chars": 4870,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "pylint-dev/pylint"
+    },
+    "pylint-dev__pylint-7228": {
+      "chars": 1158,
+      "f2p_failing_in_full_log": 2,
+      "cells": {
+        "head@1000": {
+          "visible": 1,
+          "total": 2
+        },
+        "head@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@32000": {
+          "visible": 2,
+          "total": 2
+        }
+      },
+      "repo": "pylint-dev/pylint"
+    },
+    "pylint-dev__pylint-7993": {
+      "chars": 1665,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "pylint-dev/pylint"
+    },
+    "pytest-dev__pytest-7373": {
+      "chars": 7857,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "pytest-dev/pytest"
+    },
+    "pytest-dev__pytest-7432": {
+      "chars": 6243,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "pytest-dev/pytest"
+    },
+    "pytest-dev__pytest-7490": {
+      "chars": 6428,
+      "f2p_failing_in_full_log": 2,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 2
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 2
+        },
+        "head@4000": {
+          "visible": 0,
+          "total": 2
+        },
+        "head@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@32000": {
+          "visible": 2,
+          "total": 2
+        }
+      },
+      "repo": "pytest-dev/pytest"
+    },
+    "sympy__sympy-11897": {
+      "chars": 188875,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-12171": {
+      "chars": 2016,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-12481": {
+      "chars": 2223,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-13043": {
+      "chars": 93840,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-13480": {
+      "chars": 3606,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-13773": {
+      "chars": 25379,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-13915": {
+      "chars": 37954,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-14024": {
+      "chars": 4530,
+      "f2p_failing_in_full_log": 2,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 2
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 2
+        },
+        "head@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 2
+        },
+        "tail@2000": {
+          "visible": 0,
+          "total": 2
+        },
+        "tail@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 2
+        },
+        "head_tail@2000": {
+          "visible": 0,
+          "total": 2
+        },
+        "head_tail@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@32000": {
+          "visible": 2,
+          "total": 2
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-14817": {
+      "chars": 10914,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-15011": {
+      "chars": 3684,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-15345": {
+      "chars": 1137,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-15678": {
+      "chars": 1364,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-18621": {
+      "chars": 2409,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-19007": {
+      "chars": 2621,
+      "f2p_failing_in_full_log": 3,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 3
+        },
+        "head@2000": {
+          "visible": 3,
+          "total": 3
+        },
+        "head@4000": {
+          "visible": 3,
+          "total": 3
+        },
+        "head@8000": {
+          "visible": 3,
+          "total": 3
+        },
+        "head@16000": {
+          "visible": 3,
+          "total": 3
+        },
+        "head@32000": {
+          "visible": 3,
+          "total": 3
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 3
+        },
+        "tail@2000": {
+          "visible": 3,
+          "total": 3
+        },
+        "tail@4000": {
+          "visible": 3,
+          "total": 3
+        },
+        "tail@8000": {
+          "visible": 3,
+          "total": 3
+        },
+        "tail@16000": {
+          "visible": 3,
+          "total": 3
+        },
+        "tail@32000": {
+          "visible": 3,
+          "total": 3
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 3
+        },
+        "head_tail@2000": {
+          "visible": 0,
+          "total": 3
+        },
+        "head_tail@4000": {
+          "visible": 3,
+          "total": 3
+        },
+        "head_tail@8000": {
+          "visible": 3,
+          "total": 3
+        },
+        "head_tail@16000": {
+          "visible": 3,
+          "total": 3
+        },
+        "head_tail@32000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@1000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@2000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@4000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@8000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@16000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@32000": {
+          "visible": 3,
+          "total": 3
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-19254": {
+      "chars": 1503,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-20154": {
+      "chars": 2179,
+      "f2p_failing_in_full_log": 2,
+      "cells": {
+        "head@1000": {
+          "visible": 1,
+          "total": 2
+        },
+        "head@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 2
+        },
+        "tail@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 2
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 2
+        },
+        "head_tail@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@32000": {
+          "visible": 2,
+          "total": 2
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-20212": {
+      "chars": 1827,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-20322": {
+      "chars": 3390,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-20442": {
+      "chars": 1588,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "sympy/sympy"
+    },
+    "sympy__sympy-20639": {
+      "chars": 4712,
+      "f2p_failing_in_full_log": 2,
+      "cells": {
+        "head@1000": {
+          "visible": 0,
+          "total": 2
+        },
+        "head@2000": {
+          "visible": 0,
+          "total": 2
+        },
+        "head@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@1000": {
+          "visible": 1,
+          "total": 2
+        },
+        "tail@2000": {
+          "visible": 1,
+          "total": 2
+        },
+        "tail@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "tail@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 2
+        },
+        "head_tail@2000": {
+          "visible": 1,
+          "total": 2
+        },
+        "head_tail@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "head_tail@32000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@32000": {
+          "visible": 2,
+          "total": 2
+        }
+      },
+      "repo": "sympy/sympy"
     },
     "blast-radius@52657128db": {
       "chars": 3230,
@@ -499,8 +6182,33 @@
         "head_tail@32000": {
           "visible": 3,
           "total": 3
+        },
+        "digest@1000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@2000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@4000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@8000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@16000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@32000": {
+          "visible": 3,
+          "total": 3
         }
-      }
+      },
+      "repo": "blast-radius"
     },
     "blast-radius@6d30a27e4a": {
       "chars": 4242,
@@ -577,8 +6285,33 @@
         "head_tail@32000": {
           "visible": 2,
           "total": 2
+        },
+        "digest@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@32000": {
+          "visible": 2,
+          "total": 2
         }
-      }
+      },
+      "repo": "blast-radius"
     },
     "blast-radius@74c59cd37a": {
       "chars": 392,
@@ -655,8 +6388,33 @@
         "head_tail@32000": {
           "visible": 1,
           "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
         }
-      }
+      },
+      "repo": "blast-radius"
     },
     "blast-radius@832917d975": {
       "chars": 4138,
@@ -733,8 +6491,33 @@
         "head_tail@32000": {
           "visible": 1,
           "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
         }
-      }
+      },
+      "repo": "blast-radius"
     },
     "blast-radius@cb57f583c7": {
       "chars": 3939,
@@ -811,11 +6594,36 @@
         "head_tail@32000": {
           "visible": 2,
           "total": 2
+        },
+        "digest@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@32000": {
+          "visible": 2,
+          "total": 2
         }
-      }
+      },
+      "repo": "blast-radius"
     },
     "blast-radius@f9d1fcb80c": {
-      "chars": 3229,
+      "chars": 3230,
       "f2p_failing_in_full_log": 3,
       "cells": {
         "head@1000": {
@@ -889,8 +6697,33 @@
         "head_tail@32000": {
           "visible": 3,
           "total": 3
+        },
+        "digest@1000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@2000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@4000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@8000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@16000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@32000": {
+          "visible": 3,
+          "total": 3
         }
-      }
+      },
+      "repo": "blast-radius"
     },
     "flake-detective@17e4f399cb": {
       "chars": 817,
@@ -967,8 +6800,33 @@
         "head_tail@32000": {
           "visible": 2,
           "total": 2
+        },
+        "digest@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@32000": {
+          "visible": 2,
+          "total": 2
         }
-      }
+      },
+      "repo": "flake-detective"
     },
     "flake-detective@310c6bec61": {
       "chars": 916,
@@ -1045,11 +6903,36 @@
         "head_tail@32000": {
           "visible": 1,
           "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
         }
-      }
+      },
+      "repo": "flake-detective"
     },
     "flake-detective@527680957a": {
-      "chars": 874,
+      "chars": 885,
       "f2p_failing_in_full_log": 1,
       "cells": {
         "head@1000": {
@@ -1123,8 +7006,33 @@
         "head_tail@32000": {
           "visible": 1,
           "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
         }
-      }
+      },
+      "repo": "flake-detective"
     },
     "suite-auditor@63472f11f8": {
       "chars": 3149,
@@ -1201,8 +7109,33 @@
         "head_tail@32000": {
           "visible": 2,
           "total": 2
+        },
+        "digest@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@32000": {
+          "visible": 2,
+          "total": 2
         }
-      }
+      },
+      "repo": "suite-auditor"
     },
     "suite-auditor@79c6565fe4": {
       "chars": 3468,
@@ -1279,8 +7212,33 @@
         "head_tail@32000": {
           "visible": 2,
           "total": 2
+        },
+        "digest@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@32000": {
+          "visible": 2,
+          "total": 2
         }
-      }
+      },
+      "repo": "suite-auditor"
     },
     "suite-auditor@d755996c7a": {
       "chars": 2228,
@@ -1357,11 +7315,36 @@
         "head_tail@32000": {
           "visible": 3,
           "total": 3
+        },
+        "digest@1000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@2000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@4000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@8000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@16000": {
+          "visible": 3,
+          "total": 3
+        },
+        "digest@32000": {
+          "visible": 3,
+          "total": 3
         }
-      }
+      },
+      "repo": "suite-auditor"
     },
     "suite-auditor@e50b424e09": {
-      "chars": 3311,
+      "chars": 3310,
       "f2p_failing_in_full_log": 2,
       "cells": {
         "head@1000": {
@@ -1435,8 +7418,33 @@
         "head_tail@32000": {
           "visible": 2,
           "total": 2
+        },
+        "digest@1000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@2000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@4000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@8000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@16000": {
+          "visible": 2,
+          "total": 2
+        },
+        "digest@32000": {
+          "visible": 2,
+          "total": 2
         }
-      }
+      },
+      "repo": "suite-auditor"
     },
     "urdu-nlp-toolkit@0de4128668": {
       "chars": 4906,
@@ -1513,8 +7521,33 @@
         "head_tail@32000": {
           "visible": 8,
           "total": 8
+        },
+        "digest@1000": {
+          "visible": 6,
+          "total": 8
+        },
+        "digest@2000": {
+          "visible": 8,
+          "total": 8
+        },
+        "digest@4000": {
+          "visible": 8,
+          "total": 8
+        },
+        "digest@8000": {
+          "visible": 8,
+          "total": 8
+        },
+        "digest@16000": {
+          "visible": 8,
+          "total": 8
+        },
+        "digest@32000": {
+          "visible": 8,
+          "total": 8
         }
-      }
+      },
+      "repo": "urdunlp"
     },
     "urdu-nlp-toolkit@baa2d09ff8": {
       "chars": 6413,
@@ -1591,8 +7624,33 @@
         "head_tail@32000": {
           "visible": 7,
           "total": 7
+        },
+        "digest@1000": {
+          "visible": 7,
+          "total": 7
+        },
+        "digest@2000": {
+          "visible": 7,
+          "total": 7
+        },
+        "digest@4000": {
+          "visible": 7,
+          "total": 7
+        },
+        "digest@8000": {
+          "visible": 7,
+          "total": 7
+        },
+        "digest@16000": {
+          "visible": 7,
+          "total": 7
+        },
+        "digest@32000": {
+          "visible": 7,
+          "total": 7
         }
-      }
+      },
+      "repo": "urdunlp"
     },
     "urdu-nlp-toolkit@d8bc1340d0": {
       "chars": 7745,
@@ -1669,8 +7727,33 @@
         "head_tail@32000": {
           "visible": 9,
           "total": 9
+        },
+        "digest@1000": {
+          "visible": 5,
+          "total": 9
+        },
+        "digest@2000": {
+          "visible": 9,
+          "total": 9
+        },
+        "digest@4000": {
+          "visible": 9,
+          "total": 9
+        },
+        "digest@8000": {
+          "visible": 9,
+          "total": 9
+        },
+        "digest@16000": {
+          "visible": 9,
+          "total": 9
+        },
+        "digest@32000": {
+          "visible": 9,
+          "total": 9
         }
-      }
+      },
+      "repo": "urdunlp"
     }
   }
 }

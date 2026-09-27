@@ -38,7 +38,7 @@ class ToolConfig:
     read_max_lines: int = 1000
     read_max_line_chars: int = 2000
     output_max_chars: int = 8000
-    truncate_mode: TruncateMode = "head_tail"
+    truncate_mode: TruncateMode = "digest"
     shell_timeout: float = 120.0
     test_timeout: float = 900.0
     fuzzy_edit: bool = False
