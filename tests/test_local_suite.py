@@ -162,12 +162,15 @@ def test_model_errors_are_retried_not_persisted_and_not_scored(tmp_path):
     assert (out / "a_1.json").exists()  # only the successful record is persisted
 
 
-def test_model_error_excluded_from_solve_rate_denominator():
+def test_persistent_model_error_counts_as_unsolved_and_both_rates_reported():
     def rec(outcome, steps):
         return {"outcome": outcome, "repo": "x",
                 "agent": {"steps": steps, "tokens": {"prompt": 1, "completion": 1},
                           "tool_calls": {}, "denied": [], "compactions": 0}}
 
     agg = model_run.aggregate([rec("resolved", 3), rec("wrong_fix", 5), rec("model_error", 0)])
-    assert agg["tasks"] == 2 and agg["model_errors"] == 1
-    assert agg["solve_rate"]["k"] == 1 and agg["solve_rate"]["n"] == 2  # error not in denominator
+    assert agg["tasks"] == 3 and agg["completed"] == 2 and agg["model_errors"] == 1
+    # headline: a persistent model error counts as unsolved
+    assert agg["solve_rate"]["k"] == 1 and agg["solve_rate"]["n"] == 3
+    # reported beside it: completed runs only
+    assert agg["solve_rate_completed_only"]["n"] == 2

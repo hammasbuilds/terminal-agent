@@ -164,13 +164,17 @@ def classify(rec: dict[str, Any]) -> str:
 
 
 def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
-    # a model_error is an infrastructure failure, not a fail: exclude it from the denominator
+    # A model_error that survived its retries is counted as UNSOLVED in the headline rate:
+    # dropping it would flatter the model whenever the server flakes on hard tasks (long
+    # prompts time out more). The rate over completed runs only is reported beside it.
+    total = len(records)
     errors = sum(1 for r in records if r["outcome"] == "model_error")
+    solved = sum(1 for r in records if r["outcome"] == "resolved")
     records = [r for r in records if r["outcome"] != "model_error"]
     n = len(records)
     if not n:
-        return {"tasks": 0, "model_errors": errors}
-    solved = sum(1 for r in records if r["outcome"] == "resolved")
+        return {"tasks": total, "model_errors": errors, "solve_rate": rate(0, total),
+                "solve_rate_completed_only": rate(0, 0)}
     steps = [r["agent"]["steps"] for r in records]
     tools: Counter[str] = Counter()
     edits: Counter[str] = Counter()
@@ -187,9 +191,11 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
         c[0] += r["outcome"] == "resolved"
         c[1] += 1
     return {
-        "tasks": n,
+        "tasks": total,
+        "completed": n,
         "model_errors": errors,
-        "solve_rate": rate(solved, n),
+        "solve_rate": rate(solved, total),
+        "solve_rate_completed_only": rate(solved, n),
         "outcomes": dict(Counter(r["outcome"] for r in records).most_common()),
         "steps": {"median": statistics.median(steps), "mean": round(statistics.mean(steps), 2),
                   "mean_ci95": list(bootstrap_mean_ci([float(s) for s in steps])),
@@ -217,9 +223,9 @@ def run_all(jobs: list[Any], runner: Callable[[Any], dict[str, Any]], out_dir: P
             log: Callable[[str], None] = print, retries: int = 2) -> list[dict[str, Any]]:
     """Run every job, retrying a model_error rather than recording it.
 
-    A model_error is an infrastructure failure (Ollama unreachable, a bad response), not a
-    solve/fail outcome, so it is retried up to ``retries`` times, never persisted, and never
-    counted in the solve-rate denominator. A resumed run re-runs any task that has no record.
+    A model_error (Ollama unreachable, timeout, a bad response) is retried up to ``retries``
+    times and never persisted, so a resumed run tries the task again. One that survives its
+    retries is returned (and counted as unsolved by ``aggregate``) but not written to disk.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     records = []

@@ -66,7 +66,7 @@ failing to passing.
 | **4** | **No single truncation cut works for every test runner.** At 8,000 chars, keeping head+tail showed Django's failing test **7 of 18** times; pytest's, 60 of 60. Keeping only the head showed pytest's **8 of 60** at 2,000 chars. | a failure-line digest showed 99/103 at 2,000 chars - with a caveat below |
 | **5** | **A 1,000-line read window hides the edit site in 22% of SWE-bench Lite;** and a dense window can exceed the token budget, so a read is now capped by characters. | 66/300 beyond line 1,000 (95% CI 17.7-27.0%); 121/300 beyond 500 |
 | **6** | **A name-based command policy is trivially bypassed; a flag/env/cd-aware one is not.** An independent reviewer's exploit corpus (read-only tools with a writing flag, `git -c`, exec env vars, `cd ..` then a relative write, wrapper fronts) defeated v3; the rewritten classifier catches all of them. | on a held-out set written blind, **111/121** dangerous caught by the classifier alone (auto mode); in default mode **120/121** stopped, **1 ran unasked** (`GIT_CONFIG_GLOBAL=...`); codex's forced-rm rule 9%, a tutorial blocklist 20% |
-| **7** | **Model arm: built, tested with fakes, queued.** `qwen2.5-coder:14b` on the 50 valid tasks, in a git-isolated workspace, model errors retried not scored. | at most 1,500 model calls (`scripts/run_models.sh --dry-run`) |
+| **7** | **Model arm: built, tested with fakes, queued.** `qwen2.5-coder:14b` on the 50 valid tasks, in a git-isolated workspace; model errors are retried, and one that persists counts as unsolved. | at most 1,500 model calls (`scripts/run_models.sh --dry-run`) |
 
 Every number is read from a file in [`results/`](results/) produced on this machine; the
 commands that regenerate each one are in [STATUS.md](STATUS.md).
@@ -421,7 +421,8 @@ code.
   now its own throwaway git repo and runs with `GIT_CEILING_DIRECTORIES`.
 - **`model_error` records were persisted, skipped on resume, and counted as failures.** A
   transient Ollama outage would have been recorded as an unsolved task forever. They are now
-  retried, never persisted, and excluded from the solve-rate denominator; a non-JSON Ollama
+  retried and never persisted; one that survives its retries counts as unsolved in the
+  headline rate (the completed-runs-only rate is reported beside it); a non-JSON Ollama
   body and a malformed `--script` raise clean errors instead of a traceback.
 - **The whitespace-tolerant edit ignored relative indentation.** It matched a snippet whose
   structure differed from the file (a line moved into or out of a block) and applied it
