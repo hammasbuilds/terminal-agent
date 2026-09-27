@@ -123,7 +123,7 @@ def test_text_tool_call_fallback_parser():
 def test_digest_truncation_lists_failures_first():
     lines = [f"test_{i} (app.tests.T) ... ok" for i in range(300)]
     lines[5] = "test_bad (app.tests.T) ... FAIL"
-    text = "\n".join(lines + ["", "Ran 300 tests", "OK"])
+    text = "\n".join([*lines, "", "Ran 300 tests", "OK"])
     cut, elided = truncate(text, 2000, "digest")
     assert cut.startswith("[failure lines]\ntest_bad (app.tests.T) ... FAIL")
     assert elided > 0 and len(cut) < 2100
