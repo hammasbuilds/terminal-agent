@@ -46,9 +46,10 @@ flowchart LR
 
 A model score is only as good as the harness that grades it, and a harness has no test of
 its own. So the harness is tested here the one way that exercises all of it: a scripted
-"model" applies each task's **reference fix** through the agent's real tool calls - policy,
-tool layer, trajectory log, sandbox sync, test runner, log parser - and the task counts only
-if the tests then go from failing to passing.
+"model" applies each task's **reference fix** through the agent's real tool calls - agent
+loop, policy, tool layer, trajectory log - then the grader pushes the result into a fresh
+container, runs the hidden tests and parses the log, and the task counts only if they go from
+failing to passing.
 
 > **Every harness bug below was invisible to the unit tests and fell out of the first
 > gold-patch replay: a `git apply` that changed nothing and exited 0, a network flag that

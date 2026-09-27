@@ -26,7 +26,7 @@ from terminal_agent.evals.local_tasks import (
     test_env,
 )
 from terminal_agent.evals.patches import parse_patch
-from terminal_agent.evals.stats import rate
+from terminal_agent.evals.stats import bootstrap_mean_ci, rate
 from terminal_agent.evals.tasks import Container, Task, rmtree, test_section
 from terminal_agent.llm import DEFAULT_OPTIONS, ChatClient
 from terminal_agent.policy import ApprovalPolicy
@@ -186,6 +186,7 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
         "solve_rate": rate(solved, n),
         "outcomes": dict(Counter(r["outcome"] for r in records).most_common()),
         "steps": {"median": statistics.median(steps), "mean": round(statistics.mean(steps), 2),
+                  "mean_ci95": list(bootstrap_mean_ci([float(s) for s in steps])),
                   "max": max(steps)},
         "tokens": {
             "prompt": sum(r["agent"]["tokens"]["prompt"] for r in records),
