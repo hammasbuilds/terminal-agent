@@ -157,3 +157,18 @@ def test_compaction_never_squeezes_the_protected_task():
     fitted, rep = cm.fit([{"role": "system", "content": "s"}, {"role": "user", "content": task}])
     assert fitted[1]["content"] == task and rep.squeezed == 0
     assert "KEY DETAIL" in fitted[1]["content"]
+
+
+def test_model_error_leaves_a_well_formed_conversation(tmp_path):
+    class Broken:
+        model = "broken"
+
+        def chat(self, messages, tools):
+            raise ModelError("cannot reach Ollama")
+
+    agent = build_agent(tmp_path, Broken())
+    agent.run("first task")
+    roles = [m["role"] for m in agent.messages]
+    # system, user, assistant(error) - no two user turns in a row after a failed run
+    assert roles[-1] == "assistant" and roles.count("user") == 1
+    assert "model error" in agent.messages[-1]["content"]

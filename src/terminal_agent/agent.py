@@ -109,6 +109,9 @@ class Agent:
                 turn = self.client.chat(fitted, TOOL_SPECS)
             except ModelError as exc:
                 result.status, result.error = "model_error", str(exc)
+                # keep the conversation well-formed (user -> assistant) so a REPL's next
+                # task does not leave two user messages in a row
+                self.messages.append({"role": "assistant", "content": f"[model error: {exc}]"})
                 break
             result.prompt_tokens += turn.prompt_tokens or 0
             result.completion_tokens += turn.completion_tokens or 0

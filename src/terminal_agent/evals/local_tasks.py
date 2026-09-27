@@ -103,7 +103,21 @@ def test_env(workspace: Path) -> dict[str, str]:
     env["PYTHONIOENCODING"] = "utf-8"
     env["CUDA_VISIBLE_DEVICES"] = ""
     env["OLLAMA_HOST"] = "http://127.0.0.1:9"  # discard port: fail fast, never reach a model
+    # a local-task workspace lives under runs/, inside the harness repo; without a ceiling a
+    # model's `git add -A`/`git commit` would resolve to the harness repo and could corrupt it
+    env["GIT_CEILING_DIRECTORIES"] = str(workspace.resolve().parent)
     return env
+
+
+def git_init_isolated(workspace: Path) -> None:
+    """Make the workspace its own git repo so git commands are contained, not the harness's."""
+    env = {**os.environ, "GIT_CEILING_DIRECTORIES": str(workspace.resolve().parent),
+           "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull}
+    for args in (["init", "-q"], ["-c", "user.name=ta", "-c", "user.email=ta@localhost",
+                                  "-c", "commit.gpgsign=false", "add", "-A"],
+                 ["-c", "user.name=ta", "-c", "user.email=ta@localhost",
+                  "-c", "commit.gpgsign=false", "commit", "-q", "-m", "task base"]):
+        subprocess.run(["git", *args], cwd=workspace, env=env, capture_output=True, check=False)
 
 
 def run_pytest(workspace: Path, files: list[str], timeout: float = 300) -> tuple[str, bool]:

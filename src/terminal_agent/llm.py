@@ -91,7 +91,11 @@ class OllamaClient:
         )
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                return json.loads(resp.read().decode("utf-8"))
+                body = resp.read().decode("utf-8", "replace")
+            try:
+                return json.loads(body)
+            except json.JSONDecodeError as exc:
+                raise ModelError(f"Ollama returned a non-JSON response: {body[:300]!r}") from exc
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode("utf-8", "replace")[:500]
             if exc.code == 404:
@@ -193,9 +197,15 @@ class ScriptedClient:
             raise ValueError(f"script {path} must be a JSON list of turns")
         turns = []
         for i, item in enumerate(data):
-            calls = [
-                ToolCall(name=c["name"], arguments=c.get("arguments", {}), id=f"s{i}.{j}")
-                for j, c in enumerate(item.get("tool_calls", []))
-            ]
+            if not isinstance(item, dict):
+                raise ValueError(f"script {path}: turn {i} must be an object, got "
+                                 f"{type(item).__name__}")
+            calls = []
+            for j, c in enumerate(item.get("tool_calls") or []):
+                if not isinstance(c, dict) or not isinstance(c.get("name"), str):
+                    raise ValueError(f"script {path}: turn {i} tool call {j} needs a string "
+                                     f"'name'")
+                calls.append(ToolCall(name=c["name"], arguments=c.get("arguments") or {},
+                                      id=f"s{i}.{j}"))
             turns.append(ModelTurn(content=item.get("content", ""), tool_calls=calls))
         return cls(turns)

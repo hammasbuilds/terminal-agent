@@ -104,3 +104,70 @@ def test_git_apply_works_inside_an_enclosing_repository(mined, bugfix_repo):
     mined.materialize(nested)
     ok, _ = git_apply(nested, mined.patch)
     assert ok and "sum(xs) / len(xs)\n" in (nested / "src" / "calc.py").read_text()
+
+
+def test_git_commands_in_a_local_workspace_cannot_touch_the_enclosing_repo(tmp_path):
+    # simulate the harness repo: an outer git repo with the workspace nested inside it
+    import subprocess
+
+    from terminal_agent.evals.local_tasks import git_init_isolated, test_env
+    from terminal_agent.sandbox import LocalSandbox
+
+    def _git(repo, *args):
+        return subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True,
+                              text=True).stdout
+
+    outer = tmp_path / "harness"
+    outer.mkdir()
+    _git(outer, "init", "-q")
+    (outer / "keep.txt").write_bytes(b"harness data\n")
+    _git(outer, "-c", "user.name=t", "-c", "user.email=t@t", "add", "-A")
+    _git(outer, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "harness")
+    outer_head = _git(outer, "rev-parse", "HEAD").strip()
+
+    ws = outer / "runs" / "model" / "ws"
+    ws.mkdir(parents=True)
+    (ws / "a.py").write_bytes(b"x = 1\n")
+    git_init_isolated(ws)
+    sb = LocalSandbox(ws, env=test_env(ws))
+    (ws / "a.py").write_bytes(b"x = 2\n")
+    sb.run("git add -A && git -c user.name=m -c user.email=m@m commit -q -m pwn", 30)
+    sb.run("git stash", 30)
+    # the enclosing harness repo is untouched: same HEAD, clean tree, file intact
+    assert _git(outer, "rev-parse", "HEAD").strip() == outer_head
+    # no TRACKED file of the harness was staged, modified or deleted (a nested untracked
+    # runs/ dir is fine); the inner repo swallowed the add/commit/stash
+    assert _git(outer, "status", "--porcelain", "-uno").strip() == ""
+    assert (outer / "keep.txt").read_bytes() == b"harness data\n"
+
+
+def test_model_errors_are_retried_not_persisted_and_not_scored(tmp_path):
+    from types import SimpleNamespace
+
+    calls = {"a@1": 0}
+
+    def runner(job):
+        calls[job.instance_id] += 1
+        # fail twice with a model_error, then succeed
+        if calls[job.instance_id] < 3:
+            return {"instance_id": job.instance_id, "repo": "x", "outcome": "model_error",
+                    "agent": {"steps": 0, "error": "cannot reach Ollama"}}
+        return {"instance_id": job.instance_id, "repo": "x", "outcome": "resolved",
+                "agent": {"steps": 4}}
+
+    jobs = [SimpleNamespace(instance_id="a@1")]
+    out = tmp_path / "mr"
+    recs = model_run.run_all(jobs, runner, out, log=lambda s: None, retries=3)
+    assert calls["a@1"] == 3 and recs[0]["outcome"] == "resolved"
+    assert (out / "a_1.json").exists()  # only the successful record is persisted
+
+
+def test_model_error_excluded_from_solve_rate_denominator():
+    def rec(outcome, steps):
+        return {"outcome": outcome, "repo": "x",
+                "agent": {"steps": steps, "tokens": {"prompt": 1, "completion": 1},
+                          "tool_calls": {}, "denied": [], "compactions": 0}}
+
+    agg = model_run.aggregate([rec("resolved", 3), rec("wrong_fix", 5), rec("model_error", 0)])
+    assert agg["tasks"] == 2 and agg["model_errors"] == 1
+    assert agg["solve_rate"]["k"] == 1 and agg["solve_rate"]["n"] == 2  # error not in denominator

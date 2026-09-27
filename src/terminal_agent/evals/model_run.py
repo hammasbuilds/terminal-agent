@@ -21,6 +21,7 @@ from terminal_agent.evals import specs
 from terminal_agent.evals.local_tasks import (
     LocalTask,
     git_apply,
+    git_init_isolated,
     local_test_command,
     run_pytest,
     test_env,
@@ -89,6 +90,7 @@ def run_local_task(task: LocalTask, client: ChatClient, run_dir: Path, max_steps
     traj.unlink(missing_ok=True)
     t0 = time.monotonic()
     task.materialize(ws)
+    git_init_isolated(ws)  # contain the model's git commands to this throwaway tree
     before = snapshot(ws)
     agent = _agent_for(ws, client, LocalSandbox(ws, env=test_env(ws)), None,
                        local_test_command(), traj, max_steps, token_budget)
@@ -96,7 +98,7 @@ def run_local_task(task: LocalTask, client: ChatClient, run_dir: Path, max_steps
     agent.logger.close()
     modified, deleted = changed_files(before, snapshot(ws))
     rmtree(ev)
-    shutil.copytree(ws, ev)
+    shutil.copytree(ws, ev, ignore=shutil.ignore_patterns(".git"))
     pristine = root / "pristine"
     task.materialize(pristine)
     for rel in task.test_files:  # the hidden tests win over anything the agent wrote
@@ -162,9 +164,12 @@ def classify(rec: dict[str, Any]) -> str:
 
 
 def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
+    # a model_error is an infrastructure failure, not a fail: exclude it from the denominator
+    errors = sum(1 for r in records if r["outcome"] == "model_error")
+    records = [r for r in records if r["outcome"] != "model_error"]
     n = len(records)
     if not n:
-        return {"tasks": 0}
+        return {"tasks": 0, "model_errors": errors}
     solved = sum(1 for r in records if r["outcome"] == "resolved")
     steps = [r["agent"]["steps"] for r in records]
     tools: Counter[str] = Counter()
@@ -183,6 +188,7 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
         c[1] += 1
     return {
         "tasks": n,
+        "model_errors": errors,
         "solve_rate": rate(solved, n),
         "outcomes": dict(Counter(r["outcome"] for r in records).most_common()),
         "steps": {"median": statistics.median(steps), "mean": round(statistics.mean(steps), 2),
@@ -208,15 +214,31 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def run_all(jobs: list[Any], runner: Callable[[Any], dict[str, Any]], out_dir: Path,
-            log: Callable[[str], None] = print) -> list[dict[str, Any]]:
+            log: Callable[[str], None] = print, retries: int = 2) -> list[dict[str, Any]]:
+    """Run every job, retrying a model_error rather than recording it.
+
+    A model_error is an infrastructure failure (Ollama unreachable, a bad response), not a
+    solve/fail outcome, so it is retried up to ``retries`` times, never persisted, and never
+    counted in the solve-rate denominator. A resumed run re-runs any task that has no record.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     records = []
     for job in jobs:
         target = out_dir / f"{job.instance_id.replace('@', '_')}.json"
-        if target.exists():
+        if target.exists():  # a persisted record is always a real (non-error) outcome
             records.append(json.loads(target.read_text(encoding="utf-8")))
             continue
         rec = runner(job)
+        for attempt in range(1, retries + 1):
+            if rec.get("outcome") != "model_error":
+                break
+            log(f"{job.instance_id}: {rec['agent'].get('error', 'model_error')}; "
+                f"retry {attempt}/{retries}")
+            rec = runner(job)
+        if rec.get("outcome") == "model_error":
+            log(f"{job.instance_id}: model_error after {retries} retries (not recorded)")
+            records.append(rec)
+            continue
         target.write_text(json.dumps(rec, indent=2, ensure_ascii=False) + "\n",
                           encoding="utf-8", newline="\n")
         records.append(rec)

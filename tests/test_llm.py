@@ -86,3 +86,29 @@ def test_scripted_client_from_file(tmp_path: Path):
     p.write_text("{}")
     with pytest.raises(ValueError):
         ScriptedClient.from_file(p)
+
+
+def test_malformed_script_raises_value_error_not_traceback(tmp_path):
+    for bad in ("[1]", '[{"tool_calls":[{"arguments":{}}]}]', "{}", '[{"tool_calls":[5]}]'):
+        p = tmp_path / "s.json"
+        p.write_text(bad)
+        with pytest.raises(ValueError):
+            ScriptedClient.from_file(p)
+
+
+def test_non_json_ollama_body_becomes_a_model_error(stub, monkeypatch):
+    import terminal_agent.llm as llm
+
+    class R:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def read(self):
+            return b"<html>502 Bad Gateway</html>"
+
+    monkeypatch.setattr(llm.urllib.request, "urlopen", lambda *a, **k: R())
+    with pytest.raises(ModelError, match="non-JSON"):
+        OllamaClient(model="m", host=stub).chat([], [])
