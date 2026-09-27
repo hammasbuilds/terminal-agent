@@ -38,7 +38,7 @@ since fixed and tested.
 | 15 | Works from a clean clone | 15 | Fresh clone: `uv sync --offline`, `uv run pytest -q` (222 pass, HF_HOME at an empty dir), `uv run python demo.py` all succeed; no network/model/Docker for tests or demo. |
 | 20 | Real data, real result | 17 | Headline numbers from real SWE-bench Lite instances in the official images and real bug-fix commits, produced here. Capped: 39 of 300 Lite tasks (download-bound); solve rate needs the model arm. |
 | 15 | Finding quality | 13 | Controls and baselines (three blind command sets, two policy baselines, four truncation modes, perturbation vs gold), Wilson + task-clustered bootstrap CIs, every surprising number chased (three were bugs in my own study). Minus: truncation digest not held-out; local suite small/easy. |
-| 15 | Correctness | 14 | 224 tests on behaviour and failure modes, incl. the reviewer's exploit corpus as fixtures; each confirmed regression test fails against the old code. Minus: `auto`-mode classifier coverage is ~91% on unseen commands, not 100% (default mode is the guarantee). |
+| 15 | Correctness | 14 | 226 tests on behaviour and failure modes, incl. the reviewer's exploit corpus as fixtures; each confirmed regression test fails against the old code. Minus: `auto`-mode classifier coverage is ~91% on unseen commands, not 100% (default mode is the guarantee). |
 | 10 | Usability | 9 | `--help` on both CLIs; actionable errors (Ollama unreachable, model not pulled, bad script, unknown task id, bad timeout); `--script`, `examples/`. Minus: SWE-bench runs need multi-GB images the user pulls. |
 | 10 | README | 10 | House format, findings table, six real I/O samples, NOT-do section, real problems hit (now with the review's findings and honest reframing of findings 1 and 3/6). |
 | 10 | Code quality | 8 | ruff clean, typed, zero runtime deps, small modules. Minus: `policy.py` is ~760 lines (one classifier, many command families) - cohesive but large. |
@@ -77,7 +77,7 @@ estimator error, context-limit hits, model-error count.
 ```bash
 unset VIRTUAL_ENV
 uv sync
-uv run pytest -q                                   # 222 tests (+2 with -m docker)
+uv run pytest -q                                   # 222 tests (+4 with -m docker)
 uv run python demo.py
 uv run ta-eval safety                              # results/safety.json (4 corpora)
 uv run ta-eval read-window                         # results/read_window.json

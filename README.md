@@ -14,7 +14,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-0-brightgreen" alt="zero dependencies">
-  <img src="https://img.shields.io/badge/tests-224-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-226-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/model-qwen2.5--coder%3A14b%20(queued)-orange" alt="model">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
@@ -368,7 +368,8 @@ studies and the tests need neither. `git` must be on `PATH`.
 
 ```bash
 uv run pytest -q              # 222 tests, deselects the `docker` mark
-uv run pytest -q -m docker    # 2 more: two-way container sync, a scripted model run in the
+uv run pytest -q -m docker    # 4 more: two-way container sync, -z rename parse, the
+                              # preserved executable bit, and a scripted model run in the
                               # psf__requests-3362 image (needs that image pulled)
 ```
 
