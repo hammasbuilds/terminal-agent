@@ -73,20 +73,35 @@ def _normalize(text: str) -> list[str]:
     return [ln.expandtabs(4).rstrip() for ln in text.replace("\r\n", "\n").split("\n")]
 
 
-def _apply_at(lines: list[str], hunk: Hunk, delta: int) -> tuple[list[str], bool]:
-    """Apply a hunk positionally (what git does); report whether its old lines matched."""
+MAX_OFFSET = 300
+
+
+def _locate(lines: list[str], hunk: Hunk, delta: int) -> tuple[int, int | None]:
+    """Where the hunk's old lines really are: (start, offset from the header's line).
+
+    Like ``git apply``, search outwards from the line the header names. Gold patches do
+    not always carry exact line numbers - their context is what makes them apply.
+    """
+    old = [ln[1:] for ln in hunk.lines if ln[:1] in (" ", "-")]
+    start = hunk.old_start - 1 + delta if hunk.old_len else hunk.old_start + delta
+    for off in range(MAX_OFFSET + 1):
+        for cand in ((start + off,) if off == 0 else (start - off, start + off)):
+            if cand >= 0 and lines[cand : cand + len(old)] == old:
+                return cand, cand - start
+    return start, None
+
+
+def _apply_at(lines: list[str], hunk: Hunk, start: int) -> list[str]:
     old = [ln[1:] for ln in hunk.lines if ln[:1] in (" ", "-")]
     new = [ln[1:] for ln in hunk.lines if ln[:1] in (" ", "+")]
-    start = hunk.old_start - 1 + delta if hunk.old_len else hunk.old_start + delta
-    matched = lines[start : start + len(old)] == old
-    return lines[:start] + new + lines[start + len(old) :], matched
+    return lines[:start] + new + lines[start + len(old) :]
 
 
-def _k_min(content: str, lines: list[str], hunk: Hunk, delta: int) -> int | None:
+def _k_min(content: str, lines: list[str], hunk: Hunk, start: int) -> int | None:
     lead = hunk.leading_context
     core_old, _ = hunk.core()
     n_core = core_old.count("\n")
-    start = hunk.old_start - 1 + delta + lead if hunk.old_len else hunk.old_start + delta
+    start = start + lead if hunk.old_len else start
     for k in range(0 if n_core else 1, MAX_K + 1):
         a, b = max(0, start - k), min(len(lines), start + n_core + k)
         snippet = "\n".join(lines[a:b])
@@ -114,9 +129,10 @@ def study_task(task: Task, preimages: dict[str, str]) -> list[dict[str, Any]]:
             core_old, core_new = hunk.core()
             row["core"] = apply_edit(content, core_old, core_new).status if core_old \
                 else "no_anchor"
-            row["k_min"] = _k_min(content, lines, hunk, delta)
-            new_lines, matched = _apply_at(lines, hunk, delta)
-            row["positional_match"] = matched
+            at, offset = _locate(lines, hunk, delta)
+            row["header_offset"] = offset
+            row["k_min"] = _k_min(content, lines, hunk, at)
+            new_lines = _apply_at(lines, hunk, at)
             expected = "\n".join(new_lines)
             perturbed: dict[str, Any] = {}
             for name, fn in PERTURBATIONS.items():
@@ -176,7 +192,8 @@ def aggregate(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "tasks": len(by_task),
         "hunks": len(rows),
         "files_crlf": len({(r["instance_id"], r["path"]) for r in rows if r["crlf_file"]}),
-        "positional_mismatch": sum(1 for r in rows if not r["positional_match"]),
+        "hunks_not_located": sum(1 for r in rows if r["header_offset"] is None),
+        "hunks_with_header_offset": sum(1 for r in rows if r["header_offset"]),
         "git3_unique": crate(lambda r: r["git3"] == "ok"),
         "git3_ambiguous": crate(lambda r: r["git3"] == "ambiguous"),
         "git3_not_found": crate(lambda r: r["git3"] == "not_found"),

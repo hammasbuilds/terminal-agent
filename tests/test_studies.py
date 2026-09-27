@@ -18,7 +18,7 @@ def test_edit_study_rows_and_perturbations():
              " def f1(x):\n-\treturn x  \n+\treturn x + 1\n \n")
     (row,) = edit_study.study_task(_task(patch), {"m.py": pre})
     assert row["git3"] == "ok" and row["core"] == "ambiguous" and row["k_min"] == 1
-    assert row["positional_match"]
+    assert row["header_offset"] == 0
     p = row["perturbations"]
     assert p["trailing_ws_dropped"]["exact"] == "not_found"
     assert p["trailing_ws_dropped"]["fuzzy"] == "correct"
@@ -68,3 +68,12 @@ def test_bundled_swebench_lite_is_complete():
     tasks = load_tasks()
     assert len(tasks) == 300 and len({t.instance_id for t in tasks}) == 300
     assert all(t.fail_to_pass and t.patch and t.test_patch for t in tasks)
+
+
+def test_edit_study_finds_a_hunk_whose_header_line_is_off():
+    # real case: sympy__sympy-13773 has a hunk 2 lines below where its header says
+    pre = "x = 0\ny = 0\n" + "".join(f"v{i} = {i}\n" for i in range(10))
+    patch = ("diff --git a/m.py b/m.py\n--- a/m.py\n+++ b/m.py\n@@ -3,3 +3,3 @@\n"
+             " v3 = 3\n-v4 = 4\n+v4 = 40\n v5 = 5\n")
+    (row,) = edit_study.study_task(_task(patch), {"m.py": pre})
+    assert row["header_offset"] == 3 and row["git3"] == "ok" and row["k_min"] == 0
