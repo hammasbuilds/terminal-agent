@@ -56,8 +56,8 @@ def _grade(task: Task, log: str) -> tuple[dict[str, Any], dict[str, str]]:
     return specs.grade(statuses, task.fail_to_pass, task.pass_to_pass), statuses
 
 
-def validate_task(task: Task, run_dir: Path, log_dir: Path, test_timeout: float = 1800
-                  ) -> dict[str, Any]:
+def validate_task(task: Task, run_dir: Path, log_dir: Path, test_timeout: float = 1800,
+                  repeat: int = 0) -> dict[str, Any]:
     rec: dict[str, Any] = {"instance_id": task.instance_id, "repo": task.repo,
                            "version": task.version}
     t0 = time.monotonic()
@@ -119,8 +119,9 @@ def validate_task(task: Task, run_dir: Path, log_dir: Path, test_timeout: float 
         return log, {**grade, **meta}
 
     rec["baseline"] = _stable(baseline_once, _baseline_ok,
-                              log_dir / f"{task.instance_id}.baseline.log.gz")
-    rec["gold"] = _stable(gold_once, _gold_ok, log_dir / f"{task.instance_id}.gold.log.gz")
+                              log_dir / f"{task.instance_id}.baseline.log.gz", repeat=repeat)
+    rec["gold"] = _stable(gold_once, _gold_ok, log_dir / f"{task.instance_id}.gold.log.gz",
+                          repeat=repeat)
 
     rec["reasons"] = diagnose(rec, gold_files)
     rec["verdict"] = "valid" if not rec["reasons"] else "invalid"
@@ -139,18 +140,20 @@ def _gold_ok(g: dict[str, Any]) -> bool:
 
 def _stable(run_once: Callable[[], tuple[str, dict[str, Any]]],
             expected: Callable[[dict[str, Any]], bool], log_path: Path,
-            reruns: int = 2) -> dict[str, Any]:
+            reruns: int = 2, repeat: int = 0) -> dict[str, Any]:
     """Run a test stage; if it misses its expectation, re-run it to tell flaky from broken.
 
-    The first run's log and grade are what is reported. Re-runs only add a ``reruns``
-    list, and ``flaky`` is set when any re-run's pass counts differ from the first run's.
+    ``repeat`` extra runs happen regardless (a stability check); ``reruns`` more happen
+    only when the first run misses. The first run's log and grade are what is reported;
+    ``flaky`` is set when any other run's pass counts differ from the first run's.
     """
     log, grade = run_once()
     _save_log(log_path, log)
-    if expected(grade):
+    extra = repeat if expected(grade) else max(repeat, reruns)
+    if not extra:
         return grade
     again = []
-    for _ in range(reruns):
+    for _ in range(extra):
         _, g = run_once()
         again.append({k: g[k] for k in ("f2p_passed", "p2p_passed", "resolved")})
     grade["reruns"] = again
@@ -236,7 +239,8 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def validate_local_task(task: LocalTask, run_dir: Path, log_dir: Path) -> dict[str, Any]:
+def validate_local_task(task: LocalTask, run_dir: Path, log_dir: Path, repeat: int = 0
+                        ) -> dict[str, Any]:
     """The same four checks for a mined local task, with pytest on this machine."""
     rec: dict[str, Any] = {"instance_id": task.instance_id, "repo": task.repo,
                            "version": task.base_commit[:10], "head_matches_base": True}
@@ -283,7 +287,7 @@ def validate_local_task(task: LocalTask, run_dir: Path, log_dir: Path) -> dict[s
             grade = specs.grade(specs.parse_pytest(log), task.fail_to_pass, task.pass_to_pass)
             return log, {**grade, "test_patch_applied": applied, "timed_out": timed_out}
 
-        rec[label] = _stable(once, ok,
+        rec[label] = _stable(once, ok, repeat=repeat, log_path=
                              log_dir / f"{task.instance_id.replace('@', '_')}.{label}.log.gz")
     rec["reasons"] = diagnose(rec, gold_files)
     rec["verdict"] = "valid" if not rec["reasons"] else "invalid"

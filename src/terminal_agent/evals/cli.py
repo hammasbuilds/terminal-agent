@@ -83,9 +83,11 @@ def cmd_validate(args: argparse.Namespace) -> int:
             continue
         t0 = time.monotonic()
         if args.suite == "swebench":
-            rec = validate.validate_task(task, RUNS / "validate", log_dir, args.test_timeout)
+            rec = validate.validate_task(task, RUNS / "validate", log_dir, args.test_timeout,
+                                         args.repeat)
         else:
-            rec = validate.validate_local_task(task, RUNS / "validate-local", log_dir)
+            rec = validate.validate_local_task(task, RUNS / "validate-local", log_dir,
+                                               args.repeat)
         pre = rec.pop("preimages", None)
         if pre:
             preimages[task.instance_id] = pre
@@ -260,6 +262,8 @@ def build_parser() -> argparse.ArgumentParser:
                    help="skip SWE-bench tasks whose Docker image is not pulled")
     v.add_argument("--force", action="store_true", help="re-run tasks that already have a record")
     v.add_argument("--test-timeout", type=float, default=1800)
+    v.add_argument("--repeat", type=int, default=0,
+                   help="extra runs of every test stage, to catch flaky tasks (default 0)")
     v.set_defaults(fn=cmd_validate)
 
     sub.add_parser("edit-study", help="exact-match edit failure rates on real hunks"
