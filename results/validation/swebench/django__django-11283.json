@@ -1,0 +1,99 @@
+{
+  "instance_id": "django__django-11283",
+  "repo": "django/django",
+  "version": "3.0",
+  "head_matches_base": true,
+  "export": {
+    "files": 6069,
+    "skipped_symlinks": [
+      "docs/_theme/djangodocs-epub/static/docicons-behindscenes.png",
+      "docs/_theme/djangodocs-epub/static/docicons-note.png",
+      "docs/_theme/djangodocs-epub/static/docicons-philosophy.png",
+      "docs/_theme/djangodocs-epub/static/docicons-warning.png"
+    ],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 5,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 3,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "django/contrib/auth/migrations/0011_update_proxy_permissions.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "django/contrib/auth/migrations/0011_update_proxy_permissions.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "django/contrib/auth/migrations/0011_update_proxy_permissions.py",
+      "index": 2,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "django/contrib/auth/migrations/0011_update_proxy_permissions.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 8,
+    "p2p_total": 8,
+    "f2p_failing": [
+      "test_migrate_with_existing_target_permission (auth_tests.test_migrations.ProxyModelWithSameAppLabelTests)"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/django/contrib/auth/migrations/0011_update_proxy_permissions.py b/django/contrib/auth/migrations/0011_update_proxy_permissions.py\nindex 0e66649695..c3f617f438 100755\n--- a/django/contrib/auth/migrations/0011_update_proxy_permissions.py\n+++ b/django/contrib/auth/migrations/0011_update_proxy_permissions.py\n@@ -1,5 +1,18 @@\n-from django.db import migrations\n+import sys\n+\n+from django.core.management.color import color_style\n+from django.db import migrations, transaction\n from django.db.models import Q\n+from django.db.utils import IntegrityError\n+\n+WARNING = \"\"\"\n+    A problem arose migrating proxy model permissions for {old} to {new}.\n+\n+      Permission(s) for {new} already existed.\n+      Codenames Q: {query}\n+\n+    Ensure to audit ALL permissions for {old} and {new}.\n+\"\"\"\n \n \n def update_proxy_model_permissions(apps, schema_editor, reverse=False):\n@@ -7,6 +20,7 @@ def update_proxy_model_permissions(apps, schema_editor, reverse=False):\n     Update the content_type of proxy model permissions to use the ContentType\n     of the proxy model.\n     \"\"\"\n+    style = color_style()\n     Permission = apps.get_model('auth', 'Permission')\n     ContentType = apps.get_model('contenttypes', 'ContentType')\n     for Model in apps.get_models():\n@@ -24,10 +38,16 @@ def update_proxy_model_permissions(apps, schema_editor, reverse=False):\n         proxy_content_type = ContentType.objects.get_for_model(Model, for_concrete_model=False)\n         old_content_type = proxy_content_type if reverse else concrete_content_type\n         new_content_type = concrete_content_type if reverse else proxy_content_type\n-        Permission.objects.filter(\n-            permissions_query,\n-            content_type=old_content_type,\n-        ).update(content_type=new_content_type)\n+        try:\n+            with transaction.atomic():\n+                Permission.objects.filter(\n+                    permissions_query,\n+                    content_type=old_content_type,\n+                ).update(content_type=new_content_type)\n+        except IntegrityError:\n+            old = '{}_{}'.format(old_content_type.app_label, old_content_type.model)\n+            new = '{}_{}'.format(new_content_type.app_label, new_content_type.model)\n+            sys.stdout.write(style.WARNING(WARNING.format(old=old, new=new, query=permissions_query)))\n \n \n def revert_proxy_model_permissions(apps, schema_editor):\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 8,
+    "p2p_total": 8,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 102.3
+}

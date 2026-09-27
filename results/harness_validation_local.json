@@ -24,13 +24,18 @@
   "reason_counts": {
     "flaky: baseline results changed between identical runs": 2,
     "flaky: gold results changed between identical runs": 2,
-    "gold: 1 PASS_TO_PASS fail": 1
+    "gold: N PASS_TO_PASS fail": 1
   },
   "hunks": 75,
   "hunks_first_try_ok": 74,
   "hunks_first_try_ambiguous": 1,
   "hunks_final_ok": 75,
   "byte_identical_tasks": 17,
+  "empty_patch_resolves": [],
+  "flaky": [
+    "blast-radius@832917d975",
+    "blast-radius@cb57f583c7"
+  ],
   "invalid": {
     "blast-radius@832917d975": [
       "flaky: baseline results changed between identical runs",

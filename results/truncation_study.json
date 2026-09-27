@@ -1,66 +1,66 @@
 {
   "summary": {
-    "logs": 51,
+    "logs": 52,
     "log_chars": {
-      "median": 3939,
+      "median": 4138,
       "max": 188875,
       "over_8000": 11
     },
     "visible_rate": {
       "head@1000": {
-        "k": 15,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.1471,
+        "k": 16,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.1553,
         "ci95_cluster": [
-          0.069,
-          0.2533
+          0.0775,
+          0.2692
         ]
       },
       "head@2000": {
-        "k": 25,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.2451,
+        "k": 26,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.2524,
         "ci95_cluster": [
-          0.1311,
-          0.398
+          0.1349,
+          0.411
         ]
       },
       "head@4000": {
-        "k": 52,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.5098,
+        "k": 53,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.5146,
         "ci95_cluster": [
-          0.3411,
-          0.7333
+          0.3485,
+          0.7468
         ]
       },
       "head@8000": {
-        "k": 99,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.9706,
+        "k": 100,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.9709,
         "ci95_cluster": [
-          0.9252,
+          0.9271,
           1.0
         ]
       },
       "head@16000": {
-        "k": 101,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.9902,
+        "k": 102,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.9903,
         "ci95_cluster": [
-          0.9634,
+          0.9655,
           1.0
         ]
       },
       "head@32000": {
-        "k": 102,
-        "n": 102,
-        "clusters": 51,
+        "k": 103,
+        "n": 103,
+        "clusters": 52,
         "rate": 1.0,
         "ci95_cluster": [
           1.0,
@@ -69,118 +69,118 @@
       },
       "tail@1000": {
         "k": 63,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.6176,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.6117,
         "ci95_cluster": [
-          0.4312,
-          0.7841
+          0.4206,
+          0.7788
         ]
       },
       "tail@2000": {
         "k": 77,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.7549,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.7476,
         "ci95_cluster": [
-          0.5545,
-          0.9167
+          0.5439,
+          0.9068
         ]
       },
       "tail@4000": {
         "k": 83,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.8137,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.8058,
         "ci95_cluster": [
-          0.6071,
-          0.963
+          0.5946,
+          0.9537
         ]
       },
       "tail@8000": {
-        "k": 86,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.8431,
+        "k": 87,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.8447,
         "ci95_cluster": [
-          0.6339,
-          0.9884
+          0.6288,
+          0.9821
         ]
       },
       "tail@16000": {
-        "k": 86,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.8431,
+        "k": 87,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.8447,
         "ci95_cluster": [
-          0.6339,
-          0.9884
+          0.6288,
+          0.9821
         ]
       },
       "tail@32000": {
-        "k": 99,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.9706,
+        "k": 100,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.9709,
         "ci95_cluster": [
-          0.9224,
+          0.9231,
           1.0
         ]
       },
       "head_tail@1000": {
         "k": 52,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.5098,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.5049,
         "ci95_cluster": [
-          0.3545,
-          0.6638
+          0.3433,
+          0.6667
         ]
       },
       "head_tail@2000": {
-        "k": 73,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.7157,
+        "k": 74,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.7184,
         "ci95_cluster": [
-          0.5179,
-          0.8817
+          0.5172,
+          0.886
         ]
       },
       "head_tail@4000": {
-        "k": 84,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.8235,
+        "k": 85,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.8252,
         "ci95_cluster": [
-          0.6218,
-          0.9706
+          0.6204,
+          0.9712
         ]
       },
       "head_tail@8000": {
-        "k": 89,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.8725,
+        "k": 90,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.8738,
         "ci95_cluster": [
-          0.686,
+          0.6759,
           1.0
         ]
       },
       "head_tail@16000": {
-        "k": 97,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.951,
+        "k": 98,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.9515,
         "ci95_cluster": [
-          0.8673,
+          0.8624,
           1.0
         ]
       },
       "head_tail@32000": {
-        "k": 102,
-        "n": 102,
-        "clusters": 51,
+        "k": 103,
+        "n": 103,
+        "clusters": 52,
         "rate": 1.0,
         "ci95_cluster": [
           1.0,
@@ -188,29 +188,29 @@
         ]
       },
       "digest@1000": {
-        "k": 87,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.8529,
+        "k": 88,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.8544,
         "ci95_cluster": [
-          0.723,
-          0.987
+          0.7313,
+          0.9872
         ]
       },
       "digest@2000": {
-        "k": 98,
-        "n": 102,
-        "clusters": 51,
-        "rate": 0.9608,
+        "k": 99,
+        "n": 103,
+        "clusters": 52,
+        "rate": 0.9612,
         "ci95_cluster": [
-          0.8938,
+          0.8899,
           1.0
         ]
       },
       "digest@4000": {
-        "k": 102,
-        "n": 102,
-        "clusters": 51,
+        "k": 103,
+        "n": 103,
+        "clusters": 52,
         "rate": 1.0,
         "ci95_cluster": [
           1.0,
@@ -218,9 +218,9 @@
         ]
       },
       "digest@8000": {
-        "k": 102,
-        "n": 102,
-        "clusters": 51,
+        "k": 103,
+        "n": 103,
+        "clusters": 52,
         "rate": 1.0,
         "ci95_cluster": [
           1.0,
@@ -228,9 +228,9 @@
         ]
       },
       "digest@16000": {
-        "k": 102,
-        "n": 102,
-        "clusters": 51,
+        "k": 103,
+        "n": 103,
+        "clusters": 52,
         "rate": 1.0,
         "ci95_cluster": [
           1.0,
@@ -238,9 +238,9 @@
         ]
       },
       "digest@32000": {
-        "k": 102,
-        "n": 102,
-        "clusters": 51,
+        "k": 103,
+        "n": 103,
+        "clusters": 52,
         "rate": 1.0,
         "ci95_cluster": [
           1.0,
@@ -501,47 +501,47 @@
       }
     },
     "django/django": {
-      "logs": 6,
+      "logs": 7,
       "log_chars": {
-        "median": 9163,
+        "median": 5652,
         "max": 25919,
         "over_8000": 3
       },
       "visible_rate": {
         "head@1000": {
-          "k": 1,
-          "n": 17,
-          "clusters": 6,
-          "rate": 0.0588,
+          "k": 2,
+          "n": 18,
+          "clusters": 7,
+          "rate": 0.1111,
           "ci95_cluster": [
             0.0,
-            0.5
+            0.5714
           ]
         },
         "head@2000": {
-          "k": 2,
-          "n": 17,
-          "clusters": 6,
-          "rate": 0.1176,
+          "k": 3,
+          "n": 18,
+          "clusters": 7,
+          "rate": 0.1667,
           "ci95_cluster": [
-            0.0,
-            0.6667
+            0.025,
+            0.7143
           ]
         },
         "head@4000": {
-          "k": 3,
-          "n": 17,
-          "clusters": 6,
-          "rate": 0.1765,
+          "k": 4,
+          "n": 18,
+          "clusters": 7,
+          "rate": 0.2222,
           "ci95_cluster": [
-            0.0588,
-            0.6667
+            0.1,
+            0.7143
           ]
         },
         "head@8000": {
-          "k": 17,
-          "n": 17,
-          "clusters": 6,
+          "k": 18,
+          "n": 18,
+          "clusters": 7,
           "rate": 1.0,
           "ci95_cluster": [
             1.0,
@@ -549,9 +549,9 @@
           ]
         },
         "head@16000": {
-          "k": 17,
-          "n": 17,
-          "clusters": 6,
+          "k": 18,
+          "n": 18,
+          "clusters": 7,
           "rate": 1.0,
           "ci95_cluster": [
             1.0,
@@ -559,9 +559,9 @@
           ]
         },
         "head@32000": {
-          "k": 17,
-          "n": 17,
-          "clusters": 6,
+          "k": 18,
+          "n": 18,
+          "clusters": 7,
           "rate": 1.0,
           "ci95_cluster": [
             1.0,
@@ -570,8 +570,8 @@
         },
         "tail@1000": {
           "k": 0,
-          "n": 17,
-          "clusters": 6,
+          "n": 18,
+          "clusters": 7,
           "rate": 0.0,
           "ci95_cluster": [
             0.0,
@@ -580,48 +580,48 @@
         },
         "tail@2000": {
           "k": 1,
-          "n": 17,
-          "clusters": 6,
-          "rate": 0.0588,
+          "n": 18,
+          "clusters": 7,
+          "rate": 0.0556,
           "ci95_cluster": [
             0.0,
-            0.5
+            0.4286
           ]
         },
         "tail@4000": {
           "k": 3,
-          "n": 17,
-          "clusters": 6,
-          "rate": 0.1765,
+          "n": 18,
+          "clusters": 7,
+          "rate": 0.1667,
           "ci95_cluster": [
-            0.02,
-            0.8333
+            0.025,
+            0.7143
           ]
         },
         "tail@8000": {
-          "k": 5,
-          "n": 17,
-          "clusters": 6,
-          "rate": 0.2941,
+          "k": 6,
+          "n": 18,
+          "clusters": 7,
+          "rate": 0.3333,
           "ci95_cluster": [
-            0.0769,
+            0.1,
             1.0
           ]
         },
         "tail@16000": {
-          "k": 5,
-          "n": 17,
-          "clusters": 6,
-          "rate": 0.2941,
+          "k": 6,
+          "n": 18,
+          "clusters": 7,
+          "rate": 0.3333,
           "ci95_cluster": [
-            0.0769,
+            0.1,
             1.0
           ]
         },
         "tail@32000": {
-          "k": 17,
-          "n": 17,
-          "clusters": 6,
+          "k": 18,
+          "n": 18,
+          "clusters": 7,
           "rate": 1.0,
           "ci95_cluster": [
             1.0,
@@ -630,8 +630,8 @@
         },
         "head_tail@1000": {
           "k": 0,
-          "n": 17,
-          "clusters": 6,
+          "n": 18,
+          "clusters": 7,
           "rate": 0.0,
           "ci95_cluster": [
             0.0,
@@ -639,49 +639,49 @@
           ]
         },
         "head_tail@2000": {
-          "k": 2,
-          "n": 17,
-          "clusters": 6,
-          "rate": 0.1176,
+          "k": 3,
+          "n": 18,
+          "clusters": 7,
+          "rate": 0.1667,
           "ci95_cluster": [
-            0.0,
-            0.6667
+            0.025,
+            0.7143
           ]
         },
         "head_tail@4000": {
-          "k": 3,
-          "n": 17,
-          "clusters": 6,
-          "rate": 0.1765,
+          "k": 4,
+          "n": 18,
+          "clusters": 7,
+          "rate": 0.2222,
           "ci95_cluster": [
-            0.0256,
-            0.8333
+            0.05,
+            0.8571
           ]
         },
         "head_tail@8000": {
-          "k": 6,
-          "n": 17,
-          "clusters": 6,
-          "rate": 0.3529,
+          "k": 7,
+          "n": 18,
+          "clusters": 7,
+          "rate": 0.3889,
           "ci95_cluster": [
-            0.1538,
+            0.175,
             1.0
           ]
         },
         "head_tail@16000": {
-          "k": 12,
-          "n": 17,
-          "clusters": 6,
-          "rate": 0.7059,
+          "k": 13,
+          "n": 18,
+          "clusters": 7,
+          "rate": 0.7222,
           "ci95_cluster": [
-            0.6154,
+            0.625,
             1.0
           ]
         },
         "head_tail@32000": {
-          "k": 17,
-          "n": 17,
-          "clusters": 6,
+          "k": 18,
+          "n": 18,
+          "clusters": 7,
           "rate": 1.0,
           "ci95_cluster": [
             1.0,
@@ -689,29 +689,29 @@
           ]
         },
         "digest@1000": {
-          "k": 9,
-          "n": 17,
-          "clusters": 6,
-          "rate": 0.5294,
+          "k": 10,
+          "n": 18,
+          "clusters": 7,
+          "rate": 0.5556,
           "ci95_cluster": [
-            0.3846,
+            0.4,
             1.0
           ]
         },
         "digest@2000": {
-          "k": 13,
-          "n": 17,
-          "clusters": 6,
-          "rate": 0.7647,
+          "k": 14,
+          "n": 18,
+          "clusters": 7,
+          "rate": 0.7778,
           "ci95_cluster": [
-            0.6923,
+            0.7,
             1.0
           ]
         },
         "digest@4000": {
-          "k": 17,
-          "n": 17,
-          "clusters": 6,
+          "k": 18,
+          "n": 18,
+          "clusters": 7,
           "rate": 1.0,
           "ci95_cluster": [
             1.0,
@@ -719,9 +719,9 @@
           ]
         },
         "digest@8000": {
-          "k": 17,
-          "n": 17,
-          "clusters": 6,
+          "k": 18,
+          "n": 18,
+          "clusters": 7,
           "rate": 1.0,
           "ci95_cluster": [
             1.0,
@@ -729,9 +729,9 @@
           ]
         },
         "digest@16000": {
-          "k": 17,
-          "n": 17,
-          "clusters": 6,
+          "k": 18,
+          "n": 18,
+          "clusters": 7,
           "rate": 1.0,
           "ci95_cluster": [
             1.0,
@@ -739,9 +739,9 @@
           ]
         },
         "digest@32000": {
-          "k": 17,
-          "n": 17,
-          "clusters": 6,
+          "k": 18,
+          "n": 18,
+          "clusters": 7,
           "rate": 1.0,
           "ci95_cluster": [
             1.0,
@@ -3075,6 +3075,109 @@
         },
         "head_tail@2000": {
           "visible": 0,
+          "total": 1
+        },
+        "head_tail@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "digest@32000": {
+          "visible": 1,
+          "total": 1
+        }
+      },
+      "repo": "django/django"
+    },
+    "django__django-11283": {
+      "chars": 5213,
+      "f2p_failing_in_full_log": 1,
+      "cells": {
+        "head@1000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@2000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@4000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@2000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@4000": {
+          "visible": 0,
+          "total": 1
+        },
+        "tail@8000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@16000": {
+          "visible": 1,
+          "total": 1
+        },
+        "tail@32000": {
+          "visible": 1,
+          "total": 1
+        },
+        "head_tail@1000": {
+          "visible": 0,
+          "total": 1
+        },
+        "head_tail@2000": {
+          "visible": 1,
           "total": 1
         },
         "head_tail@4000": {

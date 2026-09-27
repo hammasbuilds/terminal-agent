@@ -1,0 +1,83 @@
+{
+  "instance_id": "django__django-11179",
+  "repo": "django/django",
+  "version": "3.0",
+  "head_matches_base": true,
+  "export": {
+    "files": 6067,
+    "skipped_symlinks": [
+      "docs/_theme/djangodocs-epub/static/docicons-behindscenes.png",
+      "docs/_theme/djangodocs-epub/static/docicons-note.png",
+      "docs/_theme/djangodocs-epub/static/docicons-philosophy.png",
+      "docs/_theme/djangodocs-epub/static/docicons-warning.png"
+    ],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 3,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 1,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "django/db/models/deletion.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "django/db/models/deletion.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 40,
+    "p2p_total": 40,
+    "f2p_failing": [
+      "test_fast_delete_instance_set_pk_none (delete.tests.FastDeleteTests)"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/django/db/models/deletion.py b/django/db/models/deletion.py\nindex 92fe4affb9..3a462f1c4c 100755\n--- a/django/db/models/deletion.py\n+++ b/django/db/models/deletion.py\n@@ -277,6 +277,7 @@ class Collector:\n             if self.can_fast_delete(instance):\n                 with transaction.mark_for_rollback_on_error():\n                     count = sql.DeleteQuery(model).delete_batch([instance.pk], self.using)\n+                setattr(instance, model._meta.pk.attname, None)\n                 return count, {model._meta.label: count}\n \n         with transaction.atomic(using=self.using, savepoint=False):\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 40,
+    "p2p_total": 40,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 90.2
+}
