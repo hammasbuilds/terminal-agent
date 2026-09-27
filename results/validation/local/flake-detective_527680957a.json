@@ -1,0 +1,101 @@
+{
+  "instance_id": "flake-detective@527680957a",
+  "repo": "flake-detective",
+  "version": "85c260a72b",
+  "head_matches_base": true,
+  "export": {
+    "files": 19,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 3,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 1,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "src/flake_detective/run.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "changed_files": {
+    "modified": [
+      "src/flake_detective/run.py"
+    ],
+    "deleted": []
+  },
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 9,
+    "p2p_total": 9,
+    "f2p_failing": [
+      "tests/test_run.py::test_a_parametrised_failure_id_is_not_truncated"
+    ],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 9,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 9,
+        "resolved": false
+      }
+    ],
+    "flaky": false
+  },
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 9,
+    "p2p_total": 9,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 1,
+        "p2p_passed": 9,
+        "resolved": true
+      },
+      {
+        "f2p_passed": 1,
+        "p2p_passed": 9,
+        "resolved": true
+      }
+    ],
+    "flaky": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 748.5
+}

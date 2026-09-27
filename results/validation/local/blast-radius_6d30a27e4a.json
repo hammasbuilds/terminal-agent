@@ -1,0 +1,135 @@
+{
+  "instance_id": "blast-radius@6d30a27e4a",
+  "repo": "blast-radius",
+  "version": "832917d975",
+  "head_matches_base": true,
+  "export": {
+    "files": 12,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 8,
+    "tool_calls": {
+      "read_file": 2,
+      "edit": 5,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "src/blast_radius/cli.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/blast_radius/diff.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/blast_radius/diff.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/blast_radius/diff.py",
+      "index": 2,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/blast_radius/diff.py",
+      "index": 3,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "changed_files": {
+    "modified": [
+      "src/blast_radius/cli.py",
+      "src/blast_radius/diff.py"
+    ],
+    "deleted": []
+  },
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 2,
+    "p2p_passed": 44,
+    "p2p_total": 44,
+    "f2p_failing": [
+      "tests/test_blast_radius.py::test_a_probe_that_died_is_reported_apart_from_a_function_that_cannot_be_called",
+      "tests/test_blast_radius.py::test_calling_a_function_wrongly_is_not_the_same_as_it_rejecting_input"
+    ],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 44,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 44,
+        "resolved": false
+      }
+    ],
+    "flaky": false
+  },
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 2,
+    "f2p_total": 2,
+    "p2p_passed": 44,
+    "p2p_total": 44,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 2,
+        "p2p_passed": 44,
+        "resolved": true
+      },
+      {
+        "f2p_passed": 2,
+        "p2p_passed": 44,
+        "resolved": true
+      }
+    ],
+    "flaky": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 633.0
+}

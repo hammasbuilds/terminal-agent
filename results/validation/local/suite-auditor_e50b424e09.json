@@ -1,0 +1,129 @@
+{
+  "instance_id": "suite-auditor@e50b424e09",
+  "repo": "suite-auditor",
+  "version": "63472f11f8",
+  "head_matches_base": true,
+  "export": {
+    "files": 15,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 9,
+    "tool_calls": {
+      "read_file": 4,
+      "edit": 4,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "src/suite_auditor/audit.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/suite_auditor/mutate.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/suite_auditor/report.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/suite_auditor/types.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "changed_files": {
+    "modified": [
+      "src/suite_auditor/audit.py",
+      "src/suite_auditor/mutate.py",
+      "src/suite_auditor/report.py",
+      "src/suite_auditor/types.py"
+    ],
+    "deleted": []
+  },
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 2,
+    "p2p_passed": 34,
+    "p2p_total": 34,
+    "f2p_failing": [
+      "tests/test_suite_auditor.py::test_a_single_module_library_is_found",
+      "tests/test_suite_auditor.py::test_an_audit_with_nothing_to_mutate_says_so"
+    ],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 34,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 34,
+        "resolved": false
+      }
+    ],
+    "flaky": false
+  },
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 2,
+    "f2p_total": 2,
+    "p2p_passed": 34,
+    "p2p_total": 34,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 2,
+        "p2p_passed": 34,
+        "resolved": true
+      },
+      {
+        "f2p_passed": 2,
+        "p2p_passed": 34,
+        "resolved": true
+      }
+    ],
+    "flaky": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 47.7
+}

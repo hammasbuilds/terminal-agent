@@ -1,0 +1,175 @@
+{
+  "instance_id": "urdu-nlp-toolkit@d8bc1340d0",
+  "repo": "urdunlp",
+  "version": "baa2d09ff8",
+  "head_matches_base": true,
+  "export": {
+    "files": 15,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 13,
+    "tool_calls": {
+      "read_file": 3,
+      "edit": 9,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "scripts/measure_corpus.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/urdunlp/__init__.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/urdunlp/__init__.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/urdunlp/normalize.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/urdunlp/normalize.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/urdunlp/normalize.py",
+      "index": 2,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/urdunlp/normalize.py",
+      "index": 3,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/urdunlp/normalize.py",
+      "index": 4,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/urdunlp/normalize.py",
+      "index": 5,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "changed_files": {
+    "modified": [
+      "scripts/measure_corpus.py",
+      "src/urdunlp/__init__.py",
+      "src/urdunlp/normalize.py"
+    ],
+    "deleted": []
+  },
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 9,
+    "p2p_passed": 65,
+    "p2p_total": 65,
+    "f2p_failing": [
+      "tests/test_urdunlp.py::TestNormalize::test_is_urdu_and_the_tokeniser_agree_on_what_counts_as_urdu",
+      "tests/test_urdunlp.py::TestNormalize::test_stray_arabic_heh_resolves_by_context[\\u0627\\u0644\\u0644\\u0647-\\u0627\\u0644\\u0644\\u06c1]",
+      "tests/test_urdunlp.py::TestNormalize::test_stray_arabic_heh_resolves_by_context[\\u0628\\u0647\\u06cc-\\u0628\\u06be\\u06cc]",
+      "tests/test_urdunlp.py::TestNormalize::test_stray_arabic_heh_resolves_by_context[\\u062a\\u0647\\u0627-\\u062a\\u06be\\u0627]",
+      "tests/test_urdunlp.py::TestNormalize::test_stray_arabic_heh_resolves_by_context[\\u0633\\u0646\\u062f\\u0647-\\u0633\\u0646\\u062f\\u06be]",
+      "tests/test_urdunlp.py::TestNormalize::test_stray_arabic_heh_resolves_by_context[\\u0645\\u062c\\u0647\\u06d2-\\u0645\\u062c\\u06be\\u06d2]",
+      "tests/test_urdunlp.py::TestNormalize::test_stray_arabic_heh_resolves_by_context[\\u0646\\u0647-\\u0646\\u06c1]",
+      "tests/test_urdunlp.py::TestNormalize::test_stray_arabic_heh_resolves_by_context[\\u06a9\\u0686\\u0647-\\u06a9\\u0686\\u06be]",
+      "tests/test_urdunlp.py::TestNormalize::test_stray_arabic_heh_resolves_by_context[\\u06af\\u0647\\u0631-\\u06af\\u06be\\u0631]"
+    ],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 65,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 65,
+        "resolved": false
+      }
+    ],
+    "flaky": false
+  },
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 9,
+    "f2p_total": 9,
+    "p2p_passed": 65,
+    "p2p_total": 65,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 9,
+        "p2p_passed": 65,
+        "resolved": true
+      },
+      {
+        "f2p_passed": 9,
+        "p2p_passed": 65,
+        "resolved": true
+      }
+    ],
+    "flaky": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 17.2
+}

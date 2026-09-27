@@ -1,0 +1,115 @@
+{
+  "instance_id": "blast-radius@832917d975",
+  "repo": "blast-radius",
+  "version": "4bece4de6d",
+  "head_matches_base": true,
+  "export": {
+    "files": 12,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 4,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 2,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "src/blast_radius/probe.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/blast_radius/probe.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "changed_files": {
+    "modified": [
+      "src/blast_radius/probe.py"
+    ],
+    "deleted": []
+  },
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 44,
+    "p2p_total": 44,
+    "f2p_failing": [
+      "tests/test_blast_radius.py::test_a_temp_directory_that_cannot_be_removed_does_not_lose_the_run"
+    ],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 43,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 44,
+        "resolved": false
+      }
+    ],
+    "flaky": true
+  },
+  "gold": {
+    "resolved": false,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 43,
+    "p2p_total": 44,
+    "f2p_failing": [],
+    "p2p_failing": [
+      "tests/test_blast_radius.py::test_restarting_past_hangs_is_capped_and_the_rest_are_marked_unattempted"
+    ],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 1,
+        "p2p_passed": 44,
+        "resolved": true
+      },
+      {
+        "f2p_passed": 1,
+        "p2p_passed": 43,
+        "resolved": false
+      }
+    ],
+    "flaky": true
+  },
+  "reasons": [
+    "flaky: baseline results changed between identical runs",
+    "flaky: gold results changed between identical runs",
+    "gold: 1 PASS_TO_PASS fail"
+  ],
+  "verdict": "invalid",
+  "seconds": 689.8
+}

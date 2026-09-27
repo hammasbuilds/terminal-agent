@@ -1,0 +1,141 @@
+{
+  "instance_id": "urdu-nlp-toolkit@0de4128668",
+  "repo": "urdunlp",
+  "version": "03e261a59a",
+  "head_matches_base": true,
+  "export": {
+    "files": 11,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 8,
+    "tool_calls": {
+      "read_file": 2,
+      "edit": 5,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "demo.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "demo.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/urdunlp/translit.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/urdunlp/translit.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/urdunlp/translit.py",
+      "index": 2,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "changed_files": {
+    "modified": [
+      "demo.py",
+      "src/urdunlp/translit.py"
+    ],
+    "deleted": []
+  },
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 8,
+    "p2p_passed": 41,
+    "p2p_total": 41,
+    "f2p_failing": [
+      "tests/test_urdunlp.py::TestTransliteration::test_identifier_inside_a_sentence_leaves_the_sentence_translated",
+      "tests/test_urdunlp.py::TestTransliteration::test_identifiers_do_not_count_against_lexicon_coverage",
+      "tests/test_urdunlp.py::TestTransliteration::test_identifiers_survive_transliteration[#lahore]",
+      "tests/test_urdunlp.py::TestTransliteration::test_identifiers_survive_transliteration[@ali]",
+      "tests/test_urdunlp.py::TestTransliteration::test_identifiers_survive_transliteration[ali@example.com]",
+      "tests/test_urdunlp.py::TestTransliteration::test_identifiers_survive_transliteration[http://x.co]",
+      "tests/test_urdunlp.py::TestTransliteration::test_identifiers_survive_transliteration[https://example.com/a/b?q=1]",
+      "tests/test_urdunlp.py::TestTransliteration::test_identifiers_survive_transliteration[www.dawn.com]"
+    ],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 41,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 41,
+        "resolved": false
+      }
+    ],
+    "flaky": false
+  },
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 8,
+    "f2p_total": 8,
+    "p2p_passed": 41,
+    "p2p_total": 41,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 8,
+        "p2p_passed": 41,
+        "resolved": true
+      },
+      {
+        "f2p_passed": 8,
+        "p2p_passed": 41,
+        "resolved": true
+      }
+    ],
+    "flaky": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 10.1
+}

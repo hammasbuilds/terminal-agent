@@ -1,0 +1,107 @@
+{
+  "instance_id": "urdu-nlp-toolkit@baa2d09ff8",
+  "repo": "urdunlp",
+  "version": "d7ff18df94",
+  "head_matches_base": true,
+  "export": {
+    "files": 15,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 3,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 1,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "src/urdunlp/tokenize.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "changed_files": {
+    "modified": [
+      "src/urdunlp/tokenize.py"
+    ],
+    "deleted": []
+  },
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 7,
+    "p2p_passed": 57,
+    "p2p_total": 57,
+    "f2p_failing": [
+      "tests/test_urdunlp.py::TestTokenize::test_a_merge_still_fires_next_to_punctuation[!]",
+      "tests/test_urdunlp.py::TestTokenize::test_a_merge_still_fires_next_to_punctuation[\"]",
+      "tests/test_urdunlp.py::TestTokenize::test_a_merge_still_fires_next_to_punctuation[)]",
+      "tests/test_urdunlp.py::TestTokenize::test_a_merge_still_fires_next_to_punctuation[\\u060c]",
+      "tests/test_urdunlp.py::TestTokenize::test_a_merge_still_fires_next_to_punctuation[\\u061f]",
+      "tests/test_urdunlp.py::TestTokenize::test_a_merge_still_fires_next_to_punctuation[\\u06d4]",
+      "tests/test_urdunlp.py::TestTokenize::test_fix_spacing_leaves_the_rest_of_the_text_alone"
+    ],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 57,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 57,
+        "resolved": false
+      }
+    ],
+    "flaky": false
+  },
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 7,
+    "f2p_total": 7,
+    "p2p_passed": 57,
+    "p2p_total": 57,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 7,
+        "p2p_passed": 57,
+        "resolved": true
+      },
+      {
+        "f2p_passed": 7,
+        "p2p_passed": 57,
+        "resolved": true
+      }
+    ],
+    "flaky": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 13.8
+}

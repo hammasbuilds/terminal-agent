@@ -1,0 +1,163 @@
+{
+  "instance_id": "suite-auditor@949e4aa2f3",
+  "repo": "suite-auditor",
+  "version": "e50b424e09",
+  "head_matches_base": true,
+  "export": {
+    "files": 15,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 5,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 3,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "src/suite_auditor/mutate.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/suite_auditor/mutate.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/suite_auditor/mutate.py",
+      "index": 2,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "changed_files": {
+    "modified": [
+      "src/suite_auditor/mutate.py"
+    ],
+    "deleted": []
+  },
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 47,
+    "p2p_passed": 0,
+    "p2p_total": 0,
+    "f2p_failing": [
+      "tests/test_operators.py::test_a_function_with_nothing_to_mutate_yields_nothing",
+      "tests/test_operators.py::test_a_return_of_none_is_not_mutated_to_none",
+      "tests/test_operators.py::test_each_operator_reaches_its_shape[a",
+      "tests/test_operators.py::test_each_operator_reaches_its_shape[an",
+      "tests/test_operators.py::test_each_operator_reaches_its_shape[arithmetic]",
+      "tests/test_operators.py::test_each_operator_reaches_its_shape[branch",
+      "tests/test_operators.py::test_each_operator_reaches_its_shape[identity]",
+      "tests/test_operators.py::test_each_operator_reaches_its_shape[membership]",
+      "tests/test_operators.py::test_mutants_are_distinct",
+      "tests/test_operators.py::test_no_mutant_equals_the_original",
+      "tests/test_operators.py::test_the_operator_set_matches_what_the_mutator_can_produce",
+      "tests/test_suite_auditor.py::TestBuildMapReportsHealth::test_a_repo_whose_tests_fail_is_traced_but_not_clean",
+      "tests/test_suite_auditor.py::TestBuildMapReportsHealth::test_a_repo_whose_tests_pass_traces_them_and_reports_clean",
+      "tests/test_suite_auditor.py::TestBuildMapReportsHealth::test_a_repo_with_no_tests_returns_an_empty_map_and_says_why",
+      "tests/test_suite_auditor.py::TestSuiteHealth::test_a_clean_run_is_clean",
+      "tests/test_suite_auditor.py::TestSuiteHealth::test_a_failing_test_makes_the_unreached_count_untrustworthy",
+      "tests/test_suite_auditor.py::TestSuiteHealth::test_a_suite_that_never_ran_says_so",
+      "tests/test_suite_auditor.py::TestSuiteHealth::test_an_erroring_test_is_reported_too",
+      "tests/test_suite_auditor.py::TestSuiteHealth::test_collecting_nothing_is_its_own_condition",
+      "tests/test_suite_auditor.py::test_a_drained_iterator_that_raised_is_not_a_clean_return",
+      "tests/test_suite_auditor.py::test_a_free_function_is_found_directly",
+      "tests/test_suite_auditor.py::test_a_function_with_no_mutable_site_yields_nothing",
+      "tests/test_suite_auditor.py::test_a_function_with_no_parameters_gives_an_empty_call",
+      "tests/test_suite_auditor.py::test_a_high_kill_rate_over_a_narrow_base_cannot_hide",
+      "tests/test_suite_auditor.py::test_a_method_is_found_by_its_bare_name",
+      "tests/test_suite_auditor.py::test_a_method_mutant_is_written_back_at_the_right_indentation",
+      "tests/test_suite_auditor.py::test_a_single_module_library_is_found",
+      "tests/test_suite_auditor.py::test_a_survivor_that_really_differs_gets_a_witness",
+      "tests/test_suite_auditor.py::test_an_audit_with_nothing_to_mutate_says_so",
+      "tests/test_suite_auditor.py::test_an_equivalent_mutant_is_not_a_gap",
+      "tests/test_suite_auditor.py::test_an_uncovered_function_returns_nothing",
+      "tests/test_suite_auditor.py::test_argument_sets_vary_one_parameter_at_a_time",
+      "tests/test_suite_auditor.py::test_booleans_are_not_mutated_as_integers",
+      "tests/test_suite_auditor.py::test_caught_share_is_none_when_there_is_nothing_to_divide_by",
+      "tests/test_suite_auditor.py::test_code_outside_the_package_is_not_a_target",
+      "tests/test_suite_auditor.py::test_each_mutant_names_its_operator",
+      "tests/test_suite_auditor.py::test_gaps_are_ordered_by_strength",
+      "tests/test_suite_auditor.py::test_kill_rate_of_nothing_is_none_not_zero",
+      "tests/test_suite_auditor.py::test_methods_are_targets_named_class_dot_method",
+      "tests/test_suite_auditor.py::test_mutants_are_distinct_and_exclude_the_original",
+      "tests/test_suite_auditor.py::test_self_is_not_an_argument",
+      "tests/test_suite_auditor.py::test_skipped_mutants_are_not_evidence_either_way",
+      "tests/test_suite_auditor.py::test_tests_are_not_targets",
+      "tests/test_suite_auditor.py::test_unparseable_source_yields_nothing",
+      "tests/test_suite_auditor.py::test_unproven_survivors_are_not_counted_as_gaps",
+      "tests/test_suite_auditor.py::test_values_come_from_the_covering_tests",
+      "tests/test_suite_auditor.py::test_witness_strength_ranks_two_values_above_an_exception"
+    ],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 0,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 0,
+        "resolved": false
+      }
+    ],
+    "flaky": false
+  },
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 47,
+    "f2p_total": 47,
+    "p2p_passed": 0,
+    "p2p_total": 0,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 47,
+        "p2p_passed": 0,
+        "resolved": true
+      },
+      {
+        "f2p_passed": 47,
+        "p2p_passed": 0,
+        "resolved": true
+      }
+    ],
+    "flaky": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 33.9
+}

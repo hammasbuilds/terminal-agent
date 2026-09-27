@@ -1,0 +1,154 @@
+{
+  "instance_id": "flake-detective@310c6bec61",
+  "repo": "flake-detective",
+  "version": "2b8b925fd0",
+  "head_matches_base": true,
+  "export": {
+    "files": 25,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 13,
+    "tool_calls": {
+      "read_file": 4,
+      "edit": 8,
+      "finish": 1
+    },
+    "tool_errors": {
+      "edit": 1
+    },
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "src/flake_detective/classify.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/flake_detective/classify.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/flake_detective/detective.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/flake_detective/detective.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/flake_detective/run.py",
+      "index": 0,
+      "first_status": "ambiguous",
+      "final_status": "ok",
+      "extra_context": 1,
+      "attempts": 2
+    },
+    {
+      "path": "src/flake_detective/types.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/flake_detective/types.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "changed_files": {
+    "modified": [
+      "src/flake_detective/classify.py",
+      "src/flake_detective/detective.py",
+      "src/flake_detective/run.py",
+      "src/flake_detective/types.py"
+    ],
+    "deleted": []
+  },
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 8,
+    "p2p_total": 8,
+    "f2p_failing": [
+      "tests/test_arms.py::test_order_and_isolation_together_are_one_cause_not_unknown"
+    ],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 8,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 8,
+        "resolved": false
+      }
+    ],
+    "flaky": false
+  },
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 8,
+    "p2p_total": 8,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 1,
+        "p2p_passed": 8,
+        "resolved": true
+      },
+      {
+        "f2p_passed": 1,
+        "p2p_passed": 8,
+        "resolved": true
+      }
+    ],
+    "flaky": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 124.4
+}

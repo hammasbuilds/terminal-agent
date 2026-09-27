@@ -1,0 +1,101 @@
+{
+  "instance_id": "blast-radius@74c59cd37a",
+  "repo": "blast-radius",
+  "version": "6b227c278c",
+  "head_matches_base": true,
+  "export": {
+    "files": 13,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 3,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 1,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "src/blast_radius/probe.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "changed_files": {
+    "modified": [
+      "src/blast_radius/probe.py"
+    ],
+    "deleted": []
+  },
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 1,
+    "p2p_total": 1,
+    "f2p_failing": [
+      "tests/test_probe_timeout.py::test_a_spawned_process_that_outlives_the_child_does_not_hang_the_timeout"
+    ],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 1,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 1,
+        "resolved": false
+      }
+    ],
+    "flaky": false
+  },
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 1,
+    "p2p_total": 1,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 1,
+        "p2p_passed": 1,
+        "resolved": true
+      },
+      {
+        "f2p_passed": 1,
+        "p2p_passed": 1,
+        "resolved": true
+      }
+    ],
+    "flaky": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 200.1
+}

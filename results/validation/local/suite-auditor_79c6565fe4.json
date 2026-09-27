@@ -1,0 +1,145 @@
+{
+  "instance_id": "suite-auditor@79c6565fe4",
+  "repo": "suite-auditor",
+  "version": "949e4aa2f3",
+  "head_matches_base": true,
+  "export": {
+    "files": 16,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 11,
+    "tool_calls": {
+      "read_file": 4,
+      "edit": 6,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "src/suite_auditor/audit.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/suite_auditor/audit.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/suite_auditor/cli.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/suite_auditor/cli.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/suite_auditor/report.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/suite_auditor/types.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "changed_files": {
+    "modified": [
+      "src/suite_auditor/audit.py",
+      "src/suite_auditor/cli.py",
+      "src/suite_auditor/report.py",
+      "src/suite_auditor/types.py"
+    ],
+    "deleted": []
+  },
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 2,
+    "p2p_passed": 36,
+    "p2p_total": 36,
+    "f2p_failing": [
+      "tests/test_suite_auditor.py::test_a_complete_audit_does_not_claim_to_be_partial",
+      "tests/test_suite_auditor.py::test_a_truncated_audit_says_it_is_partial"
+    ],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 36,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 36,
+        "resolved": false
+      }
+    ],
+    "flaky": false
+  },
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 2,
+    "f2p_total": 2,
+    "p2p_passed": 36,
+    "p2p_total": 36,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 2,
+        "p2p_passed": 36,
+        "resolved": true
+      },
+      {
+        "f2p_passed": 2,
+        "p2p_passed": 36,
+        "resolved": true
+      }
+    ],
+    "flaky": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 112.4
+}

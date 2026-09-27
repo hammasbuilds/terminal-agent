@@ -1,0 +1,138 @@
+{
+  "instance_id": "blast-radius@cb57f583c7",
+  "repo": "blast-radius",
+  "version": "3e80e5a698",
+  "head_matches_base": true,
+  "export": {
+    "files": 12,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 8,
+    "tool_calls": {
+      "read_file": 2,
+      "edit": 5,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "src/blast_radius/cli.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/blast_radius/probe.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/blast_radius/probe.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/blast_radius/probe.py",
+      "index": 2,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/blast_radius/probe.py",
+      "index": 3,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "changed_files": {
+    "modified": [
+      "src/blast_radius/cli.py",
+      "src/blast_radius/probe.py"
+    ],
+    "deleted": []
+  },
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 2,
+    "p2p_passed": 41,
+    "p2p_total": 41,
+    "f2p_failing": [
+      "tests/test_blast_radius.py::test_a_return_value_whose_repr_raises_is_recorded_not_fatal",
+      "tests/test_blast_radius.py::test_an_exception_whose_str_raises_is_recorded_not_fatal"
+    ],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 40,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 0,
+        "p2p_passed": 41,
+        "resolved": false
+      }
+    ],
+    "flaky": true
+  },
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 2,
+    "f2p_total": 2,
+    "p2p_passed": 41,
+    "p2p_total": 41,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 2,
+        "p2p_passed": 40,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 2,
+        "p2p_passed": 40,
+        "resolved": false
+      }
+    ],
+    "flaky": true
+  },
+  "reasons": [
+    "flaky: baseline results changed between identical runs",
+    "flaky: gold results changed between identical runs"
+  ],
+  "verdict": "invalid",
+  "seconds": 754.9
+}
