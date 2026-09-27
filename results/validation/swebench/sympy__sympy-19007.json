@@ -1,0 +1,88 @@
+{
+  "instance_id": "sympy__sympy-19007",
+  "repo": "sympy/sympy",
+  "version": "1.6",
+  "head_matches_base": true,
+  "export": {
+    "files": 1760,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 4,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 2,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "sympy/matrices/expressions/blockmatrix.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "sympy/matrices/expressions/blockmatrix.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "sympy/matrices/expressions/blockmatrix.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 3,
+    "p2p_passed": 26,
+    "p2p_total": 26,
+    "f2p_failing": [
+      "test_block_index_large",
+      "test_block_index_symbolic",
+      "test_block_index_symbolic_nonzero"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/sympy/matrices/expressions/blockmatrix.py b/sympy/matrices/expressions/blockmatrix.py\nindex b821c42845..8ae120bb9d 100755\n--- a/sympy/matrices/expressions/blockmatrix.py\n+++ b/sympy/matrices/expressions/blockmatrix.py\n@@ -7,7 +7,7 @@\n from sympy.utilities import sift\n from sympy.utilities.misc import filldedent\n \n-from sympy.matrices.expressions.matexpr import MatrixExpr, ZeroMatrix, Identity\n+from sympy.matrices.expressions.matexpr import MatrixExpr, ZeroMatrix, Identity, MatrixElement\n from sympy.matrices.expressions.matmul import MatMul\n from sympy.matrices.expressions.matadd import MatAdd\n from sympy.matrices.expressions.matpow import MatPow\n@@ -234,16 +234,24 @@ def transpose(self):\n \n     def _entry(self, i, j, **kwargs):\n         # Find row entry\n+        orig_i, orig_j = i, j\n         for row_block, numrows in enumerate(self.rowblocksizes):\n-            if (i < numrows) != False:\n+            cmp = i < numrows\n+            if cmp == True:\n                 break\n-            else:\n+            elif cmp == False:\n                 i -= numrows\n+            elif row_block < self.blockshape[0] - 1:\n+                # Can't tell which block and it's not the last one, return unevaluated\n+                return MatrixElement(self, orig_i, orig_j)\n         for col_block, numcols in enumerate(self.colblocksizes):\n-            if (j < numcols) != False:\n+            cmp = j < numcols\n+            if cmp == True:\n                 break\n-            else:\n+            elif cmp == False:\n                 j -= numcols\n+            elif col_block < self.blockshape[1] - 1:\n+                return MatrixElement(self, orig_i, orig_j)\n         return self.blocks[row_block, col_block][i, j]\n \n     @property\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 3,
+    "f2p_total": 3,
+    "p2p_passed": 26,
+    "p2p_total": 26,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 36.1
+}

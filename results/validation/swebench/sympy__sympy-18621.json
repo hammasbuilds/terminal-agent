@@ -1,0 +1,78 @@
+{
+  "instance_id": "sympy__sympy-18621",
+  "repo": "sympy/sympy",
+  "version": "1.6",
+  "head_matches_base": true,
+  "export": {
+    "files": 1747,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 3,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 1,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "sympy/matrices/expressions/blockmatrix.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "sympy/matrices/expressions/blockmatrix.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 15,
+    "p2p_total": 15,
+    "f2p_failing": [
+      "test_issue_18618"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/sympy/matrices/expressions/blockmatrix.py b/sympy/matrices/expressions/blockmatrix.py\nindex 11aebbc59f..b821c42845 100755\n--- a/sympy/matrices/expressions/blockmatrix.py\n+++ b/sympy/matrices/expressions/blockmatrix.py\n@@ -301,7 +301,7 @@ def blocks(self):\n         data = [[mats[i] if i == j else ZeroMatrix(mats[i].rows, mats[j].cols)\n                         for j in range(len(mats))]\n                         for i in range(len(mats))]\n-        return ImmutableDenseMatrix(data)\n+        return ImmutableDenseMatrix(data, evaluate=False)\n \n     @property\n     def shape(self):\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 15,
+    "p2p_total": 15,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 37.8
+}

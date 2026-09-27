@@ -1,0 +1,107 @@
+{
+  "instance_id": "django__django-11099",
+  "repo": "django/django",
+  "version": "3.0",
+  "head_matches_base": true,
+  "export": {
+    "files": 6068,
+    "skipped_symlinks": [
+      "docs/_theme/djangodocs-epub/static/docicons-behindscenes.png",
+      "docs/_theme/djangodocs-epub/static/docicons-note.png",
+      "docs/_theme/djangodocs-epub/static/docicons-philosophy.png",
+      "docs/_theme/djangodocs-epub/static/docicons-warning.png"
+    ],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 4,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 2,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "django/contrib/auth/validators.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "django/contrib/auth/validators.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "django/contrib/auth/validators.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 1,
+    "f2p_total": 3,
+    "p2p_passed": 19,
+    "p2p_total": 19,
+    "f2p_failing": [
+      "test_ascii_validator (auth_tests.test_validators.UsernameValidatorsTests)",
+      "test_unicode_validator (auth_tests.test_validators.UsernameValidatorsTests)"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 1,
+        "p2p_passed": 19,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 1,
+        "p2p_passed": 19,
+        "resolved": false
+      }
+    ],
+    "flaky": false
+  },
+  "model_patch": "diff --git a/django/contrib/auth/validators.py b/django/contrib/auth/validators.py\nindex b4878cfd45..9345c5cb0b 100755\n--- a/django/contrib/auth/validators.py\n+++ b/django/contrib/auth/validators.py\n@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _\n \n @deconstructible\n class ASCIIUsernameValidator(validators.RegexValidator):\n-    regex = r'^[\\w.@+-]+$'\n+    regex = r'^[\\w.@+-]+\\Z'\n     message = _(\n         'Enter a valid username. This value may contain only English letters, '\n         'numbers, and @/./+/-/_ characters.'\n@@ -17,7 +17,7 @@ class ASCIIUsernameValidator(validators.RegexValidator):\n \n @deconstructible\n class UnicodeUsernameValidator(validators.RegexValidator):\n-    regex = r'^[\\w.@+-]+$'\n+    regex = r'^[\\w.@+-]+\\Z'\n     message = _(\n         'Enter a valid username. This value may contain only letters, '\n         'numbers, and @/./+/-/_ characters.'\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 3,
+    "f2p_total": 3,
+    "p2p_passed": 19,
+    "p2p_total": 19,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [
+    "task: 1/3 FAIL_TO_PASS already pass before the fix"
+  ],
+  "verdict": "invalid",
+  "seconds": 147.5
+}

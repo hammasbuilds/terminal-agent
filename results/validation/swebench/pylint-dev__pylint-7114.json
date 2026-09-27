@@ -1,0 +1,89 @@
+{
+  "instance_id": "pylint-dev__pylint-7114",
+  "repo": "pylint-dev/pylint",
+  "version": "2.15",
+  "head_matches_base": true,
+  "export": {
+    "files": 3380,
+    "skipped_symlinks": [
+      "tests/functional/s/symlink/_binding/__init__.py",
+      "tests/functional/s/symlink/_binding/symlink_module.py"
+    ],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 4,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 2,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "pylint/lint/expand_modules.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "pylint/lint/expand_modules.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "pylint/lint/expand_modules.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 56,
+    "p2p_total": 56,
+    "f2p_failing": [
+      "tests/lint/unittest_lint.py::test_identically_named_nested_module"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/pylint/lint/expand_modules.py b/pylint/lint/expand_modules.py\nindex 289e1afc..d5fe6066 100755\n--- a/pylint/lint/expand_modules.py\n+++ b/pylint/lint/expand_modules.py\n@@ -82,8 +82,10 @@ def expand_modules(\n             continue\n         module_path = get_python_path(something)\n         additional_search_path = [\".\", module_path] + path\n-        if os.path.exists(something):\n-            # this is a file or a directory\n+        if os.path.isfile(something) or os.path.exists(\n+            os.path.join(something, \"__init__.py\")\n+        ):\n+            # this is a file or a directory with an explicit __init__.py\n             try:\n                 modname = \".\".join(\n                     modutils.modpath_from_file(something, path=additional_search_path)\n@@ -103,9 +105,7 @@ def expand_modules(\n                 )\n                 if filepath is None:\n                     continue\n-            except (ImportError, SyntaxError) as ex:\n-                # The SyntaxError is a Python bug and should be\n-                # removed once we move away from imp.find_module: https://bugs.python.org/issue10588\n+            except ImportError as ex:\n                 errors.append({\"key\": \"fatal\", \"mod\": modname, \"ex\": ex})\n                 continue\n         filepath = os.path.normpath(filepath)\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 56,
+    "p2p_total": 56,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 91.1
+}

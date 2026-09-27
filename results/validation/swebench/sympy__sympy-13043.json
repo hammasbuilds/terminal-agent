@@ -1,0 +1,94 @@
+{
+  "instance_id": "sympy__sympy-13043",
+  "repo": "sympy/sympy",
+  "version": "1.1",
+  "head_matches_base": true,
+  "export": {
+    "files": 1455,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 5,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 3,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "sympy/integrals/intpoly.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "sympy/integrals/intpoly.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "sympy/integrals/intpoly.py",
+      "index": 2,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "sympy/integrals/intpoly.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 1,
+    "p2p_total": 1,
+    "f2p_failing": [
+      "test_decompose"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/sympy/integrals/intpoly.py b/sympy/integrals/intpoly.py\nindex fc72bd206..da84e0f5f 100755\n--- a/sympy/integrals/intpoly.py\n+++ b/sympy/integrals/intpoly.py\n@@ -556,7 +556,7 @@ def decompose(expr, separate=False):\n     >>> decompose(x**2 + x*y + x + y + x**3*y**2 + y**5)\n     {1: x + y, 2: x**2 + x*y, 5: x**3*y**2 + y**5}\n     >>> decompose(x**2 + x*y + x + y + x**3*y**2 + y**5, True)\n-    [x, y, x**2, y**5, x*y, x**3*y**2]\n+    {x, x**2, y, y**5, x*y, x**3*y**2}\n     \"\"\"\n     expr = S(expr)\n     poly_dict = {}\n@@ -569,7 +569,7 @@ def decompose(expr, separate=False):\n             degrees = [(sum(degree_list(monom, *symbols)), monom)\n                        for monom in expr.args]\n             if separate:\n-                return [monom[1] for monom in degrees]\n+                return {monom[1] for monom in degrees}\n             else:\n                 for monom in degrees:\n                     degree, term = monom\n@@ -593,7 +593,7 @@ def decompose(expr, separate=False):\n         poly_dict[0] = expr\n \n     if separate:\n-        return list(poly_dict.values())\n+        return set(poly_dict.values())\n     return poly_dict\n \n \n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 1,
+    "p2p_total": 1,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 47.4
+}

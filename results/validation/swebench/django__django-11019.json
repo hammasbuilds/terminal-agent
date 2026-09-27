@@ -1,0 +1,114 @@
+{
+  "instance_id": "django__django-11019",
+  "repo": "django/django",
+  "version": "3.0",
+  "head_matches_base": true,
+  "export": {
+    "files": 6057,
+    "skipped_symlinks": [
+      "docs/_theme/djangodocs-epub/static/docicons-behindscenes.png",
+      "docs/_theme/djangodocs-epub/static/docicons-note.png",
+      "docs/_theme/djangodocs-epub/static/docicons-philosophy.png",
+      "docs/_theme/djangodocs-epub/static/docicons-warning.png"
+    ],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 6,
+    "tool_calls": {
+      "read_file": 2,
+      "edit": 3,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "django/forms/widgets.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "django/forms/widgets.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "django/forms/widgets.py",
+      "index": 2,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "django/forms/widgets.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 16,
+    "p2p_passed": 58,
+    "p2p_total": 58,
+    "f2p_failing": [
+      "test_combine_media (forms_tests.tests.test_media.FormsMediaTestCase)",
+      "test_construction (forms_tests.tests.test_media.FormsMediaTestCase)",
+      "test_form_media (forms_tests.tests.test_media.FormsMediaTestCase)",
+      "test_inline_media_only_inline (admin_inlines.tests.TestInlineMedia)",
+      "test_media (admin_widgets.test_autocomplete_widget.AutocompleteMixinTests)",
+      "test_media_deduplication (forms_tests.tests.test_media.FormsMediaTestCase)",
+      "test_media_inheritance (forms_tests.tests.test_media.FormsMediaTestCase)",
+      "test_media_inheritance_extends (forms_tests.tests.test_media.FormsMediaTestCase)",
+      "test_media_property_parent_references (forms_tests.tests.test_media.FormsMediaTestCase)",
+      "test_merge (forms_tests.tests.test_media.FormsMediaTestCase)",
+      "test_merge_css_three_way (forms_tests.tests.test_media.FormsMediaTestCase)",
+      "test_merge_js_three_way (forms_tests.tests.test_media.FormsMediaTestCase)",
+      "test_merge_js_three_way2 (forms_tests.tests.test_media.FormsMediaTestCase)",
+      "test_merge_warning (forms_tests.tests.test_media.FormsMediaTestCase)",
+      "test_multi_widget (forms_tests.tests.test_media.FormsMediaTestCase)",
+      "test_render_options (admin_widgets.test_autocomplete_widget.AutocompleteMixinTests)"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 02aa32b207..e944091f0d 100755\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -6,16 +6,21 @@ import copy\n import datetime\n import re\n import warnings\n+from collections import defaultdict\n from itertools import chain\n \n from django.conf import settings\n from django.forms.utils import to_current_timezone\n from django.templatetags.static import static\n from django.utils import datetime_safe, formats\n+from django.utils.datastructures import OrderedSet\n from django.utils.dates import MONTHS\n from django.utils.formats import get_format\n from django.utils.html import format_html, html_safe\n from django.utils.safestring import mark_safe\n+from django.utils.topological_sort import (\n+    CyclicDependencyError, stable_topological_sort,\n+)\n from django.utils.translation import gettext_lazy as _\n \n from .renderers import get_default_renderer\n@@ -59,22 +64,15 @@ class Media:\n \n     @property\n     def _css(self):\n-        css = self._css_lists[0]\n-        # filter(None, ...) avoids calling merge with empty dicts.\n-        for obj in filter(None, self._css_lists[1:]):\n-            css = {\n-                medium: self.merge(css.get(medium, []), obj.get(medium, []))\n-                for medium in css.keys() | obj.keys()\n-            }\n-        return css\n+        css = defaultdict(list)\n+        for css_list in self._css_lists:\n+            for medium, sublist in css_list.items():\n+                css[medium].append(sublist)\n+        return {medium: self.merge(*lists) for medium, lists in css.items()}\n \n     @property\n     def _js(self):\n-        js = self._js_lists[0]\n-        # filter(None, ...) avoids calling merge() with empty lists.\n-        for obj in filter(None, self._js_lists[1:]):\n-            js = self.merge(js, obj)\n-        return js\n+        return self.merge(*self._js_lists)\n \n     def render(self):\n         return mark_safe('\\n'.join(chain.from_iterable(getattr(self, 'render_' + name)() for name in MEDIA_TYPES)))\n@@ -115,39 +113,37 @@ class Media:\n         raise KeyError('Unknown media type \"%s\"' % name)\n \n     @staticmethod\n-    def merge(list_1, list_2):\n+    def merge(*lists):\n         \"\"\"\n-        Merge two lists while trying to keep the relative order of the elements.\n-        Warn if the lists have the same two elements in a different relative\n-        order.\n+        Merge lists while trying to keep the relative order of the elements.\n+        Warn if the lists have the same elements in a different relative order.\n \n         For static assets it can be important to have them included in the DOM\n         in a certain order. In JavaScript you may not be able to reference a\n         global or in CSS you might want to override a style.\n         \"\"\"\n-        # Start with a copy of list_1.\n-        combined_list = list(list_1)\n-        last_insert_index = len(list_1)\n-        # Walk list_2 in reverse, inserting each element into combined_list if\n-        # it doesn't already exist.\n-        for path in reversed(list_2):\n-            try:\n-                # Does path already exist in the list?\n-                index = combined_list.index(path)\n-            except ValueError:\n-                # Add path to combined_list since it doesn't exist.\n-                combined_list.insert(last_insert_index, path)\n-            else:\n-                if index > last_insert_index:\n-                    warnings.warn(\n-                        'Detected duplicate Media files in an opposite order:\\n'\n-                        '%s\\n%s' % (combined_list[last_insert_index], combined_list[index]),\n-                        MediaOrderConflictWarning,\n-                    )\n-                # path already exists in the list. Update last_insert_index so\n-                # that the following elements are inserted in front of this one.\n-                last_insert_index = index\n-        return combined_list\n+        dependency_graph = defaultdict(set)\n+        all_items = OrderedSet()\n+        for list_ in filter(None, lists):\n+            head = list_[0]\n+            # The first items depend on nothing but have to be part of the\n+            # dependency graph to be included in the result.\n+            dependency_graph.setdefault(head, set())\n+            for item in list_:\n+                all_items.add(item)\n+                # No self dependencies\n+                if head != item:\n+                    dependency_graph[item].add(head)\n+                head = item\n+        try:\n+            return stable_topological_sort(all_items, dependency_graph)\n+        except CyclicDependencyError:\n+            warnings.warn(\n+                'Detected duplicate Media files in an opposite order: {}'.format(\n+                    ', '.join(repr(l) for l in lists)\n+                ), MediaOrderConflictWarning,\n+            )\n+            return list(all_items)\n \n     def __add__(self, other):\n         combined = Media()\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 16,
+    "f2p_total": 16,
+    "p2p_passed": 58,
+    "p2p_total": 58,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 632.6
+}

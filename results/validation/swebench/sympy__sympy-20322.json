@@ -1,0 +1,86 @@
+{
+  "instance_id": "sympy__sympy-20322",
+  "repo": "sympy/sympy",
+  "version": "1.8",
+  "head_matches_base": true,
+  "export": {
+    "files": 1815,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 6,
+    "tool_calls": {
+      "read_file": 3,
+      "edit": 2,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "sympy/core/mul.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "sympy/core/mul.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "sympy/core/mul.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 89,
+    "p2p_total": 89,
+    "f2p_failing": [
+      "test_Mul_is_integer"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/sympy/core/mul.py b/sympy/core/mul.py\nindex 46f310b122..251b7fa4c7 100755\n--- a/sympy/core/mul.py\n+++ b/sympy/core/mul.py\n@@ -7,7 +7,7 @@\n from .singleton import S\n from .operations import AssocOp, AssocOpDispatcher\n from .cache import cacheit\n-from .logic import fuzzy_not, _fuzzy_group, fuzzy_and\n+from .logic import fuzzy_not, _fuzzy_group\n from .compatibility import reduce\n from .expr import Expr\n from .parameters import global_parameters\n@@ -1262,27 +1262,47 @@ def _eval_is_zero(self):\n                     zero = None\n         return zero\n \n+    # without involving odd/even checks this code would suffice:\n+    #_eval_is_integer = lambda self: _fuzzy_group(\n+    #    (a.is_integer for a in self.args), quick_exit=True)\n     def _eval_is_integer(self):\n-        from sympy import fraction\n-        from sympy.core.numbers import Float\n-\n         is_rational = self._eval_is_rational()\n         if is_rational is False:\n             return False\n \n-        # use exact=True to avoid recomputing num or den\n-        n, d = fraction(self, exact=True)\n-        if is_rational:\n-            if d is S.One:\n-                return True\n-        if d.is_even:\n-            if d.is_prime:  # literal or symbolic 2\n-                return n.is_even\n-            if n.is_odd:\n-                return False  # true even if d = 0\n-        if n == d:\n-            return fuzzy_and([not bool(self.atoms(Float)),\n-            fuzzy_not(d.is_zero)])\n+        numerators = []\n+        denominators = []\n+        for a in self.args:\n+            if a.is_integer:\n+                numerators.append(a)\n+            elif a.is_Rational:\n+                n, d = a.as_numer_denom()\n+                numerators.append(n)\n+                denominators.append(d)\n+            elif a.is_Pow:\n+                b, e = a.as_base_exp()\n+                if not b.is_integer or not e.is_integer: return\n+                if e.is_negative:\n+                    denominators.append(b)\n+                else:\n+                    # for integer b and positive integer e: a = b**e would be integer\n+                    assert not e.is_positive\n+                    # for self being rational and e equal to zero: a = b**e would be 1\n+                    assert not e.is_zero\n+                    return # sign of e unknown -> self.is_integer cannot be decided\n+            else:\n+                return\n+\n+        if not denominators:\n+            return True\n+\n+        odd = lambda ints: all(i.is_odd for i in ints)\n+        even = lambda ints: any(i.is_even for i in ints)\n+\n+        if odd(numerators) and even(denominators):\n+            return False\n+        elif even(numerators) and denominators == [2]:\n+            return True\n \n     def _eval_is_polar(self):\n         has_polar = any(arg.is_polar for arg in self.args)\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 89,
+    "p2p_total": 89,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 159.5
+}

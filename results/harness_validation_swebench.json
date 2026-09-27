@@ -1,0 +1,65 @@
+{
+  "tasks_attempted": 37,
+  "tasks_valid": 33,
+  "valid_rate": 0.8919,
+  "image_missing": 0,
+  "by_repo": {
+    "django/django": {
+      "tasks": 7,
+      "valid": 6
+    },
+    "psf/requests": {
+      "tasks": 4,
+      "valid": 1
+    },
+    "pylint-dev/pylint": {
+      "tasks": 3,
+      "valid": 3
+    },
+    "pytest-dev/pytest": {
+      "tasks": 3,
+      "valid": 3
+    },
+    "sympy/sympy": {
+      "tasks": 20,
+      "valid": 20
+    }
+  },
+  "reason_counts": {
+    "task: 1/3 FAIL_TO_PASS already pass before the fix": 1,
+    "flaky: baseline results changed between identical runs": 1,
+    "flaky: gold results changed between identical runs": 1,
+    "task: 6/7 FAIL_TO_PASS already pass before the fix": 1,
+    "gold: 1 PASS_TO_PASS fail": 1,
+    "task: 7/8 FAIL_TO_PASS already pass before the fix": 1,
+    "task: 12/12 FAIL_TO_PASS already pass before the fix": 1
+  },
+  "hunks": 60,
+  "hunks_first_try_ok": 60,
+  "hunks_first_try_ambiguous": 0,
+  "hunks_final_ok": 60,
+  "byte_identical_tasks": 37,
+  "empty_patch_resolves": [
+    "psf__requests-2674"
+  ],
+  "flaky": [
+    "psf__requests-1963"
+  ],
+  "invalid": {
+    "django__django-11099": [
+      "task: 1/3 FAIL_TO_PASS already pass before the fix"
+    ],
+    "psf__requests-1963": [
+      "flaky: baseline results changed between identical runs",
+      "flaky: gold results changed between identical runs",
+      "task: 6/7 FAIL_TO_PASS already pass before the fix",
+      "gold: 1 PASS_TO_PASS fail"
+    ],
+    "psf__requests-2317": [
+      "task: 7/8 FAIL_TO_PASS already pass before the fix"
+    ],
+    "psf__requests-2674": [
+      "task: 12/12 FAIL_TO_PASS already pass before the fix"
+    ]
+  }
+}

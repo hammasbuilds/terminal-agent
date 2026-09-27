@@ -1,0 +1,111 @@
+{
+  "instance_id": "psf__requests-1963",
+  "repo": "psf/requests",
+  "version": "2.3",
+  "head_matches_base": true,
+  "export": {
+    "files": 121,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 3,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 1,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "requests/sessions.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "requests/sessions.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 6,
+    "f2p_total": 7,
+    "p2p_passed": 112,
+    "p2p_total": 112,
+    "f2p_failing": [
+      "test_requests.py::TestRedirects::test_requests_are_updated_each_time"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 6,
+        "p2p_passed": 112,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 6,
+        "p2p_passed": 111,
+        "resolved": false
+      }
+    ],
+    "flaky": true
+  },
+  "model_patch": "diff --git a/requests/sessions.py b/requests/sessions.py\nindex 425db22..fc5b0ff 100755\n--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -168,8 +168,11 @@ class SessionRedirectMixin(object):\n             if new_auth is not None:\n                 prepared_request.prepare_auth(new_auth)\n \n+            # Override the original request.\n+            req = prepared_request\n+\n             resp = self.send(\n-                prepared_request,\n+                req,\n                 stream=stream,\n                 timeout=timeout,\n                 verify=verify,\n",
+  "gold": {
+    "resolved": false,
+    "f2p_passed": 7,
+    "f2p_total": 7,
+    "p2p_passed": 111,
+    "p2p_total": 112,
+    "f2p_failing": [],
+    "p2p_failing": [
+      "test_requests.py::RequestsTestCase::test_session_pickling"
+    ],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 7,
+        "p2p_passed": 112,
+        "resolved": true
+      },
+      {
+        "f2p_passed": 7,
+        "p2p_passed": 112,
+        "resolved": true
+      }
+    ],
+    "flaky": true
+  },
+  "reasons": [
+    "flaky: baseline results changed between identical runs",
+    "flaky: gold results changed between identical runs",
+    "task: 6/7 FAIL_TO_PASS already pass before the fix",
+    "gold: 1 PASS_TO_PASS fail"
+  ],
+  "verdict": "invalid",
+  "seconds": 1212.9
+}

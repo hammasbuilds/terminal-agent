@@ -1,0 +1,86 @@
+{
+  "instance_id": "sympy__sympy-20442",
+  "repo": "sympy/sympy",
+  "version": "1.8",
+  "head_matches_base": true,
+  "export": {
+    "files": 1815,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 4,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 2,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "sympy/physics/units/util.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "sympy/physics/units/util.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "sympy/physics/units/util.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 24,
+    "p2p_total": 24,
+    "f2p_failing": [
+      "test_convert_to"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/sympy/physics/units/util.py b/sympy/physics/units/util.py\nindex b03ed4cd88..150dc05111 100755\n--- a/sympy/physics/units/util.py\n+++ b/sympy/physics/units/util.py\n@@ -4,6 +4,7 @@\n \n from sympy import Add, Mul, Pow, Tuple, sympify\n from sympy.core.compatibility import reduce, Iterable, ordered\n+from sympy.matrices.common import NonInvertibleMatrixError\n from sympy.physics.units.dimensions import Dimension\n from sympy.physics.units.prefixes import Prefix\n from sympy.physics.units.quantities import Quantity\n@@ -30,7 +31,11 @@ def _get_conversion_matrix_for_expr(expr, target_units, unit_system):\n     camat = Matrix([[dimension_system.get_dimensional_dependencies(i, mark_dimensionless=True).get(j, 0) for i in target_dims] for j in canon_dim_units])\n     exprmat = Matrix([dim_dependencies.get(k, 0) for k in canon_dim_units])\n \n-    res_exponents = camat.solve_least_squares(exprmat, method=None)\n+    try:\n+        res_exponents = camat.solve(exprmat)\n+    except NonInvertibleMatrixError:\n+        return None\n+\n     return res_exponents\n \n \n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 24,
+    "p2p_total": 24,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 52.0
+}

@@ -1,0 +1,78 @@
+{
+  "instance_id": "sympy__sympy-13915",
+  "repo": "sympy/sympy",
+  "version": "1.1",
+  "head_matches_base": true,
+  "export": {
+    "files": 1509,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 4,
+    "tool_calls": {
+      "read_file": 2,
+      "edit": 1,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "sympy/core/mul.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "sympy/core/mul.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 62,
+    "p2p_total": 62,
+    "f2p_failing": [
+      "test_Mul_does_not_cancel_infinities"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/sympy/core/mul.py b/sympy/core/mul.py\nindex 4f01eeedb..29e6085ce 100755\n--- a/sympy/core/mul.py\n+++ b/sympy/core/mul.py\n@@ -423,6 +423,11 @@ def _gather(c_powers):\n             changed = False\n             for b, e in c_powers:\n                 if e.is_zero:\n+                    # canceling out infinities yields NaN\n+                    if (b.is_Add or b.is_Mul) and any(infty in b.args\n+                        for infty in (S.ComplexInfinity, S.Infinity,\n+                                      S.NegativeInfinity)):\n+                        return [S.NaN], [], None\n                     continue\n                 if e is S.One:\n                     if b.is_Number:\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 62,
+    "p2p_total": 62,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 49.7
+}

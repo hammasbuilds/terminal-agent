@@ -1,0 +1,101 @@
+{
+  "instance_id": "psf__requests-2317",
+  "repo": "psf/requests",
+  "version": "2.4",
+  "head_matches_base": true,
+  "export": {
+    "files": 128,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 4,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 2,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "requests/sessions.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "requests/sessions.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "requests/sessions.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 7,
+    "f2p_total": 8,
+    "p2p_passed": 133,
+    "p2p_total": 133,
+    "f2p_failing": [
+      "test_requests.py::TestTimeout::test_encoded_methods"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 7,
+        "p2p_passed": 133,
+        "resolved": false
+      },
+      {
+        "f2p_passed": 7,
+        "p2p_passed": 133,
+        "resolved": false
+      }
+    ],
+    "flaky": false
+  },
+  "model_patch": "diff --git a/requests/sessions.py b/requests/sessions.py\nindex d701ff2..dfce7cf 100755\n--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@ -13,7 +13,7 @@ from collections import Mapping\n from datetime import datetime\n \n from .auth import _basic_auth_str\n-from .compat import cookielib, OrderedDict, urljoin, urlparse, builtin_str\n+from .compat import cookielib, OrderedDict, urljoin, urlparse\n from .cookies import (\n     cookiejar_from_dict, extract_cookies_to_jar, RequestsCookieJar, merge_cookies)\n from .models import Request, PreparedRequest, DEFAULT_REDIRECT_LIMIT\n@@ -425,7 +425,7 @@ class Session(SessionRedirectMixin):\n             If Tuple, ('cert', 'key') pair.\n         \"\"\"\n \n-        method = builtin_str(method)\n+        method = to_native_string(method)\n \n         # Create the Request.\n         req = Request(\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 8,
+    "f2p_total": 8,
+    "p2p_passed": 133,
+    "p2p_total": 133,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [
+    "task: 7/8 FAIL_TO_PASS already pass before the fix"
+  ],
+  "verdict": "invalid",
+  "seconds": 1189.1
+}

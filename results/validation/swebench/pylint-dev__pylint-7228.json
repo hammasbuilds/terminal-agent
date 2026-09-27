@@ -1,0 +1,90 @@
+{
+  "instance_id": "pylint-dev__pylint-7228",
+  "repo": "pylint-dev/pylint",
+  "version": "2.15",
+  "head_matches_base": true,
+  "export": {
+    "files": 3377,
+    "skipped_symlinks": [
+      "tests/functional/s/symlink/_binding/__init__.py",
+      "tests/functional/s/symlink/_binding/symlink_module.py"
+    ],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 4,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 2,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "pylint/config/argument.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "pylint/config/argument.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "pylint/config/argument.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 2,
+    "p2p_passed": 10,
+    "p2p_total": 10,
+    "f2p_failing": [
+      "tests/config/test_config.py::test_csv_regex_error",
+      "tests/config/test_config.py::test_regex_error"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/pylint/config/argument.py b/pylint/config/argument.py\nindex 3c295151..375801c5 100755\n--- a/pylint/config/argument.py\n+++ b/pylint/config/argument.py\n@@ -99,11 +99,20 @@ def _py_version_transformer(value: str) -> tuple[int, ...]:\n     return version\n \n \n+def _regex_transformer(value: str) -> Pattern[str]:\n+    \"\"\"Return `re.compile(value)`.\"\"\"\n+    try:\n+        return re.compile(value)\n+    except re.error as e:\n+        msg = f\"Error in provided regular expression: {value} beginning at index {e.pos}: {e.msg}\"\n+        raise argparse.ArgumentTypeError(msg)\n+\n+\n def _regexp_csv_transfomer(value: str) -> Sequence[Pattern[str]]:\n     \"\"\"Transforms a comma separated list of regular expressions.\"\"\"\n     patterns: list[Pattern[str]] = []\n     for pattern in _csv_transformer(value):\n-        patterns.append(re.compile(pattern))\n+        patterns.append(_regex_transformer(pattern))\n     return patterns\n \n \n@@ -130,7 +139,7 @@ _TYPE_TRANSFORMERS: dict[str, Callable[[str], _ArgumentTypes]] = {\n     \"non_empty_string\": _non_empty_string_transformer,\n     \"path\": _path_transformer,\n     \"py_version\": _py_version_transformer,\n-    \"regexp\": re.compile,\n+    \"regexp\": _regex_transformer,\n     \"regexp_csv\": _regexp_csv_transfomer,\n     \"regexp_paths_csv\": _regexp_paths_csv_transfomer,\n     \"string\": pylint_utils._unquote,\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 2,
+    "f2p_total": 2,
+    "p2p_passed": 10,
+    "p2p_total": 10,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 69.0
+}

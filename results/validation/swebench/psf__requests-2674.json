@@ -1,0 +1,99 @@
+{
+  "instance_id": "psf__requests-2674",
+  "repo": "psf/requests",
+  "version": "2.7",
+  "head_matches_base": true,
+  "export": {
+    "files": 132,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 4,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 2,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "requests/adapters.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "requests/adapters.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "requests/adapters.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": true,
+    "f2p_passed": 12,
+    "f2p_total": 12,
+    "p2p_passed": 142,
+    "p2p_total": 142,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false,
+    "reruns": [
+      {
+        "f2p_passed": 12,
+        "p2p_passed": 142,
+        "resolved": true
+      },
+      {
+        "f2p_passed": 12,
+        "p2p_passed": 142,
+        "resolved": true
+      }
+    ],
+    "flaky": false
+  },
+  "model_patch": "diff --git a/requests/adapters.py b/requests/adapters.py\nindex 841cbbf..cf46860 100755\n--- a/requests/adapters.py\n+++ b/requests/adapters.py\n@@ -19,6 +19,7 @@ from .compat import urlparse, basestring\n from .utils import (DEFAULT_CA_BUNDLE_PATH, get_encoding_from_headers,\n                     prepend_scheme_if_needed, get_auth_from_url, urldefragauth)\n from .structures import CaseInsensitiveDict\n+from .packages.urllib3.exceptions import ClosedPoolError\n from .packages.urllib3.exceptions import ConnectTimeoutError\n from .packages.urllib3.exceptions import HTTPError as _HTTPError\n from .packages.urllib3.exceptions import MaxRetryError\n@@ -421,6 +422,9 @@ class HTTPAdapter(BaseAdapter):\n \n             raise ConnectionError(e, request=request)\n \n+        except ClosedPoolError as e:\n+            raise ConnectionError(e, request=request)\n+\n         except _ProxyError as e:\n             raise ProxyError(e)\n \n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 12,
+    "f2p_total": 12,
+    "p2p_passed": 142,
+    "p2p_total": 142,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [
+    "task: 12/12 FAIL_TO_PASS already pass before the fix"
+  ],
+  "verdict": "invalid",
+  "seconds": 666.3
+}

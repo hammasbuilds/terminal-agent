@@ -1,0 +1,87 @@
+{
+  "instance_id": "pytest-dev__pytest-7490",
+  "repo": "pytest-dev/pytest",
+  "version": "6.0",
+  "head_matches_base": true,
+  "export": {
+    "files": 478,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 4,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 2,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "src/_pytest/skipping.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "src/_pytest/skipping.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "src/_pytest/skipping.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 2,
+    "p2p_passed": 78,
+    "p2p_total": 78,
+    "f2p_failing": [
+      "testing/test_skipping.py::TestXFail::test_dynamic_xfail_set_during_runtest_failed",
+      "testing/test_skipping.py::TestXFail::test_dynamic_xfail_set_during_runtest_passed_strict"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/src/_pytest/skipping.py b/src/_pytest/skipping.py\nindex 335e10996..e333e78df 100755\n--- a/src/_pytest/skipping.py\n+++ b/src/_pytest/skipping.py\n@@ -231,17 +231,14 @@ unexpectedsuccess_key = StoreKey[str]()\n \n @hookimpl(tryfirst=True)\n def pytest_runtest_setup(item: Item) -> None:\n-    item._store[skipped_by_mark_key] = False\n-\n     skipped = evaluate_skip_marks(item)\n+    item._store[skipped_by_mark_key] = skipped is not None\n     if skipped:\n-        item._store[skipped_by_mark_key] = True\n         skip(skipped.reason)\n \n-    if not item.config.option.runxfail:\n-        item._store[xfailed_key] = xfailed = evaluate_xfail_marks(item)\n-        if xfailed and not xfailed.run:\n-            xfail(\"[NOTRUN] \" + xfailed.reason)\n+    item._store[xfailed_key] = xfailed = evaluate_xfail_marks(item)\n+    if xfailed and not item.config.option.runxfail and not xfailed.run:\n+        xfail(\"[NOTRUN] \" + xfailed.reason)\n \n \n @hookimpl(hookwrapper=True)\n@@ -250,12 +247,16 @@ def pytest_runtest_call(item: Item) -> Generator[None, None, None]:\n     if xfailed is None:\n         item._store[xfailed_key] = xfailed = evaluate_xfail_marks(item)\n \n-    if not item.config.option.runxfail:\n-        if xfailed and not xfailed.run:\n-            xfail(\"[NOTRUN] \" + xfailed.reason)\n+    if xfailed and not item.config.option.runxfail and not xfailed.run:\n+        xfail(\"[NOTRUN] \" + xfailed.reason)\n \n     yield\n \n+    # The test run may have added an xfail mark dynamically.\n+    xfailed = item._store.get(xfailed_key, None)\n+    if xfailed is None:\n+        item._store[xfailed_key] = xfailed = evaluate_xfail_marks(item)\n+\n \n @hookimpl(hookwrapper=True)\n def pytest_runtest_makereport(item: Item, call: CallInfo[None]):\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 2,
+    "f2p_total": 2,
+    "p2p_passed": 78,
+    "p2p_total": 78,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 37.9
+}

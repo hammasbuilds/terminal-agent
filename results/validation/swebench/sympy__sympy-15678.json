@@ -1,0 +1,78 @@
+{
+  "instance_id": "sympy__sympy-15678",
+  "repo": "sympy/sympy",
+  "version": "1.4",
+  "head_matches_base": true,
+  "export": {
+    "files": 1656,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 3,
+    "tool_calls": {
+      "read_file": 1,
+      "edit": 1,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "sympy/geometry/util.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "sympy/geometry/util.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 3,
+    "p2p_total": 3,
+    "f2p_failing": [
+      "test_idiff"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/sympy/geometry/util.py b/sympy/geometry/util.py\nindex d32adc306..a239b982a 100755\n--- a/sympy/geometry/util.py\n+++ b/sympy/geometry/util.py\n@@ -570,12 +570,19 @@ def idiff(eq, y, x, n=1):\n         y = y[0]\n     elif isinstance(y, Symbol):\n         dep = {y}\n+    elif isinstance(y, Function):\n+        pass\n     else:\n-        raise ValueError(\"expecting x-dependent symbol(s) but got: %s\" % y)\n+        raise ValueError(\"expecting x-dependent symbol(s) or function(s) but got: %s\" % y)\n \n     f = dict([(s, Function(\n         s.name)(x)) for s in eq.free_symbols if s != x and s in dep])\n-    dydx = Function(y.name)(x).diff(x)\n+\n+    if isinstance(y, Symbol):\n+        dydx = Function(y.name)(x).diff(x)\n+    else:\n+        dydx = y.diff(x)\n+\n     eq = eq.subs(f)\n     derivs = {}\n     for i in range(n):\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 3,
+    "p2p_total": 3,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 82.2
+}

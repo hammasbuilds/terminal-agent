@@ -1,0 +1,86 @@
+{
+  "instance_id": "sympy__sympy-13773",
+  "repo": "sympy/sympy",
+  "version": "1.1",
+  "head_matches_base": true,
+  "export": {
+    "files": 1507,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 6,
+    "tool_calls": {
+      "read_file": 3,
+      "edit": 2,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "sympy/matrices/common.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "sympy/matrices/common.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "sympy/matrices/common.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 69,
+    "p2p_total": 69,
+    "f2p_failing": [
+      "test_matmul"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/sympy/matrices/common.py b/sympy/matrices/common.py\nindex 379a2917a..ea6b83c42 100755\n--- a/sympy/matrices/common.py\n+++ b/sympy/matrices/common.py\n@@ -1973,6 +1973,10 @@ def __div__(self, other):\n \n     @call_highest_priority('__rmatmul__')\n     def __matmul__(self, other):\n+        other = _matrixify(other)\n+        if not getattr(other, 'is_Matrix', False) and not getattr(other, 'is_MatrixLike', False):\n+            return NotImplemented\n+\n         return self.__mul__(other)\n \n     @call_highest_priority('__rmul__')\n@@ -2068,6 +2072,10 @@ def __radd__(self, other):\n \n     @call_highest_priority('__matmul__')\n     def __rmatmul__(self, other):\n+        other = _matrixify(other)\n+        if not getattr(other, 'is_Matrix', False) and not getattr(other, 'is_MatrixLike', False):\n+            return NotImplemented\n+\n         return self.__rmul__(other)\n \n     @call_highest_priority('__mul__')\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 69,
+    "p2p_total": 69,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 44.0
+}

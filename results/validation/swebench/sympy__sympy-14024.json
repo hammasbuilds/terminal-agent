@@ -1,0 +1,87 @@
+{
+  "instance_id": "sympy__sympy-14024",
+  "repo": "sympy/sympy",
+  "version": "1.1",
+  "head_matches_base": true,
+  "export": {
+    "files": 1526,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 7,
+    "tool_calls": {
+      "read_file": 4,
+      "edit": 2,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "sympy/core/numbers.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    },
+    {
+      "path": "sympy/core/numbers.py",
+      "index": 1,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "sympy/core/numbers.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 2,
+    "p2p_passed": 83,
+    "p2p_total": 83,
+    "f2p_failing": [
+      "test_powers_Integer",
+      "test_powers_Rational"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/sympy/core/numbers.py b/sympy/core/numbers.py\nindex c6cfc127e..30e954a28 100755\n--- a/sympy/core/numbers.py\n+++ b/sympy/core/numbers.py\n@@ -1678,11 +1678,7 @@ def _eval_power(self, expt):\n                 if (ne is S.One):\n                     return Rational(self.q, self.p)\n                 if self.is_negative:\n-                    if expt.q != 1:\n-                        return -(S.NegativeOne)**((expt.p % expt.q) /\n-                               S(expt.q))*Rational(self.q, -self.p)**ne\n-                    else:\n-                        return S.NegativeOne**ne*Rational(self.q, -self.p)**ne\n+                    return S.NegativeOne**expt*Rational(self.q, -self.p)**ne\n                 else:\n                     return Rational(self.q, self.p)**ne\n             if expt is S.Infinity:  # -oo already caught by test for negative\n@@ -2223,11 +2219,7 @@ def _eval_power(self, expt):\n             # invert base and change sign on exponent\n             ne = -expt\n             if self.is_negative:\n-                if expt.q != 1:\n-                    return -(S.NegativeOne)**((expt.p % expt.q) /\n-                            S(expt.q))*Rational(1, -self)**ne\n-                else:\n-                    return (S.NegativeOne)**ne*Rational(1, -self)**ne\n+                    return S.NegativeOne**expt*Rational(1, -self)**ne\n             else:\n                 return Rational(1, self.p)**ne\n         # see if base is a perfect root, sqrt(4) --> 2\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 2,
+    "f2p_total": 2,
+    "p2p_passed": 83,
+    "p2p_total": 83,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 44.4
+}

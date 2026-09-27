@@ -1,0 +1,78 @@
+{
+  "instance_id": "sympy__sympy-11897",
+  "repo": "sympy/sympy",
+  "version": "1.0",
+  "head_matches_base": true,
+  "export": {
+    "files": 1419,
+    "skipped_symlinks": [],
+    "skipped_invalid": [],
+    "case_collisions": []
+  },
+  "agent": {
+    "status": "finished",
+    "response": "applied the reference patch",
+    "steps": 5,
+    "tool_calls": {
+      "read_file": 3,
+      "edit": 1,
+      "finish": 1
+    },
+    "tool_errors": {},
+    "denied": [],
+    "tokens": {
+      "prompt": 0,
+      "completion": 0
+    },
+    "compactions": 0,
+    "error": ""
+  },
+  "hunks": [
+    {
+      "path": "sympy/printing/latex.py",
+      "index": 0,
+      "first_status": "ok",
+      "final_status": "ok",
+      "extra_context": 0,
+      "attempts": 1
+    }
+  ],
+  "git_apply_ok": true,
+  "byte_mismatch": [],
+  "changed_files": {
+    "modified": [
+      "sympy/printing/latex.py"
+    ],
+    "deleted": []
+  },
+  "baseline": {
+    "resolved": false,
+    "f2p_passed": 0,
+    "f2p_total": 1,
+    "p2p_passed": 95,
+    "p2p_total": 95,
+    "f2p_failing": [
+      "test_latex_Piecewise"
+    ],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "model_patch": "diff --git a/sympy/printing/latex.py b/sympy/printing/latex.py\nindex 1edc71235..9d09ba03c 100755\n--- a/sympy/printing/latex.py\n+++ b/sympy/printing/latex.py\n@@ -235,10 +235,12 @@ def _needs_mul_brackets(self, expr, first=False, last=False):\n         elif expr.is_Mul:\n             if not first and _coeff_isneg(expr):\n                 return True\n+        if expr.is_Piecewise:\n+            return True\n         if any([expr.has(x) for x in (Mod,)]):\n             return True\n         if (not last and\n-            any([expr.has(x) for x in (Integral, Piecewise, Product, Sum)])):\n+            any([expr.has(x) for x in (Integral, Product, Sum)])):\n             return True\n \n         return False\n",
+  "gold": {
+    "resolved": true,
+    "f2p_passed": 1,
+    "f2p_total": 1,
+    "p2p_passed": 95,
+    "p2p_total": 95,
+    "f2p_failing": [],
+    "p2p_failing": [],
+    "exit_code": 0,
+    "test_patch_applied": true,
+    "timed_out": false
+  },
+  "reasons": [],
+  "verdict": "valid",
+  "seconds": 55.1
+}
