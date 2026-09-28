@@ -21,9 +21,15 @@ class _Stub(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'{"error": "model not found"}')
             return
-        reply = {"message": {"role": "assistant", "content": "", "tool_calls": [
-            {"function": {"name": "read_file", "arguments": {"path": "a.py"}}}]},
-            "prompt_eval_count": 120, "eval_count": 9}
+        reply = {
+            "message": {
+                "role": "assistant",
+                "content": "",
+                "tool_calls": [{"function": {"name": "read_file", "arguments": {"path": "a.py"}}}],
+            },
+            "prompt_eval_count": 120,
+            "eval_count": 9,
+        }
         data = json.dumps(reply).encode()
         self.send_response(200)
         self.send_header("Content-Length", str(len(data)))
@@ -66,14 +72,27 @@ def test_missing_model_and_unreachable_server_give_actionable_errors(stub):
 
 
 def test_text_fallback_and_string_arguments():
-    t = turn_from_response({"message": {"content": '<tool_call>{"name": "glob", "arguments": '
-                                                   '{"pattern": "*.py"}}</tool_call>'}})
+    t = turn_from_response(
+        {
+            "message": {
+                "content": '<tool_call>{"name": "glob", "arguments": '
+                '{"pattern": "*.py"}}</tool_call>'
+            }
+        }
+    )
     assert t.parsed_from_text and t.tool_calls[0].arguments == {"pattern": "*.py"}
-    t = turn_from_response({"message": {"content": "", "tool_calls": [
-        {"function": {"name": "grep", "arguments": '{"pattern": "x"}'}}]}})
+    t = turn_from_response(
+        {
+            "message": {
+                "content": "",
+                "tool_calls": [{"function": {"name": "grep", "arguments": '{"pattern": "x"}'}}],
+            }
+        }
+    )
     assert t.tool_calls[0].arguments == {"pattern": "x"} and not t.parsed_from_text
-    t = turn_from_response({"message": {"tool_calls": [
-        {"function": {"name": "grep", "arguments": "{broken"}}]}})
+    t = turn_from_response(
+        {"message": {"tool_calls": [{"function": {"name": "grep", "arguments": "{broken"}}]}}
+    )
     assert "__unparsed__" in t.tool_calls[0].arguments
 
 
@@ -121,8 +140,9 @@ def test_non_dict_tool_arguments_do_not_crash_the_tool_layer():
     from terminal_agent.sandbox import LocalSandbox
     from terminal_agent.tools import Toolbox
 
-    t = turn_from_response({"message": {"tool_calls": [
-        {"function": {"name": "read_file", "arguments": "[1, 2]"}}]}})
+    t = turn_from_response(
+        {"message": {"tool_calls": [{"function": {"name": "read_file", "arguments": "[1, 2]"}}]}}
+    )
     assert isinstance(t.tool_calls[0].arguments, dict)
     res = Toolbox(Path("."), LocalSandbox(Path("."))).execute(t.tool_calls[0])
     assert not res.ok and res.meta["error"] == "bad_arguments"

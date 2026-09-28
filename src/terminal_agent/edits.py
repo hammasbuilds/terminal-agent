@@ -86,8 +86,9 @@ def _shift(lines: list[str], src: str, dst: str) -> list[str]:
         cut = len(src) - len(dst)
         prefix = src[:cut]
         return [line[cut:] if line.startswith(prefix) else line for line in lines]
-    return [dst + line[len(src):] if line.startswith(src) and line.strip() else line
-            for line in lines]
+    return [
+        dst + line[len(src) :] if line.startswith(src) and line.strip() else line for line in lines
+    ]
 
 
 def _common_lead(lines: list[str]) -> str:
@@ -111,7 +112,7 @@ def _dedent_key(block: list[str]) -> list[str]:
     lead = _common_lead(block)
     out = []
     for ln in block:
-        body = ln[len(lead):] if ln.startswith(lead) else ln.lstrip(" \t")
+        body = ln[len(lead) :] if ln.startswith(lead) else ln.lstrip(" \t")
         out.append(body.rstrip())
     return out
 
@@ -125,12 +126,12 @@ def _line_match(content: str, old: str, new: str, strategy: str) -> EditOutcome:
     k = len(old_lines)
     if strategy == "rstrip":
         want = [ln.rstrip() for ln in old_lines]
-        hits = [i for i in range(len(bodies) - k + 1)
-                if [b.rstrip() for b in bodies[i : i + k]] == want]
+        hits = [
+            i for i in range(len(bodies) - k + 1) if [b.rstrip() for b in bodies[i : i + k]] == want
+        ]
     else:  # indent: compare dedented (structure-preserving) keys
         want = _dedent_key(old_lines)
-        hits = [i for i in range(len(bodies) - k + 1)
-                if _dedent_key(bodies[i : i + k]) == want]
+        hits = [i for i in range(len(bodies) - k + 1) if _dedent_key(bodies[i : i + k]) == want]
     if not hits:
         return EditOutcome("not_found", strategy=strategy)
     if len(hits) > 1:
@@ -140,18 +141,20 @@ def _line_match(content: str, old: str, new: str, strategy: str) -> EditOutcome:
     new_lines, new_trailing = _split_old(new)
     if strategy == "indent":
         new_lines = _shift(new_lines, _common_lead(old_lines), _common_lead(bodies[i : i + k]))
-    last_eol = file_lines[i + k - 1][len(bodies[i + k - 1]):]
+    last_eol = file_lines[i + k - 1][len(bodies[i + k - 1]) :]
     replacement = eol.join(new_lines)
     if new_lines and (new_trailing or last_eol):
         replacement += last_eol or eol
     before = "".join(file_lines[:i])
     after = "".join(file_lines[i + k :])
-    return EditOutcome("ok", content=before + replacement + after, occurrences=1,
-                       strategy=strategy, line=i + 1)
+    return EditOutcome(
+        "ok", content=before + replacement + after, occurrences=1, strategy=strategy, line=i + 1
+    )
 
 
-def apply_edit(content: str, old: str, new: str, expected: int = 1,
-               fuzzy: bool = False) -> EditOutcome:
+def apply_edit(
+    content: str, old: str, new: str, expected: int = 1, fuzzy: bool = False
+) -> EditOutcome:
     """Replace ``old`` with ``new`` in ``content`` if it occurs exactly ``expected`` times."""
     if old == "":
         return EditOutcome("empty_old")
@@ -161,8 +164,9 @@ def apply_edit(content: str, old: str, new: str, expected: int = 1,
     if outcome.status != "not_found":
         return outcome
     if "\r\n" in content and "\r" not in old:
-        crlf = _exact(content, old.replace("\n", "\r\n"), new.replace("\n", "\r\n"),
-                      expected, "crlf")
+        crlf = _exact(
+            content, old.replace("\n", "\r\n"), new.replace("\n", "\r\n"), expected, "crlf"
+        )
         if crlf.status != "not_found":
             return crlf
     if not fuzzy or expected != 1:

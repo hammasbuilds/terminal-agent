@@ -22,8 +22,9 @@ def rate(k: int, n: int) -> dict[str, object]:
     return {"k": k, "n": n, "rate": round(k / n, 4) if n else None, "ci95": list(wilson(k, n))}
 
 
-def cluster_rate(groups: Sequence[tuple[int, int]], iters: int = 2000, seed: int = 0
-                 ) -> dict[str, object]:
+def cluster_rate(
+    groups: Sequence[tuple[int, int]], iters: int = 2000, seed: int = 0
+) -> dict[str, object]:
     """Pooled rate over clusters (k_i of n_i), with a CI from resampling whole clusters.
 
     Hunks from one patch are not independent, so the interval resamples tasks, not hunks.
@@ -39,13 +40,21 @@ def cluster_rate(groups: Sequence[tuple[int, int]], iters: int = 2000, seed: int
         sn = sum(g[1] for g in sample)
         draws.append(sum(g[0] for g in sample) / sn if sn else 0.0)
     draws.sort()
-    return {"k": k, "n": n, "clusters": len(groups), "rate": round(k / n, 4),
-            "ci95_cluster": [round(draws[int(0.025 * iters)], 4),
-                             round(draws[int(0.975 * iters) - 1], 4)]}
+    return {
+        "k": k,
+        "n": n,
+        "clusters": len(groups),
+        "rate": round(k / n, 4),
+        "ci95_cluster": [
+            round(draws[int(0.025 * iters)], 4),
+            round(draws[int(0.975 * iters) - 1], 4),
+        ],
+    }
 
 
-def bootstrap_mean_ci(values: Sequence[float], iters: int = 2000, seed: int = 0
-                      ) -> tuple[float, float]:
+def bootstrap_mean_ci(
+    values: Sequence[float], iters: int = 2000, seed: int = 0
+) -> tuple[float, float]:
     if not values:
         return (0.0, 0.0)
     rng = random.Random(seed)

@@ -34,12 +34,14 @@ PREIMAGES = ROOT / "data" / "gold_preimages.jsonl.gz"
 
 def _write(path: Path, data: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8",
-                    newline="\n")
+    path.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
+    )
     print(f"wrote {path.relative_to(ROOT)}")
 
 
 # -- mine-local ------------------------------------------------------------------------------
+
 
 def cmd_mine_local(args: argparse.Namespace) -> int:
     repos: list[tuple[Path, str]] = []
@@ -47,8 +49,12 @@ def cmd_mine_local(args: argparse.Namespace) -> int:
     for d in sorted(Path(args.root).iterdir()):
         if not (d / ".git").exists() or d.resolve() == ROOT:
             continue
-        url = subprocess.run(["git", "-C", str(d), "remote", "get-url", "origin"],
-                             capture_output=True, text=True, check=False).stdout.strip()
+        url = subprocess.run(
+            ["git", "-C", str(d), "remote", "get-url", "origin"],
+            capture_output=True,
+            text=True,
+            check=False,
+        ).stdout.strip()
         name = url.rstrip("/").removesuffix(".git").split("/")[-1] if url else ""
         if public and name not in public:
             continue
@@ -61,6 +67,7 @@ def cmd_mine_local(args: argparse.Namespace) -> int:
 
 
 # -- validate --------------------------------------------------------------------------------
+
 
 def cmd_validate(args: argparse.Namespace) -> int:
     out_dir = RESULTS / "validation" / args.suite
@@ -84,11 +91,11 @@ def cmd_validate(args: argparse.Namespace) -> int:
             continue
         t0 = time.monotonic()
         if args.suite == "swebench":
-            rec = validate.validate_task(task, RUNS / "validate", log_dir, args.test_timeout,
-                                         args.repeat)
+            rec = validate.validate_task(
+                task, RUNS / "validate", log_dir, args.test_timeout, args.repeat
+            )
         else:
-            rec = validate.validate_local_task(task, RUNS / "validate-local", log_dir,
-                                               args.repeat)
+            rec = validate.validate_local_task(task, RUNS / "validate-local", log_dir, args.repeat)
         pre = rec.pop("preimages", None)
         if pre and args.suite == "swebench":
             # re-read right before writing: another validation process may have added entries
@@ -96,16 +103,21 @@ def cmd_validate(args: argparse.Namespace) -> int:
             preimages[task.instance_id] = pre
             edit_study.save_preimages(PREIMAGES, preimages)
         if rec.get("verdict") != "image_missing":
-            target.write_text(json.dumps(rec, indent=2, ensure_ascii=False) + "\n",
-                              encoding="utf-8", newline="\n")
-        print(f"{task.instance_id}: {rec['verdict']} ({time.monotonic() - t0:.0f}s) "
-              + "; ".join(rec.get("reasons", [])), flush=True)
+            target.write_text(
+                json.dumps(rec, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
+            )
+        print(
+            f"{task.instance_id}: {rec['verdict']} ({time.monotonic() - t0:.0f}s) "
+            + "; ".join(rec.get("reasons", [])),
+            flush=True,
+        )
     records = list(validate.load_records(out_dir).values())
     _write(RESULTS / f"harness_validation_{args.suite}.json", validate.summarize(records))
     return 0
 
 
 # -- studies ---------------------------------------------------------------------------------
+
 
 def _all_tasks() -> dict[str, Any]:
     tasks: dict[str, Any] = {t.instance_id: t for t in load_tasks()}
@@ -122,7 +134,9 @@ def local_preimages() -> dict[str, dict[str, str]]:
             task.materialize(ws)
             out[task.instance_id] = {
                 f.path: (ws / f.path).read_bytes().decode("utf-8", "surrogateescape")
-                for f in parse_patch(task.patch) if (ws / f.path).is_file()}
+                for f in parse_patch(task.patch)
+                if (ws / f.path).is_file()
+            }
     return out
 
 
@@ -135,12 +149,15 @@ def cmd_edit_study(args: argparse.Namespace) -> int:
             rows.extend(edit_study.study_task(tasks[iid], files))
     swe = [r for r in rows if "@" not in r["instance_id"]]
     loc = [r for r in rows if "@" in r["instance_id"]]
-    _write(RESULTS / "edit_study.json", {
-        "all": edit_study.aggregate(rows),
-        "swebench": edit_study.aggregate(swe),
-        "local": edit_study.aggregate(loc),
-        "per_hunk": rows,
-    })
+    _write(
+        RESULTS / "edit_study.json",
+        {
+            "all": edit_study.aggregate(rows),
+            "swebench": edit_study.aggregate(swe),
+            "local": edit_study.aggregate(loc),
+            "per_hunk": rows,
+        },
+    )
     return 0
 
 
@@ -150,23 +167,28 @@ def cmd_read_window(args: argparse.Namespace) -> int:
     windows = (250, 500, 1000, 2000)
     last_lines = []
     for t in tasks:
-        ends = [h.old_start + max(h.old_len, 1) - 1 for f in parse_patch(t.patch)
-                for h in f.hunks]
+        ends = [h.old_start + max(h.old_len, 1) - 1 for f in parse_patch(t.patch) for h in f.hunks]
         last_lines.append(max(ends) if ends else 0)
     preimages = edit_study.load_preimages(PREIMAGES)
     long_line_files = [
-        f"{iid}:{p}" for iid, files in preimages.items() for p, c in files.items()
+        f"{iid}:{p}"
+        for iid, files in preimages.items()
+        for p, c in files.items()
         if any(len(line) > 2000 for line in c.split("\n"))
     ]
-    _write(RESULTS / "read_window.json", {
-        "tasks": len(tasks),
-        "edit_beyond_first_window": {str(w): rate(sum(1 for n in last_lines if n > w),
-                                                  len(tasks)) for w in windows},
-        "median_last_edited_line": sorted(last_lines)[len(last_lines) // 2],
-        "max_last_edited_line": max(last_lines),
-        "preimage_files_with_lines_over_2000_chars": long_line_files,
-        "preimage_files": sum(len(v) for v in preimages.values()),
-    })
+    _write(
+        RESULTS / "read_window.json",
+        {
+            "tasks": len(tasks),
+            "edit_beyond_first_window": {
+                str(w): rate(sum(1 for n in last_lines if n > w), len(tasks)) for w in windows
+            },
+            "median_last_edited_line": sorted(last_lines)[len(last_lines) // 2],
+            "max_last_edited_line": max(last_lines),
+            "preimage_files_with_lines_over_2000_chars": long_line_files,
+            "preimage_files": sum(len(v) for v in preimages.values()),
+        },
+    )
     return 0
 
 
@@ -179,7 +201,8 @@ def cmd_truncation_study(args: argparse.Namespace) -> int:
             key = p.name.removesuffix(".baseline.log.gz")
             iid = key if suite == "swebench" else key.replace("_", "@", 1)
             task = tasks.get(iid) or next(
-                (t for k, t in tasks.items() if k.replace("@", "_") == key), None)
+                (t for k, t in tasks.items() if k.replace("@", "_") == key), None
+            )
             if task is None:
                 continue
             with gzip.open(p, "rt", encoding="utf-8") as fh:
@@ -195,35 +218,48 @@ def cmd_truncation_study(args: argparse.Namespace) -> int:
     by_repo: dict[str, dict[str, Any]] = {}
     for iid, row in per_log.items():
         by_repo.setdefault(row["repo"], {})[iid] = row
-    _write(RESULTS / "truncation_study.json", {
-        "summary": truncation_study.aggregate(per_log),
-        "by_repo": {repo: truncation_study.aggregate(rows)
-                    for repo, rows in sorted(by_repo.items())},
-        "per_log": per_log,
-    })
+    _write(
+        RESULTS / "truncation_study.json",
+        {
+            "summary": truncation_study.aggregate(per_log),
+            "by_repo": {
+                repo: truncation_study.aggregate(rows) for repo, rows in sorted(by_repo.items())
+            },
+            "per_log": per_log,
+        },
+    )
     return 0
 
 
 def cmd_safety(args: argparse.Namespace) -> int:
     out = {}
-    for name in ("risky_commands", "risky_commands_heldout", "risky_commands_heldout2",
-                 "risky_commands_heldout3"):
+    for name in (
+        "risky_commands",
+        "risky_commands_heldout",
+        "risky_commands_heldout2",
+        "risky_commands_heldout3",
+    ):
         corpus = safety_study.load_corpus(ROOT / "data" / f"{name}.jsonl")
         out[name] = safety_study.score(corpus)
     _write(RESULTS / "safety.json", out)
     for name, res in out.items():
         p = res["policy"]
-        print(f"{name}: dangerous caught {p['dangerous_caught']['rate']}, safe friction "
-              f"{p['safe_friction']['rate']}; forced_rm caught "
-              f"{res['forced_rm']['dangerous_caught']['rate']}, blocklist caught "
-              f"{res['blocklist']['dangerous_caught']['rate']}")
+        print(
+            f"{name}: dangerous caught {p['dangerous_caught']['rate']}, safe friction "
+            f"{p['safe_friction']['rate']}; forced_rm caught "
+            f"{res['forced_rm']['dangerous_caught']['rate']}, blocklist caught "
+            f"{res['blocklist']['dangerous_caught']['rate']}"
+        )
     return 0
 
 
 def valid_ids(suite: str) -> list[str]:
     out_dir = RESULTS / "validation" / suite
-    return sorted(r["instance_id"] for r in validate.load_records(out_dir).values()
-                  if r.get("verdict") == "valid")
+    return sorted(
+        r["instance_id"]
+        for r in validate.load_records(out_dir).values()
+        if r.get("verdict") == "valid"
+    )
 
 
 def cmd_model_run(args: argparse.Namespace) -> int:
@@ -233,8 +269,10 @@ def cmd_model_run(args: argparse.Namespace) -> int:
     if args.limit:
         ids = ids[: args.limit]
     upper = len(ids) * args.max_steps
-    print(f"model arm: {args.model} on {len(ids)} validated {args.suite} task(s); "
-          f"at most {upper} model calls ({args.max_steps} steps x {len(ids)} tasks)")
+    print(
+        f"model arm: {args.model} on {len(ids)} validated {args.suite} task(s); "
+        f"at most {upper} model calls ({args.max_steps} steps x {len(ids)} tasks)"
+    )
     if args.dry_run:
         for i in ids:
             print(f"  {i}")
@@ -242,8 +280,11 @@ def cmd_model_run(args: argparse.Namespace) -> int:
     if not ids:
         print("nothing to run: validate the suite first (ta-eval validate)", file=sys.stderr)
         return 1
-    client = OllamaClient(model=args.model, host=args.host,
-                          cache_dir=ROOT / "cache" / "ollama" / args.model.replace(":", "_"))
+    client = OllamaClient(
+        model=args.model,
+        host=args.host,
+        cache_dir=ROOT / "cache" / "ollama" / args.model.replace(":", "_"),
+    )
     out_dir = RESULTS / "model_run" / args.model.replace(":", "_") / args.suite
     runs = RUNS / "model" / args.suite
     if args.suite == "swebench":
@@ -251,19 +292,24 @@ def cmd_model_run(args: argparse.Namespace) -> int:
         jobs: list[Any] = [by_id[i] for i in ids]
 
         def runner(job: Any) -> dict[str, Any]:
-            return model_run.run_swebench_task(job, client, runs, args.max_steps,
-                                               args.token_budget)
+            return model_run.run_swebench_task(job, client, runs, args.max_steps, args.token_budget)
     else:
         by_local = {t.instance_id: t for t in load_local_tasks()}
         jobs = [by_local[i] for i in ids]
 
         def runner(job: Any) -> dict[str, Any]:
-            return model_run.run_local_task(job, client, runs, args.max_steps,
-                                            args.token_budget)
+            return model_run.run_local_task(job, client, runs, args.max_steps, args.token_budget)
+
     records = model_run.run_all(jobs, runner, out_dir)
-    _write(RESULTS / f"model_run_{args.model.replace(':', '_')}_{args.suite}.json",
-           {"model": args.model, "max_steps": args.max_steps, "token_budget": args.token_budget,
-            "summary": model_run.aggregate(records)})
+    _write(
+        RESULTS / f"model_run_{args.model.replace(':', '_')}_{args.suite}.json",
+        {
+            "model": args.model,
+            "max_steps": args.max_steps,
+            "token_budget": args.token_budget,
+            "summary": model_run.aggregate(records),
+        },
+    )
     return 0
 
 
@@ -282,22 +328,33 @@ def build_parser() -> argparse.ArgumentParser:
     v.add_argument("--suite", choices=["swebench", "local"], default="local")
     v.add_argument("--ids", nargs="*", help="only these instance ids")
     v.add_argument("--repos", nargs="*", help="only these repos (swebench), e.g. psf/requests")
-    v.add_argument("--pulled-only", action="store_true",
-                   help="skip SWE-bench tasks whose Docker image is not pulled")
+    v.add_argument(
+        "--pulled-only",
+        action="store_true",
+        help="skip SWE-bench tasks whose Docker image is not pulled",
+    )
     v.add_argument("--force", action="store_true", help="re-run tasks that already have a record")
     v.add_argument("--test-timeout", type=float, default=1800)
-    v.add_argument("--repeat", type=int, default=0,
-                   help="extra runs of every test stage, to catch flaky tasks (default 0)")
+    v.add_argument(
+        "--repeat",
+        type=int,
+        default=0,
+        help="extra runs of every test stage, to catch flaky tasks (default 0)",
+    )
     v.set_defaults(fn=cmd_validate)
 
-    sub.add_parser("edit-study", help="exact-match edit failure rates on real hunks"
-                   ).set_defaults(fn=cmd_edit_study)
-    sub.add_parser("read-window", help="where gold edits sit relative to read_file's window"
-                   ).set_defaults(fn=cmd_read_window)
-    sub.add_parser("truncation-study", help="does truncation hide the failing test?"
-                   ).set_defaults(fn=cmd_truncation_study)
-    sub.add_parser("safety", help="score the approval policy on the command corpora"
-                   ).set_defaults(fn=cmd_safety)
+    sub.add_parser("edit-study", help="exact-match edit failure rates on real hunks").set_defaults(
+        fn=cmd_edit_study
+    )
+    sub.add_parser(
+        "read-window", help="where gold edits sit relative to read_file's window"
+    ).set_defaults(fn=cmd_read_window)
+    sub.add_parser("truncation-study", help="does truncation hide the failing test?").set_defaults(
+        fn=cmd_truncation_study
+    )
+    sub.add_parser("safety", help="score the approval policy on the command corpora").set_defaults(
+        fn=cmd_safety
+    )
 
     r = sub.add_parser("model-run", help="run the agent with a real model on validated tasks")
     r.add_argument("--suite", choices=["swebench", "local"], default="local")

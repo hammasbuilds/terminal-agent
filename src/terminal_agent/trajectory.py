@@ -18,8 +18,9 @@ from typing import Any, TextIO
 
 
 class TrajectoryLogger:
-    def __init__(self, path: Path | None,
-                 listener: Callable[[dict[str, Any]], None] | None = None) -> None:
+    def __init__(
+        self, path: Path | None, listener: Callable[[dict[str, Any]], None] | None = None
+    ) -> None:
         self.path = path
         self.listener = listener
         self._fh: TextIO | None = None
@@ -29,8 +30,7 @@ class TrajectoryLogger:
             self._fh = path.open("a", encoding="utf-8", newline="\n")
 
     def log(self, type_: str, step: int, **payload: Any) -> None:
-        event = {"t": round(time.monotonic() - self._t0, 3), "step": step, "type": type_,
-                 **payload}
+        event = {"t": round(time.monotonic() - self._t0, 3), "step": step, "type": type_, **payload}
         if self.listener is not None:
             self.listener(event)
         if self._fh is not None:
@@ -74,11 +74,17 @@ class Summary:
 
     def as_dict(self) -> dict[str, Any]:
         return {
-            "runs": self.runs, "status": self.status, "steps": self.steps,
-            "tool_calls": dict(self.tool_calls), "tool_errors": dict(self.tool_errors),
-            "approvals": dict(self.approvals), "prompt_tokens": self.prompt_tokens,
-            "completion_tokens": self.completion_tokens, "compactions": self.compactions,
-            "seconds": self.seconds, "corrupt_lines": self.corrupt_lines,
+            "runs": self.runs,
+            "status": self.status,
+            "steps": self.steps,
+            "tool_calls": dict(self.tool_calls),
+            "tool_errors": dict(self.tool_errors),
+            "approvals": dict(self.approvals),
+            "prompt_tokens": self.prompt_tokens,
+            "completion_tokens": self.completion_tokens,
+            "compactions": self.compactions,
+            "seconds": self.seconds,
+            "corrupt_lines": self.corrupt_lines,
         }
 
 
@@ -123,12 +129,17 @@ def render(events: list[dict[str, Any]], full: bool = False, width: int = 600) -
             out.append(f"=== run start  model={e.get('model')}  workspace={e.get('workspace')}")
             out.append(f"task: {_clip(e.get('task', ''), limit)}")
         elif kind == "compaction":
-            out.append(f"--- step {step}: context compacted {e.get('tokens_before')} -> "
-                       f"{e.get('tokens_after')} est. tokens (stubbed {e.get('stubbed')}, "
-                       f"dropped {e.get('dropped')}, squeezed {e.get('squeezed')})")
+            out.append(
+                f"--- step {step}: context compacted {e.get('tokens_before')} -> "
+                f"{e.get('tokens_after')} est. tokens (stubbed {e.get('stubbed')}, "
+                f"dropped {e.get('dropped')}, squeezed {e.get('squeezed')})"
+            )
         elif kind == "model":
-            tok = (f", {e.get('prompt_tokens')}+{e.get('completion_tokens')} tokens"
-                   if e.get("prompt_tokens") is not None else "")
+            tok = (
+                f", {e.get('prompt_tokens')}+{e.get('completion_tokens')} tokens"
+                if e.get("prompt_tokens") is not None
+                else ""
+            )
             cached = " (cached)" if e.get("cached") else ""
             out.append(f"\n[step {step}] model{cached}{tok}")
             if e.get("content"):
@@ -143,8 +154,9 @@ def render(events: list[dict[str, Any]], full: bool = False, width: int = 600) -
             body = _clip(e.get("output", ""), limit).replace("\n", "\n       ")
             out.append(f"  <- {mark}: {body}")
         elif kind == "run_end":
-            out.append(f"\n=== run end: {e.get('status')} after {e.get('steps')} steps, "
-                       f"{e.get('t')}s")
+            out.append(
+                f"\n=== run end: {e.get('status')} after {e.get('steps')} steps, {e.get('t')}s"
+            )
             if e.get("final"):
                 out.append(f"final: {_clip(e['final'], limit)}")
         elif kind == "corrupt_line":

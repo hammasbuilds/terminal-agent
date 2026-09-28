@@ -23,39 +23,71 @@ def _agent_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="terminal-agent",
         description="A minimal coding agent for the terminal. With no -p it starts an "
-                    "interactive session; with -p it runs one task headlessly and exits.",
+        "interactive session; with -p it runs one task headlessly and exits.",
         epilog="Replay a logged run:  terminal-agent replay <trajectory.jsonl> [--summary]",
     )
     p.add_argument("-p", "--prompt", help="run this task headlessly and exit")
-    p.add_argument("-w", "--workspace", type=Path, default=Path.cwd(),
-                   help="repository to work in (default: current directory)")
+    p.add_argument(
+        "-w",
+        "--workspace",
+        type=Path,
+        default=Path.cwd(),
+        help="repository to work in (default: current directory)",
+    )
     p.add_argument("--model", default=DEFAULT_MODEL, help=f"Ollama model (default {DEFAULT_MODEL})")
     p.add_argument("--host", default=DEFAULT_HOST, help=f"Ollama URL (default {DEFAULT_HOST})")
-    p.add_argument("--output-format", choices=["text", "json"], default="text",
-                   help="headless output format (default text)")
-    p.add_argument("--approval-mode", choices=["default", "auto"], default="default",
-                   help="default: only read-only commands and tests run unasked; auto: "
-                        "non-destructive commands run too. Dangerous ones always need a human "
-                        "(and are refused headless).")
-    p.add_argument("--allow", action="append", default=[], metavar="PREFIX",
-                   help="trust commands starting with PREFIX (repeatable), e.g. --allow 'make'")
+    p.add_argument(
+        "--output-format",
+        choices=["text", "json"],
+        default="text",
+        help="headless output format (default text)",
+    )
+    p.add_argument(
+        "--approval-mode",
+        choices=["default", "auto"],
+        default="default",
+        help="default: only read-only commands and tests run unasked; auto: "
+        "non-destructive commands run too. Dangerous ones always need a human "
+        "(and are refused headless).",
+    )
+    p.add_argument(
+        "--allow",
+        action="append",
+        default=[],
+        metavar="PREFIX",
+        help="trust commands starting with PREFIX (repeatable), e.g. --allow 'make'",
+    )
     p.add_argument("--max-steps", type=int, default=40, help="model calls per task (default 40)")
-    p.add_argument("--token-budget", type=int, default=12000,
-                   help="estimated prompt tokens before compaction (default 12000)")
-    p.add_argument("--test-command", default="python -m pytest -q",
-                   help="what run_tests runs (default 'python -m pytest -q')")
-    p.add_argument("--trajectory", type=Path,
-                   help=f"JSONL log path (default {DEFAULT_TRAJECTORY_DIR}/<time>.jsonl)")
+    p.add_argument(
+        "--token-budget",
+        type=int,
+        default=12000,
+        help="estimated prompt tokens before compaction (default 12000)",
+    )
+    p.add_argument(
+        "--test-command",
+        default="python -m pytest -q",
+        help="what run_tests runs (default 'python -m pytest -q')",
+    )
+    p.add_argument(
+        "--trajectory",
+        type=Path,
+        help=f"JSONL log path (default {DEFAULT_TRAJECTORY_DIR}/<time>.jsonl)",
+    )
     p.add_argument("--cache-dir", type=Path, help="cache model responses here (resumable runs)")
-    p.add_argument("--script", type=Path,
-                   help="drive the agent from a JSON list of scripted turns instead of a model "
-                        "(for testing tools and policy without Ollama)")
+    p.add_argument(
+        "--script",
+        type=Path,
+        help="drive the agent from a JSON list of scripted turns instead of a model "
+        "(for testing tools and policy without Ollama)",
+    )
     return p
 
 
 def _replay_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="terminal-agent replay",
-                                description="Pretty-print a JSONL trajectory.")
+    p = argparse.ArgumentParser(
+        prog="terminal-agent replay", description="Pretty-print a JSONL trajectory."
+    )
     p.add_argument("path", type=Path, help="trajectory .jsonl file")
     p.add_argument("--full", action="store_true", help="do not clip long outputs")
     p.add_argument("--summary", action="store_true", help="print aggregate stats as JSON only")

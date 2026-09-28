@@ -104,7 +104,7 @@ def test_argument_validation(box):
 
 def test_run_shell_truncates_head_and_tail(box):
     py = Path(sys.executable).as_posix()
-    res = call(box, "run_shell", command=f'"{py}" -c "print(\'A\' * 2000); print(\'END\')"')
+    res = call(box, "run_shell", command=f"\"{py}\" -c \"print('A' * 2000); print('END')\"")
     assert res.ok and res.meta["elided_chars"] > 1500
     assert "chars truncated" in res.output and res.output.rstrip().endswith("END")
 
@@ -125,10 +125,13 @@ def test_run_shell_backgrounded_child_does_not_hang_past_the_timeout(box):
     # a backgrounded grandchild used to hold the stdout pipe open, so run_shell returned
     # ~12 s after a 2 s timeout and lost output (reviewer issue 9)
     import time as _t
+
     py = Path(sys.executable).as_posix()
     start = _t.monotonic()
-    res = box.run_shell(f'"{py}" -c "import time; time.sleep(30)" & '
-                        f'"{py}" -c "import time; time.sleep(30)"', timeout=2)
+    res = box.run_shell(
+        f'"{py}" -c "import time; time.sleep(30)" & "{py}" -c "import time; time.sleep(30)"',
+        timeout=2,
+    )
     assert not res.ok and res.meta["timed_out"]
     assert _t.monotonic() - start < 9  # not the ~30 s the child would otherwise run
 

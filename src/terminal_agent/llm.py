@@ -52,12 +52,12 @@ class ModelError(RuntimeError):
 class ChatClient(Protocol):
     model: str
 
-    def chat(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]) -> ModelTurn:
-        ...
+    def chat(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]) -> ModelTurn: ...
 
 
-def cache_key(model: str, messages: list[dict[str, Any]], tools: list[dict[str, Any]],
-              options: dict[str, Any]) -> str:
+def cache_key(
+    model: str, messages: list[dict[str, Any]], tools: list[dict[str, Any]], options: dict[str, Any]
+) -> str:
     """Stable key over everything that determines a generation."""
     blob = json.dumps(
         {"model": model, "messages": messages, "tools": tools, "options": options},
@@ -205,14 +205,15 @@ class ScriptedClient:
         turns = []
         for i, item in enumerate(data):
             if not isinstance(item, dict):
-                raise ValueError(f"script {path}: turn {i} must be an object, got "
-                                 f"{type(item).__name__}")
+                raise ValueError(
+                    f"script {path}: turn {i} must be an object, got {type(item).__name__}"
+                )
             calls = []
             for j, c in enumerate(item.get("tool_calls") or []):
                 if not isinstance(c, dict) or not isinstance(c.get("name"), str):
-                    raise ValueError(f"script {path}: turn {i} tool call {j} needs a string "
-                                     f"'name'")
-                calls.append(ToolCall(name=c["name"], arguments=c.get("arguments") or {},
-                                      id=f"s{i}.{j}"))
+                    raise ValueError(f"script {path}: turn {i} tool call {j} needs a string 'name'")
+                calls.append(
+                    ToolCall(name=c["name"], arguments=c.get("arguments") or {}, id=f"s{i}.{j}")
+                )
             turns.append(ModelTurn(content=item.get("content", ""), tool_calls=calls))
         return cls(turns)

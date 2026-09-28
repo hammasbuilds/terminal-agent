@@ -18,10 +18,23 @@ from pathlib import Path
 
 import pyarrow as pa
 
-DEFAULT = (Path.home() / ".cache/huggingface/datasets/princeton-nlp___swe-bench_lite/default/"
-           "0.0.0/6ec7bb89b9342f664a54a6e0a6ea6501d3437cc2/swe-bench_lite-test.arrow")
-FIELDS = ["instance_id", "repo", "base_commit", "version", "created_at", "problem_statement",
-          "patch", "test_patch", "FAIL_TO_PASS", "PASS_TO_PASS", "environment_setup_commit"]
+DEFAULT = (
+    Path.home() / ".cache/huggingface/datasets/princeton-nlp___swe-bench_lite/default/"
+    "0.0.0/6ec7bb89b9342f664a54a6e0a6ea6501d3437cc2/swe-bench_lite-test.arrow"
+)
+FIELDS = [
+    "instance_id",
+    "repo",
+    "base_commit",
+    "version",
+    "created_at",
+    "problem_statement",
+    "patch",
+    "test_patch",
+    "FAIL_TO_PASS",
+    "PASS_TO_PASS",
+    "environment_setup_commit",
+]
 OUT = Path(__file__).resolve().parents[1] / "data" / "swebench_lite.jsonl.gz"
 
 

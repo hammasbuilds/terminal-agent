@@ -63,10 +63,14 @@ def _grade(task: Task, log: str) -> tuple[dict[str, Any], dict[str, str]]:
     return specs.grade(statuses, task.fail_to_pass, task.pass_to_pass), statuses
 
 
-def validate_task(task: Task, run_dir: Path, log_dir: Path, test_timeout: float = 1800,
-                  repeat: int = 0) -> dict[str, Any]:
-    rec: dict[str, Any] = {"instance_id": task.instance_id, "repo": task.repo,
-                           "version": task.version}
+def validate_task(
+    task: Task, run_dir: Path, log_dir: Path, test_timeout: float = 1800, repeat: int = 0
+) -> dict[str, Any]:
+    rec: dict[str, Any] = {
+        "instance_id": task.instance_id,
+        "repo": task.repo,
+        "version": task.version,
+    }
     t0 = time.monotonic()
     if not image_present(task.image):
         rec["verdict"] = "image_missing"
@@ -82,14 +86,20 @@ def validate_task(task: Task, run_dir: Path, log_dir: Path, test_timeout: float 
         export = c.export(ws)
         rec["export"] = asdict(export)
         before = snapshot(ws)
-        rec["preimages"] = {p: (ws / p).read_bytes().decode("utf-8", "surrogateescape")
-                            for p in gold_files if (ws / p).is_file()}
+        rec["preimages"] = {
+            p: (ws / p).read_bytes().decode("utf-8", "surrogateescape")
+            for p in gold_files
+            if (ws / p).is_file()
+        }
         client = GoldPatchClient(task.patch)
         agent = build_agent(
-            ws, client,
+            ws,
+            client,
             sandbox=DockerSandbox(c.name, ws, prelude=specs.PRELUDE),
             policy=ApprovalPolicy(ws, shell_root="/testbed", mode="auto"),
-            trajectory=traj, max_steps=400, token_budget=10**9,
+            trajectory=traj,
+            max_steps=400,
+            token_budget=10**9,
         )
         result = agent.run(task.problem_statement)
         agent.logger.close()
@@ -125,10 +135,12 @@ def validate_task(task: Task, run_dir: Path, log_dir: Path, test_timeout: float 
         grade, _ = _grade(task, log)
         return log, {**grade, **meta}
 
-    rec["baseline"] = _stable(baseline_once, _baseline_ok,
-                              log_dir / f"{task.instance_id}.baseline.log.gz", repeat=repeat)
-    rec["gold"] = _stable(gold_once, _gold_ok, log_dir / f"{task.instance_id}.gold.log.gz",
-                          repeat=repeat)
+    rec["baseline"] = _stable(
+        baseline_once, _baseline_ok, log_dir / f"{task.instance_id}.baseline.log.gz", repeat=repeat
+    )
+    rec["gold"] = _stable(
+        gold_once, _gold_ok, log_dir / f"{task.instance_id}.gold.log.gz", repeat=repeat
+    )
 
     rec["reasons"] = diagnose(rec, gold_files)
     rec["verdict"] = "valid" if not rec["reasons"] else "invalid"
@@ -145,9 +157,13 @@ def _gold_ok(g: dict[str, Any]) -> bool:
     return bool(g["resolved"])
 
 
-def _stable(run_once: Callable[[], tuple[str, dict[str, Any]]],
-            expected: Callable[[dict[str, Any]], bool], log_path: Path,
-            reruns: int = 2, repeat: int = 0) -> dict[str, Any]:
+def _stable(
+    run_once: Callable[[], tuple[str, dict[str, Any]]],
+    expected: Callable[[dict[str, Any]], bool],
+    log_path: Path,
+    reruns: int = 2,
+    repeat: int = 0,
+) -> dict[str, Any]:
     """Run a test stage; if it misses its expectation, re-run it to tell flaky from broken.
 
     ``repeat`` extra runs happen regardless (a stability check); ``reruns`` more happen
@@ -164,8 +180,10 @@ def _stable(run_once: Callable[[], tuple[str, dict[str, Any]]],
         _, g = run_once()
         again.append({k: g[k] for k in ("f2p_passed", "p2p_passed", "resolved")})
     grade["reruns"] = again
-    grade["flaky"] = any((g["f2p_passed"], g["p2p_passed"]) !=
-                         (grade["f2p_passed"], grade["p2p_passed"]) for g in again)
+    grade["flaky"] = any(
+        (g["f2p_passed"], g["p2p_passed"]) != (grade["f2p_passed"], grade["p2p_passed"])
+        for g in again
+    )
     return grade
 
 
@@ -178,15 +196,18 @@ def diagnose(rec: dict[str, Any], gold_files: list[str]) -> list[str]:
         reasons.append("export: a file the patch touches could not be exported")
     bad_hunks = [h for h in rec.get("hunks", []) if h["final_status"] != "ok"]
     if bad_hunks:
-        reasons.append(f"tool layer: {len(bad_hunks)} hunk(s) did not apply "
-                       f"({', '.join(sorted({h['final_status'] for h in bad_hunks}))})")
+        reasons.append(
+            f"tool layer: {len(bad_hunks)} hunk(s) did not apply "
+            f"({', '.join(sorted({h['final_status'] for h in bad_hunks}))})"
+        )
     if rec["agent"]["status"] != "finished":
         reasons.append(f"agent loop ended with {rec['agent']['status']}")
     if not rec.get("git_apply_ok"):
         reasons.append("reference: git apply of the gold patch failed")
     if rec.get("byte_mismatch"):
-        reasons.append(f"tool layer: result differs from git apply in "
-                       f"{', '.join(rec['byte_mismatch'])}")
+        reasons.append(
+            f"tool layer: result differs from git apply in {', '.join(rec['byte_mismatch'])}"
+        )
     b, g = rec["baseline"], rec["gold"]
     for label, r in (("baseline", b), ("gold", g)):
         if r.get("flaky"):
@@ -196,11 +217,11 @@ def diagnose(rec: dict[str, Any], gold_files: list[str]) -> list[str]:
         if r.get("timed_out"):
             reasons.append(f"{label}: tests timed out")
     if b["f2p_passed"]:
-        reasons.append(f"task: {b['f2p_passed']}/{b['f2p_total']} FAIL_TO_PASS already pass "
-                       f"before the fix")
+        reasons.append(
+            f"task: {b['f2p_passed']}/{b['f2p_total']} FAIL_TO_PASS already pass before the fix"
+        )
     if b["p2p_passed"] < b["p2p_total"]:
-        reasons.append(f"task: {b['p2p_total'] - b['p2p_passed']} PASS_TO_PASS fail before "
-                       f"the fix")
+        reasons.append(f"task: {b['p2p_total'] - b['p2p_passed']} PASS_TO_PASS fail before the fix")
     if g["f2p_passed"] < g["f2p_total"]:
         reasons.append(f"gold: {g['f2p_total'] - g['f2p_passed']} FAIL_TO_PASS still fail")
     if g["p2p_passed"] < g["p2p_total"]:
@@ -242,34 +263,53 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         "hunks_first_try_ambiguous": sum(1 for h in hunks if h["first_status"] == "ambiguous"),
         "hunks_final_ok": sum(1 for h in hunks if h["final_status"] == "ok"),
         "byte_identical_tasks": sum(1 for r in ran if not r.get("byte_mismatch")),
-        "empty_patch_resolves": sorted(r["instance_id"] for r in ran
-                                       if r["baseline"].get("resolved")),
-        "flaky": sorted(r["instance_id"] for r in ran
-                        if r["baseline"].get("flaky") or r["gold"].get("flaky")),
+        "empty_patch_resolves": sorted(
+            r["instance_id"] for r in ran if r["baseline"].get("resolved")
+        ),
+        "flaky": sorted(
+            r["instance_id"] for r in ran if r["baseline"].get("flaky") or r["gold"].get("flaky")
+        ),
         "invalid": {r["instance_id"]: r["reasons"] for r in ran if r["verdict"] != "valid"},
     }
 
 
-def validate_local_task(task: LocalTask, run_dir: Path, log_dir: Path, repeat: int = 0
-                        ) -> dict[str, Any]:
+def validate_local_task(
+    task: LocalTask, run_dir: Path, log_dir: Path, repeat: int = 0
+) -> dict[str, Any]:
     """The same four checks for a mined local task, with pytest on this machine."""
-    rec: dict[str, Any] = {"instance_id": task.instance_id, "repo": task.repo,
-                           "version": task.base_commit[:10], "head_matches_base": True}
+    rec: dict[str, Any] = {
+        "instance_id": task.instance_id,
+        "repo": task.repo,
+        "version": task.base_commit[:10],
+        "head_matches_base": True,
+    }
     t0 = time.monotonic()
     root = run_dir / task.instance_id.replace("@", "_")
     ws, ref, base, fin = (root / n for n in ("workspace", "ref", "baseline", "gold"))
     task.materialize(ws)
-    rec["export"] = {"files": sum(1 for _ in ws.rglob("*")), "skipped_symlinks": [],
-                     "skipped_invalid": [], "case_collisions": []}
+    rec["export"] = {
+        "files": sum(1 for _ in ws.rglob("*")),
+        "skipped_symlinks": [],
+        "skipped_invalid": [],
+        "case_collisions": [],
+    }
     before = snapshot(ws)
     gold_files = [f.path for f in parse_patch(task.patch)]
-    rec["preimages"] = {p: (ws / p).read_bytes().decode("utf-8", "surrogateescape")
-                        for p in gold_files if (ws / p).is_file()}
+    rec["preimages"] = {
+        p: (ws / p).read_bytes().decode("utf-8", "surrogateescape")
+        for p in gold_files
+        if (ws / p).is_file()
+    }
     client = GoldPatchClient(task.patch)
-    agent = build_agent(ws, client, sandbox=LocalSandbox(ws, env=test_env(ws)),
-                        policy=ApprovalPolicy(ws, mode="auto"),
-                        trajectory=root / "trajectory.jsonl", max_steps=400,
-                        token_budget=10**9)
+    agent = build_agent(
+        ws,
+        client,
+        sandbox=LocalSandbox(ws, env=test_env(ws)),
+        policy=ApprovalPolicy(ws, mode="auto"),
+        trajectory=root / "trajectory.jsonl",
+        max_steps=400,
+        token_budget=10**9,
+    )
     result = agent.run(task.problem_statement)
     agent.logger.close()
     rec["agent"] = result.as_dict()
@@ -280,9 +320,10 @@ def validate_local_task(task: LocalTask, run_dir: Path, log_dir: Path, repeat: i
     task.materialize(ref)
     rec["git_apply_ok"], _ = git_apply(ref, task.patch)
     rec["byte_mismatch"] = [
-        rel for rel in sorted(set(modified) | set(gold_files))
-        if ((ws / rel).is_file() and file_digest(ws / rel)) != (
-            (ref / rel).is_file() and file_digest(ref / rel))
+        rel
+        for rel in sorted(set(modified) | set(gold_files))
+        if ((ws / rel).is_file() and file_digest(ws / rel))
+        != ((ref / rel).is_file() and file_digest(ref / rel))
     ]
     runnable = task.test_files
     for label, tree, ok in (("baseline", base, _baseline_ok), ("gold", fin, _gold_ok)):
@@ -298,8 +339,12 @@ def validate_local_task(task: LocalTask, run_dir: Path, log_dir: Path, repeat: i
             grade = specs.grade(specs.parse_pytest(log), task.fail_to_pass, task.pass_to_pass)
             return log, {**grade, "test_patch_applied": applied, "timed_out": timed_out}
 
-        rec[label] = _stable(once, ok, repeat=repeat, log_path=
-                             log_dir / f"{task.instance_id.replace('@', '_')}.{label}.log.gz")
+        rec[label] = _stable(
+            once,
+            ok,
+            repeat=repeat,
+            log_path=log_dir / f"{task.instance_id.replace('@', '_')}.{label}.log.gz",
+        )
     rec["reasons"] = diagnose(rec, gold_files)
     rec["verdict"] = "valid" if not rec["reasons"] else "invalid"
     rec["seconds"] = round(time.monotonic() - t0, 1)

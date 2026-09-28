@@ -101,8 +101,9 @@ class ContextManager:
     3. **squeeze** the largest remaining messages in the middle.
     """
 
-    def __init__(self, budget_tokens: int = 12000, keep_recent: int = 6,
-                 stub_min_chars: int = 400) -> None:
+    def __init__(
+        self, budget_tokens: int = 12000, keep_recent: int = 6, stub_min_chars: int = 400
+    ) -> None:
         self.budget = budget_tokens
         self.keep_recent = keep_recent
         self.stub_min_chars = stub_min_chars
@@ -137,9 +138,16 @@ class ContextManager:
         # 2. drop the oldest non-protected assistant turn (with its tool results)
         while conversation_tokens(msgs) > self.budget:
             tail_start = max(0, len(msgs) - self.keep_recent)
-            start = next((i for i in range(len(msgs))
-                          if not msgs[i].get(self._KEEP) and i < tail_start
-                          and msgs[i].get("role") != "tool"), None)
+            start = next(
+                (
+                    i
+                    for i in range(len(msgs))
+                    if not msgs[i].get(self._KEEP)
+                    and i < tail_start
+                    and msgs[i].get("role") != "tool"
+                ),
+                None,
+            )
             if start is None:
                 break
             j = start + 1
@@ -149,14 +157,22 @@ class ContextManager:
             del msgs[start:j]
         if report.dropped:
             at = next((i for i in range(len(msgs)) if not msgs[i].get(self._KEEP)), len(msgs))
-            msgs.insert(at, {"role": "user",
-                             "content": f"[{report.dropped} earlier messages were removed "
-                                        "to fit the context budget]"})
+            msgs.insert(
+                at,
+                {
+                    "role": "user",
+                    "content": f"[{report.dropped} earlier messages were removed "
+                    "to fit the context budget]",
+                },
+            )
 
         # 3. squeeze the largest remaining *unprotected* message (never the task/system prompt)
         while conversation_tokens(msgs) > self.budget:
-            candidates = [k for k in range(len(msgs)) if not msgs[k].get(self._KEEP)
-                          and len(msgs[k].get("content") or "") >= 800]
+            candidates = [
+                k
+                for k in range(len(msgs))
+                if not msgs[k].get(self._KEEP) and len(msgs[k].get("content") or "") >= 800
+            ]
             if not candidates:
                 break
             idx = max(candidates, key=lambda k: len(msgs[k].get("content") or ""))

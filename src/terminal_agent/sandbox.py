@@ -31,8 +31,7 @@ class ExecResult:
 
 
 class Sandbox(Protocol):
-    def run(self, command: str, timeout: float) -> ExecResult:
-        ...
+    def run(self, command: str, timeout: float) -> ExecResult: ...
 
 
 def _decode(data: bytes | None) -> str:
@@ -50,16 +49,16 @@ def local_shell() -> list[str]:
 def _kill_tree(proc: subprocess.Popen[bytes]) -> None:
     """Kill the process we started and its children - never anything else."""
     if os.name == "nt":
-        subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)],
-                       capture_output=True, check=False)
+        subprocess.run(
+            ["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True, check=False
+        )
     else:
         with contextlib.suppress(ProcessLookupError):
             os.killpg(proc.pid, signal.SIGKILL)
     proc.kill()
 
 
-def run_argv(argv: list[str], cwd: Path, env: dict[str, str] | None, timeout: float
-             ) -> ExecResult:
+def run_argv(argv: list[str], cwd: Path, env: dict[str, str] | None, timeout: float) -> ExecResult:
     """Run a process in its own group; on timeout kill the tree and return what it wrote.
 
     Output goes to a real temp file, not a pipe. A pipe stays open as long as *any*
@@ -77,8 +76,15 @@ def run_argv(argv: list[str], cwd: Path, env: dict[str, str] | None, timeout: fl
         kwargs["start_new_session"] = True
     timed_out = False
     with tempfile.TemporaryFile() as out:
-        proc = subprocess.Popen(argv, cwd=cwd, stdout=out, stderr=subprocess.STDOUT,
-                                stdin=subprocess.DEVNULL, env=env, **kwargs)  # type: ignore[call-overload]
+        proc = subprocess.Popen(
+            argv,
+            cwd=cwd,
+            stdout=out,
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,
+            env=env,
+            **kwargs,
+        )  # type: ignore[call-overload]
         while proc.poll() is None:
             if time.monotonic() >= deadline:
                 _kill_tree(proc)
@@ -136,21 +142,25 @@ def tar_files(root: Path, rel_paths: list[str], modes: dict[str, int] | None = N
     return buf.getvalue()
 
 
-def docker(args: list[str], *, input_bytes: bytes | None = None, timeout: float = 600,
-           check: bool = True) -> subprocess.CompletedProcess[bytes]:
-    proc = subprocess.run(["docker", *args], input=input_bytes, capture_output=True,
-                          timeout=timeout, check=False)
+def docker(
+    args: list[str], *, input_bytes: bytes | None = None, timeout: float = 600, check: bool = True
+) -> subprocess.CompletedProcess[bytes]:
+    proc = subprocess.run(
+        ["docker", *args], input=input_bytes, capture_output=True, timeout=timeout, check=False
+    )
     if check and proc.returncode != 0:
-        raise RuntimeError(f"docker {' '.join(args[:3])} failed ({proc.returncode}): "
-                           f"{_decode(proc.stderr)[-800:]}")
+        raise RuntimeError(
+            f"docker {' '.join(args[:3])} failed ({proc.returncode}): {_decode(proc.stderr)[-800:]}"
+        )
     return proc
 
 
 class DockerSandbox:
     """Runs commands inside ``container`` at ``workdir``, keeping it in sync with ``workspace``."""
 
-    def __init__(self, container: str, workspace: Path, workdir: str = "/testbed",
-                 prelude: str = "") -> None:
+    def __init__(
+        self, container: str, workspace: Path, workdir: str = "/testbed", prelude: str = ""
+    ) -> None:
         self.container = container
         self.workspace = workspace
         self.workdir = workdir
@@ -165,23 +175,46 @@ class DockerSandbox:
             # Windows loses the executable bit; keep whatever the container already had so
             # overwriting a file (e.g. sympy's bin/test) does not make it non-executable.
             modes = {f: 0o755 for f in self._container_executables(modified)}
-            docker(["exec", "-i", self.container, "tar", "-x", "-C", self.workdir],
-                   input_bytes=tar_files(self.workspace, modified, modes))
+            docker(
+                ["exec", "-i", self.container, "tar", "-x", "-C", self.workdir],
+                input_bytes=tar_files(self.workspace, modified, modes),
+            )
         if deleted:
-            docker(["exec", self.container, "rm", "-f", "--",
-                    *[f"{self.workdir}/{d}" for d in deleted]])
+            docker(
+                [
+                    "exec",
+                    self.container,
+                    "rm",
+                    "-f",
+                    "--",
+                    *[f"{self.workdir}/{d}" for d in deleted],
+                ]
+            )
         self._synced = now
 
     def _container_executables(self, rel_paths: list[str]) -> list[str]:
-        script = "".join(f'test -x "{self.workdir}/{r}" && printf "%s\\0" "{r}"; '
-                         for r in rel_paths)
+        script = "".join(
+            f'test -x "{self.workdir}/{r}" && printf "%s\\0" "{r}"; ' for r in rel_paths
+        )
         proc = docker(["exec", self.container, "sh", "-c", script], check=False)
         return [r for r in proc.stdout.decode("utf-8", "replace").split("\0") if r]
 
     def pull(self) -> None:
         """Copy files a command changed inside the container back to the workspace."""
-        proc = docker(["exec", self.container, "git", "-C", self.workdir, "status",
-                       "--porcelain", "-z", "--untracked-files=all"], check=False)
+        proc = docker(
+            [
+                "exec",
+                self.container,
+                "git",
+                "-C",
+                self.workdir,
+                "status",
+                "--porcelain",
+                "-z",
+                "--untracked-files=all",
+            ],
+            check=False,
+        )
         if proc.returncode != 0:
             return
         # porcelain -z: a rename/copy is two NUL fields ("R  <new>\0<old>\0"), so the old
@@ -205,8 +238,9 @@ class DockerSandbox:
             (gone if "D" in code else present).append(rel)
         wanted = [r for r in present if self._container_differs(r)]
         if wanted:
-            data = docker(["exec", self.container, "tar", "-c", "-C", self.workdir, "--",
-                           *wanted]).stdout
+            data = docker(
+                ["exec", self.container, "tar", "-c", "-C", self.workdir, "--", *wanted]
+            ).stdout
             with tarfile.open(fileobj=io.BytesIO(data)) as tar:
                 for member in tar.getmembers():
                     if not member.isfile():
@@ -232,11 +266,28 @@ class DockerSandbox:
         script = f"exec 2>&1\n{self.prelude}\ncd {self.workdir}\n{command}"
         start = time.monotonic()
         try:
-            proc = docker(["exec", self.container, "timeout", "-s", "KILL", str(int(timeout)),
-                           "bash", "-c", script], timeout=timeout + 30, check=False)
+            proc = docker(
+                [
+                    "exec",
+                    self.container,
+                    "timeout",
+                    "-s",
+                    "KILL",
+                    str(int(timeout)),
+                    "bash",
+                    "-c",
+                    script,
+                ],
+                timeout=timeout + 30,
+                check=False,
+            )
         except subprocess.TimeoutExpired:
             return ExecResult(124, "", True, time.monotonic() - start)
         timed_out = proc.returncode == 137 and time.monotonic() - start >= timeout - 1
         self.pull()
-        return ExecResult(proc.returncode, _decode(proc.stdout) + _decode(proc.stderr),
-                          timed_out, time.monotonic() - start)
+        return ExecResult(
+            proc.returncode,
+            _decode(proc.stdout) + _decode(proc.stderr),
+            timed_out,
+            time.monotonic() - start,
+        )

@@ -47,17 +47,32 @@ run_tests if you can. Do not edit or add test files; hidden tests will be run af
 Call finish when you are done."""
 
 
-def _agent_for(ws: Path, client: ChatClient, sandbox: Any, shell_root: str | None,
-               test_command: str, traj: Path, max_steps: int, token_budget: int) -> Any:
+def _agent_for(
+    ws: Path,
+    client: ChatClient,
+    sandbox: Any,
+    shell_root: str | None,
+    test_command: str,
+    traj: Path,
+    max_steps: int,
+    token_budget: int,
+) -> Any:
     return build_agent(
-        ws, client, sandbox=sandbox,
+        ws,
+        client,
+        sandbox=sandbox,
         tool_config=ToolConfig(test_command=test_command, test_timeout=600),
         policy=ApprovalPolicy(ws, shell_root=shell_root, mode="auto"),
-        approver=deny_all, trajectory=traj, max_steps=max_steps, token_budget=token_budget)
+        approver=deny_all,
+        trajectory=traj,
+        max_steps=max_steps,
+        token_budget=token_budget,
+    )
 
 
-def run_swebench_task(task: Task, client: ChatClient, run_dir: Path, max_steps: int,
-                      token_budget: int) -> dict[str, Any]:
+def run_swebench_task(
+    task: Task, client: ChatClient, run_dir: Path, max_steps: int, token_budget: int
+) -> dict[str, Any]:
     ws = run_dir / task.instance_id / "workspace"
     traj = run_dir / task.instance_id / "trajectory.jsonl"
     traj.unlink(missing_ok=True)
@@ -65,9 +80,16 @@ def run_swebench_task(task: Task, client: ChatClient, run_dir: Path, max_steps: 
     with Container(task) as c:
         c.export(ws)
         before = snapshot(ws)
-        agent = _agent_for(ws, client, DockerSandbox(c.name, ws, prelude=specs.PRELUDE),
-                           "/testbed", specs.test_command(task.repo, task.version), traj,
-                           max_steps, token_budget)
+        agent = _agent_for(
+            ws,
+            client,
+            DockerSandbox(c.name, ws, prelude=specs.PRELUDE),
+            "/testbed",
+            specs.test_command(task.repo, task.version),
+            traj,
+            max_steps,
+            token_budget,
+        )
         result = agent.run(TASK_PROMPT.format(problem=task.problem_statement))
         agent.logger.close()
     modified, deleted = changed_files(before, snapshot(ws))
@@ -75,15 +97,27 @@ def run_swebench_task(task: Task, client: ChatClient, run_dir: Path, max_steps: 
         ev.push_changes(ws, before)
         patch = ev.diff()
         log, meta = ev.run_tests()
-    grade = specs.grade(specs.PARSERS[task.repo](test_section(log)), task.fail_to_pass,
-                        task.pass_to_pass)
+    grade = specs.grade(
+        specs.PARSERS[task.repo](test_section(log)), task.fail_to_pass, task.pass_to_pass
+    )
     rmtree(ws)
-    return _record(task.instance_id, task.repo, task.patch, result.as_dict(), modified, deleted,
-                   patch, {**grade, **meta}, traj, time.monotonic() - t0)
+    return _record(
+        task.instance_id,
+        task.repo,
+        task.patch,
+        result.as_dict(),
+        modified,
+        deleted,
+        patch,
+        {**grade, **meta},
+        traj,
+        time.monotonic() - t0,
+    )
 
 
-def run_local_task(task: LocalTask, client: ChatClient, run_dir: Path, max_steps: int,
-                   token_budget: int) -> dict[str, Any]:
+def run_local_task(
+    task: LocalTask, client: ChatClient, run_dir: Path, max_steps: int, token_budget: int
+) -> dict[str, Any]:
     root = run_dir / task.instance_id.replace("@", "_")
     ws, ev = root / "workspace", root / "eval"
     traj = root / "trajectory.jsonl"
@@ -92,8 +126,16 @@ def run_local_task(task: LocalTask, client: ChatClient, run_dir: Path, max_steps
     task.materialize(ws)
     git_init_isolated(ws)  # contain the model's git commands to this throwaway tree
     before = snapshot(ws)
-    agent = _agent_for(ws, client, LocalSandbox(ws, env=test_env(ws)), None,
-                       local_test_command(), traj, max_steps, token_budget)
+    agent = _agent_for(
+        ws,
+        client,
+        LocalSandbox(ws, env=test_env(ws)),
+        None,
+        local_test_command(),
+        traj,
+        max_steps,
+        token_budget,
+    )
     result = agent.run(TASK_PROMPT.format(problem=task.problem_statement))
     agent.logger.close()
     modified, deleted = changed_files(before, snapshot(ws))
@@ -110,34 +152,66 @@ def run_local_task(task: LocalTask, client: ChatClient, run_dir: Path, max_steps
     applied, _ = git_apply(ev, task.test_patch)
     log, timed_out = run_pytest(ev, task.test_files)
     grade = specs.grade(specs.parse_pytest(log), task.fail_to_pass, task.pass_to_pass)
-    rec = _record(task.instance_id, task.repo, task.patch, result.as_dict(), modified, deleted,
-                  "", {**grade, "test_patch_applied": applied, "timed_out": timed_out}, traj,
-                  time.monotonic() - t0)
+    rec = _record(
+        task.instance_id,
+        task.repo,
+        task.patch,
+        result.as_dict(),
+        modified,
+        deleted,
+        "",
+        {**grade, "test_patch_applied": applied, "timed_out": timed_out},
+        traj,
+        time.monotonic() - t0,
+    )
     for d in (ws, ev, pristine):
         rmtree(d)
     return rec
 
 
-def _record(iid: str, repo: str, gold_patch: str, agent: dict[str, Any], modified: list[str],
-            deleted: list[str], patch: str, grade: dict[str, Any], traj: Path,
-            seconds: float) -> dict[str, Any]:
+def _record(
+    iid: str,
+    repo: str,
+    gold_patch: str,
+    agent: dict[str, Any],
+    modified: list[str],
+    deleted: list[str],
+    patch: str,
+    grade: dict[str, Any],
+    traj: Path,
+    seconds: float,
+) -> dict[str, Any]:
     events = load(traj) if traj.exists() else []
     edit_status = Counter(
         (e.get("meta") or {}).get("status", "ok" if e.get("ok") else "error")
-        for e in events if e.get("type") == "tool_result" and e.get("name") == "edit")
-    est = [(e["prompt_tokens"], e["estimated_prompt_tokens"]) for e in events
-           if e.get("type") == "model" and e.get("prompt_tokens") and not e.get("cached")
-           and e.get("estimated_prompt_tokens")]
+        for e in events
+        if e.get("type") == "tool_result" and e.get("name") == "edit"
+    )
+    est = [
+        (e["prompt_tokens"], e["estimated_prompt_tokens"])
+        for e in events
+        if e.get("type") == "model"
+        and e.get("prompt_tokens")
+        and not e.get("cached")
+        and e.get("estimated_prompt_tokens")
+    ]
     rec = {
-        "instance_id": iid, "repo": repo, "agent": agent, "grade": grade,
+        "instance_id": iid,
+        "repo": repo,
+        "agent": agent,
+        "grade": grade,
         "changed": {"modified": modified, "deleted": deleted},
         "gold_files": [f.path for f in parse_patch(gold_patch)],
-        "model_patch": patch, "edit_status": dict(edit_status),
+        "model_patch": patch,
+        "edit_status": dict(edit_status),
         "token_estimate_ratio": [round(a / b, 3) for a, b in est],
         "calls_near_context_limit": sum(
-            1 for e in events if e.get("type") == "model"
-            and (e.get("prompt_tokens") or 0) >= 0.95 * NUM_CTX),
-        "trajectory_summary": summarize(events).as_dict(), "seconds": round(seconds, 1),
+            1
+            for e in events
+            if e.get("type") == "model" and (e.get("prompt_tokens") or 0) >= 0.95 * NUM_CTX
+        ),
+        "trajectory_summary": summarize(events).as_dict(),
+        "seconds": round(seconds, 1),
     }
     rec["outcome"] = classify(rec)
     return rec
@@ -154,8 +228,11 @@ def classify(rec: dict[str, Any]) -> str:
     if not touched:
         if rec.get("edit_status") and not rec["edit_status"].get("ok"):
             return "edits_never_applied"
-        return {"loop": "loop_without_edit", "max_steps": "ran_out_of_steps",
-                "no_tool_call": "gave_up"}.get(status, "no_edit")
+        return {
+            "loop": "loop_without_edit",
+            "max_steps": "ran_out_of_steps",
+            "no_tool_call": "gave_up",
+        }.get(status, "no_edit")
     if not touched & set(rec["gold_files"]):
         return "wrong_file"
     if rec["grade"]["f2p_passed"] < rec["grade"]["f2p_total"]:
@@ -173,8 +250,12 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
     records = [r for r in records if r["outcome"] != "model_error"]
     n = len(records)
     if not n:
-        return {"tasks": total, "model_errors": errors, "solve_rate": rate(0, total),
-                "solve_rate_completed_only": rate(0, 0)}
+        return {
+            "tasks": total,
+            "model_errors": errors,
+            "solve_rate": rate(0, total),
+            "solve_rate_completed_only": rate(0, 0),
+        }
     steps = [r["agent"]["steps"] for r in records]
     tools: Counter[str] = Counter()
     edits: Counter[str] = Counter()
@@ -197,15 +278,18 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
         "solve_rate": rate(solved, total),
         "solve_rate_completed_only": rate(solved, n),
         "outcomes": dict(Counter(r["outcome"] for r in records).most_common()),
-        "steps": {"median": statistics.median(steps), "mean": round(statistics.mean(steps), 2),
-                  "mean_ci95": list(bootstrap_mean_ci([float(s) for s in steps])),
-                  "max": max(steps)},
+        "steps": {
+            "median": statistics.median(steps),
+            "mean": round(statistics.mean(steps), 2),
+            "mean_ci95": list(bootstrap_mean_ci([float(s) for s in steps])),
+            "max": max(steps),
+        },
         "tokens": {
             "prompt": sum(r["agent"]["tokens"]["prompt"] for r in records),
             "completion": sum(r["agent"]["tokens"]["completion"] for r in records),
             "per_task_median": statistics.median(
-                r["agent"]["tokens"]["prompt"] + r["agent"]["tokens"]["completion"]
-                for r in records),
+                r["agent"]["tokens"]["prompt"] + r["agent"]["tokens"]["completion"] for r in records
+            ),
         },
         "tool_share": {k: round(v / total_calls, 4) for k, v in tools.most_common()},
         "edit_calls": edit_calls,
@@ -219,8 +303,13 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def run_all(jobs: list[Any], runner: Callable[[Any], dict[str, Any]], out_dir: Path,
-            log: Callable[[str], None] = print, retries: int = 2) -> list[dict[str, Any]]:
+def run_all(
+    jobs: list[Any],
+    runner: Callable[[Any], dict[str, Any]],
+    out_dir: Path,
+    log: Callable[[str], None] = print,
+    retries: int = 2,
+) -> list[dict[str, Any]]:
     """Run every job, retrying a model_error rather than recording it.
 
     A model_error (Ollama unreachable, timeout, a bad response) is retried up to ``retries``
@@ -238,15 +327,18 @@ def run_all(jobs: list[Any], runner: Callable[[Any], dict[str, Any]], out_dir: P
         for attempt in range(1, retries + 1):
             if rec.get("outcome") != "model_error":
                 break
-            log(f"{job.instance_id}: {rec['agent'].get('error', 'model_error')}; "
-                f"retry {attempt}/{retries}")
+            log(
+                f"{job.instance_id}: {rec['agent'].get('error', 'model_error')}; "
+                f"retry {attempt}/{retries}"
+            )
             rec = runner(job)
         if rec.get("outcome") == "model_error":
             log(f"{job.instance_id}: model_error after {retries} retries (not recorded)")
             records.append(rec)
             continue
-        target.write_text(json.dumps(rec, indent=2, ensure_ascii=False) + "\n",
-                          encoding="utf-8", newline="\n")
+        target.write_text(
+            json.dumps(rec, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
+        )
         records.append(rec)
         log(f"{job.instance_id}: {rec['outcome']} in {rec['agent']['steps']} steps")
     return records

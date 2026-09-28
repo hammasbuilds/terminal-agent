@@ -61,8 +61,12 @@ class GoldPatchClient:
         call = self._next_call()
         self._n += 1
         if call is None:
-            return ModelTurn(content="", tool_calls=[ToolCall(
-                "finish", {"summary": "applied the reference patch"}, f"g{self._n}")])
+            return ModelTurn(
+                content="",
+                tool_calls=[
+                    ToolCall("finish", {"summary": "applied the reference patch"}, f"g{self._n}")
+                ],
+            )
         call.id = f"g{self._n}"
         return ModelTurn(content="", tool_calls=[call])
 
@@ -110,7 +114,7 @@ class GoldPatchClient:
                 fs.total = len(fs.lines)  # give up reading; edits will report the failure
                 return
             m = _HEADER.match(output)
-            body = output[m.end():] if m else output
+            body = output[m.end() :] if m else output
             fs.lines.extend(body.split("\n") if body else [])
             fs.total = int(m.group("n")) if m else len(fs.lines)
             return

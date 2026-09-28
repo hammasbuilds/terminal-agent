@@ -57,9 +57,19 @@ def load_tasks(path: Path = DATA) -> list[Task]:
     with gzip.open(path, "rt", encoding="utf-8") as fh:
         for line in fh:
             r = json.loads(line)
-            tasks.append(Task(r["instance_id"], r["repo"], r["base_commit"], r["version"],
-                              r["problem_statement"], r["patch"], r["test_patch"],
-                              r["FAIL_TO_PASS"], r["PASS_TO_PASS"]))
+            tasks.append(
+                Task(
+                    r["instance_id"],
+                    r["repo"],
+                    r["base_commit"],
+                    r["version"],
+                    r["problem_statement"],
+                    r["patch"],
+                    r["test_patch"],
+                    r["FAIL_TO_PASS"],
+                    r["PASS_TO_PASS"],
+                )
+            )
     return tasks
 
 
@@ -115,8 +125,22 @@ class Container:
 
     def __enter__(self) -> Container:
         net = [] if self.network else ["--network", "none"]
-        docker(["run", "-d", "--name", self.name, "--memory", self.memory, *net,
-                self.task.image, "tail", "-f", "/dev/null"], timeout=300)
+        docker(
+            [
+                "run",
+                "-d",
+                "--name",
+                self.name,
+                "--memory",
+                self.memory,
+                *net,
+                self.task.image,
+                "tail",
+                "-f",
+                "/dev/null",
+            ],
+            timeout=300,
+        )
         self.started = True
         return self
 
@@ -125,10 +149,12 @@ class Container:
             docker(["rm", "-f", self.name], timeout=120, check=False)
             self.started = False
 
-    def sh(self, script: str, timeout: float = 600, stdin: bytes | None = None
-           ) -> tuple[int, str]:
-        args = ["exec", "-i", self.name, "bash", "-c", script] if stdin is not None else [
-            "exec", self.name, "bash", "-c", script]
+    def sh(self, script: str, timeout: float = 600, stdin: bytes | None = None) -> tuple[int, str]:
+        args = (
+            ["exec", "-i", self.name, "bash", "-c", script]
+            if stdin is not None
+            else ["exec", self.name, "bash", "-c", script]
+        )
         proc = docker(args, input_bytes=stdin, timeout=timeout, check=False)
         text = (proc.stdout + proc.stderr).decode("utf-8", "replace")
         return proc.returncode, text
@@ -145,6 +171,7 @@ class Container:
         only file modes, so comparing HEAD's hash with base_commit would reject every
         image. Compare (path, blob) pairs instead, which ignores modes.
         """
+
         def tree(rev: str) -> set[tuple[str, str]] | None:
             code, out = self.sh(f"git -C {WORKDIR} ls-tree -r {rev}")
             if code != 0:
@@ -159,8 +186,10 @@ class Container:
         """Extract the tracked tree at HEAD to ``dest`` (bytes preserved, no .git)."""
         rmtree(dest)
         dest.mkdir(parents=True)
-        proc = docker(["exec", self.name, "git", "-C", WORKDIR, "archive", "--format=tar",
-                       "HEAD"], timeout=600)
+        proc = docker(
+            ["exec", self.name, "git", "-C", WORKDIR, "archive", "--format=tar", "HEAD"],
+            timeout=600,
+        )
         report = ExportReport()
         seen: dict[str, str] = {}
         with tarfile.open(fileobj=io.BytesIO(proc.stdout)) as tar:
@@ -190,8 +219,11 @@ class Container:
         """Copy files the agent changed into /testbed; return (modified, deleted)."""
         modified, deleted = changed_files(before, snapshot(workspace))
         if modified:
-            docker(["exec", "-i", self.name, "tar", "-x", "-C", WORKDIR],
-                   input_bytes=tar_files(workspace, modified), timeout=300)
+            docker(
+                ["exec", "-i", self.name, "tar", "-x", "-C", WORKDIR],
+                input_bytes=tar_files(workspace, modified),
+                timeout=300,
+            )
         if deleted:
             docker(["exec", self.name, "rm", "-f", "--", *[f"{WORKDIR}/{d}" for d in deleted]])
         return modified, deleted
@@ -207,20 +239,28 @@ class Container:
         files = t.test_files
         self.write("/tmp/test.patch", t.test_patch.encode("utf-8"))
         # Django reports on stderr: without the merge its results land after the end marker
-        lines = ["exec 2>&1", specs.PRELUDE, f"cd {WORKDIR}",
-                 *specs.pre_test_commands(t.repo, t.version),
-                 f"git checkout {t.base_commit} -- {' '.join(files)} 2>/dev/null || true",
-                 "git apply -v /tmp/test.patch || { echo '>>>>> TEST PATCH FAILED'; exit 97; }",
-                 "echo '>>>>> Start Test Output'",
-                 f"{specs.test_command(t.repo, t.version)} "
-                 f"{' '.join(specs.test_directives(t.repo, files))}",
-                 "echo \">>>>> Test Exit Code $?\"",
-                 "echo '>>>>> End Test Output'"]
+        lines = [
+            "exec 2>&1",
+            specs.PRELUDE,
+            f"cd {WORKDIR}",
+            *specs.pre_test_commands(t.repo, t.version),
+            f"git checkout {t.base_commit} -- {' '.join(files)} 2>/dev/null || true",
+            "git apply -v /tmp/test.patch || { echo '>>>>> TEST PATCH FAILED'; exit 97; }",
+            "echo '>>>>> Start Test Output'",
+            f"{specs.test_command(t.repo, t.version)} "
+            f"{' '.join(specs.test_directives(t.repo, files))}",
+            'echo ">>>>> Test Exit Code $?"',
+            "echo '>>>>> End Test Output'",
+        ]
         script = _quote("\n".join(lines))
-        code, log = self.sh(f"timeout -s KILL {int(timeout)} bash -c '{script}'",
-                            timeout=timeout + 60)
-        meta = {"exit_code": code, "test_patch_applied": ">>>>> TEST PATCH FAILED" not in log,
-                "timed_out": code == 137}
+        code, log = self.sh(
+            f"timeout -s KILL {int(timeout)} bash -c '{script}'", timeout=timeout + 60
+        )
+        meta = {
+            "exit_code": code,
+            "test_patch_applied": ">>>>> TEST PATCH FAILED" not in log,
+            "timed_out": code == 137,
+        }
         return log, meta
 
 

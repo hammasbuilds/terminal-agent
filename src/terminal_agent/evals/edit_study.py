@@ -29,8 +29,10 @@ MAX_K = 60
 
 
 def _map_lines(text: str, fn: Callable[[str], str]) -> str:
-    return "".join(fn(line[:-1]) + "\n" if line.endswith("\n") else fn(line)
-                   for line in text.splitlines(keepends=True))
+    return "".join(
+        fn(line[:-1]) + "\n" if line.endswith("\n") else fn(line)
+        for line in text.splitlines(keepends=True)
+    )
 
 
 def _common_indent(text: str) -> str:
@@ -51,7 +53,7 @@ def _dedent_pair(old: str, new: str) -> tuple[str, str]:
     ind = _common_indent(old + "\n" + new)
     if not ind:
         return old, new
-    strip = lambda s: _map_lines(s, lambda ln: ln[len(ind):] if ln.startswith(ind) else ln)  # noqa: E731
+    strip = lambda s: _map_lines(s, lambda ln: ln[len(ind) :] if ln.startswith(ind) else ln)  # noqa: E731
     return strip(old), strip(new)
 
 
@@ -59,7 +61,7 @@ def _first_line_lstrip(old: str, new: str) -> tuple[str, str]:
     head, sep, rest = old.partition("\n")
     nhead, nsep, nrest = new.partition("\n")
     lost = head[: len(head) - len(head.lstrip(" \t"))]
-    new2 = (nhead[len(lost):] if nhead.startswith(lost) else nhead) + nsep + nrest
+    new2 = (nhead[len(lost) :] if nhead.startswith(lost) else nhead) + nsep + nrest
     return head.lstrip(" \t") + sep + rest, new2
 
 
@@ -70,6 +72,7 @@ def _shift_second_line(old: str, new: str) -> tuple[str, str]:
     into or out of a block). A whitespace-tolerant matcher must NOT apply it; the study
     counts how often the fuzzy tool refuses (right) vs applies a wrong result.
     """
+
     def bump(text: str) -> str:
         lines = text.split("\n")
         seen = 0
@@ -80,6 +83,7 @@ def _shift_second_line(old: str, new: str) -> tuple[str, str]:
                     lines[i] = "    " + ln
                     break
         return "\n".join(lines)
+
     o2, n2 = bump(old), bump(new)
     return (o2, n2) if o2 != old else (old, new)
 
@@ -109,7 +113,7 @@ def _locate(lines: list[str], hunk: Hunk, delta: int) -> tuple[int, int | None]:
     old = [ln[1:] for ln in hunk.lines if ln[:1] in (" ", "-")]
     start = hunk.old_start - 1 + delta if hunk.old_len else hunk.old_start + delta
     for off in range(MAX_OFFSET + 1):
-        for cand in ((start + off,) if off == 0 else (start - off, start + off)):
+        for cand in (start + off,) if off == 0 else (start - off, start + off):
             if cand >= 0 and lines[cand : cand + len(old)] == old:
                 return cand, cand - start
     return start, None
@@ -145,14 +149,21 @@ def study_task(task: Task, preimages: dict[str, str]) -> list[dict[str, Any]]:
         lines = content.split("\n")
         delta = 0
         for idx, hunk in enumerate(fp.hunks):
-            row: dict[str, Any] = {"instance_id": task.instance_id, "repo": task.repo,
-                                   "path": fp.path, "hunk": idx, "crlf_file": crlf,
-                                   "removed": hunk.removed, "added": hunk.added}
+            row: dict[str, Any] = {
+                "instance_id": task.instance_id,
+                "repo": task.repo,
+                "path": fp.path,
+                "hunk": idx,
+                "crlf_file": crlf,
+                "removed": hunk.removed,
+                "added": hunk.added,
+            }
             old, new = hunk.old_text, hunk.new_text
             row["git3"] = apply_edit(content, old, new).status
             core_old, core_new = hunk.core()
-            row["core"] = apply_edit(content, core_old, core_new).status if core_old \
-                else "no_anchor"
+            row["core"] = (
+                apply_edit(content, core_old, core_new).status if core_old else "no_anchor"
+            )
             at, offset = _locate(lines, hunk, delta)
             row["header_offset"] = offset
             row["k_min"] = _k_min(content, lines, hunk, at)
@@ -167,12 +178,18 @@ def study_task(task: Task, preimages: dict[str, str]) -> list[dict[str, Any]]:
                 fuzzy = apply_edit(content, p_old, p_new, fuzzy=True)
                 if fuzzy.ok:
                     assert fuzzy.content is not None
-                    fz = ("correct" if _normalize(fuzzy.content) == _normalize(expected)
-                          else "wrong_result")
+                    fz = (
+                        "correct"
+                        if _normalize(fuzzy.content) == _normalize(expected)
+                        else "wrong_result"
+                    )
                 else:
                     fz = fuzzy.status
-                perturbed[name] = {"exact": exact.status, "fuzzy": fz,
-                                   "fuzzy_strategy": fuzzy.strategy}
+                perturbed[name] = {
+                    "exact": exact.status,
+                    "fuzzy": fz,
+                    "fuzzy_strategy": fuzzy.strategy,
+                }
             row["perturbations"] = perturbed
             rows.append(row)
             lines = new_lines
@@ -186,10 +203,14 @@ def aggregate(rows: list[dict[str, Any]]) -> dict[str, Any]:
     for r in rows:
         by_task.setdefault(r["instance_id"], []).append(r)
 
-    def crate(pred: Callable[[dict[str, Any]], bool],
-              where: Callable[[dict[str, Any]], bool] = lambda r: True) -> dict[str, object]:
-        groups = [(sum(1 for r in rs if where(r) and pred(r)), sum(1 for r in rs if where(r)))
-                  for rs in by_task.values()]
+    def crate(
+        pred: Callable[[dict[str, Any]], bool],
+        where: Callable[[dict[str, Any]], bool] = lambda r: True,
+    ) -> dict[str, object]:
+        groups = [
+            (sum(1 for r in rs if where(r) and pred(r)), sum(1 for r in rs if where(r)))
+            for rs in by_task.values()
+        ]
         return cluster_rate([g for g in groups if g[1]])
 
     with_removal = lambda r: r["removed"] > 0  # noqa: E731
@@ -249,6 +270,7 @@ def save_preimages(path: Path, data: dict[str, dict[str, str]]) -> None:
         for iid in sorted(data):
             for p in sorted(data[iid]):
                 # ensure_ascii keeps surrogate-escaped (non-UTF-8) bytes representable
-                fh.write(json.dumps({"instance_id": iid, "path": p,
-                                     "content": data[iid][p]}) + "\n")
+                fh.write(
+                    json.dumps({"instance_id": iid, "path": p, "content": data[iid][p]}) + "\n"
+                )
     tmp.replace(path)

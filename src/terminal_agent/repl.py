@@ -19,12 +19,15 @@ HELP = """Type a request and press Enter. Commands:
   /exit     quit (also /quit, Ctrl-D)"""
 
 
-def make_terminal_approver(input_fn: Callable[[str], str] = input,
-                           print_fn: Callable[[str], None] = print
-                           ) -> Callable[[ToolCall, Verdict], bool]:
+def make_terminal_approver(
+    input_fn: Callable[[str], str] = input, print_fn: Callable[[str], None] = print
+) -> Callable[[ToolCall, Verdict], bool]:
     def approve(call: ToolCall, verdict: Verdict) -> bool:
-        detail = call.arguments.get("command") or call.arguments.get("path") or json.dumps(
-            call.arguments)
+        detail = (
+            call.arguments.get("command")
+            or call.arguments.get("path")
+            or json.dumps(call.arguments)
+        )
         flag = "DANGEROUS" if verdict.risk == "dangerous" else "needs approval"
         print_fn(f"\n[{flag}] {call.name}: {detail}\n  reason: {verdict.reason}")
         try:
@@ -36,8 +39,9 @@ def make_terminal_approver(input_fn: Callable[[str], str] = input,
     return approve
 
 
-def run_repl(agent: Agent, input_fn: Callable[[str], str] = input,
-             print_fn: Callable[[str], None] = print) -> int:
+def run_repl(
+    agent: Agent, input_fn: Callable[[str], str] = input, print_fn: Callable[[str], None] = print
+) -> int:
     print_fn(f"terminal-agent  model={agent.client.model}  workspace={agent.toolbox.workspace}")
     print_fn("Type /help for commands.")
     while True:
@@ -59,8 +63,10 @@ def run_repl(agent: Agent, input_fn: Callable[[str], str] = input,
                 print_fn(f"  {fn['name']:<11} {fn['description']}")
             continue
         if line == "/tokens":
-            print_fn(f"  ~{conversation_tokens(agent.messages)} tokens in "
-                     f"{len(agent.messages)} messages (budget {agent.context.budget})")
+            print_fn(
+                f"  ~{conversation_tokens(agent.messages)} tokens in "
+                f"{len(agent.messages)} messages (budget {agent.context.budget})"
+            )
             continue
         if line == "/reset":
             agent.reset()

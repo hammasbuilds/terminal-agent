@@ -14,11 +14,13 @@ def turn(name: str, **args) -> ModelTurn:
 
 def test_agent_runs_tools_logs_and_finishes(tmp_path: Path):
     (tmp_path / "a.py").write_bytes(b"x = 1\n")
-    client = ScriptedClient([
-        turn("read_file", path="a.py"),
-        turn("edit", path="a.py", old_string="x = 1", new_string="x = 2"),
-        turn("finish", summary="set x to 2"),
-    ])
+    client = ScriptedClient(
+        [
+            turn("read_file", path="a.py"),
+            turn("edit", path="a.py", old_string="x = 1", new_string="x = 2"),
+            turn("finish", summary="set x to 2"),
+        ]
+    )
     traj = tmp_path / "t.jsonl"
     agent = build_agent(tmp_path, client, trajectory=traj)
     res = agent.run("change x")
@@ -51,8 +53,9 @@ def test_interactive_approver_is_consulted(tmp_path: Path):
         asked.append((call.arguments["path"], verdict.risk))
         return True
 
-    client = ScriptedClient([turn("write_file", path="../outside.txt", content="hi"),
-                             turn("finish", summary="x")])
+    client = ScriptedClient(
+        [turn("write_file", path="../outside.txt", content="hi"), turn("finish", summary="x")]
+    )
     agent = build_agent(tmp_path / "ws", client, approver=approve)
     (tmp_path / "ws").mkdir(exist_ok=True)
     agent.run("write")
@@ -86,8 +89,13 @@ def test_text_answer_ends_the_run_and_model_error_is_reported(tmp_path: Path):
 def test_compaction_keeps_the_task_and_recent_turns():
     msgs = [{"role": "system", "content": "sys"}, {"role": "user", "content": "TASK"}]
     for i in range(20):
-        msgs.append({"role": "assistant", "content": "",
-                     "tool_calls": [{"function": {"name": "read_file", "arguments": {"i": i}}}]})
+        msgs.append(
+            {
+                "role": "assistant",
+                "content": "",
+                "tool_calls": [{"function": {"name": "read_file", "arguments": {"i": i}}}],
+            }
+        )
         msgs.append({"role": "tool", "tool_name": "read_file", "content": f"{i}" * 2000})
     fitted, report = ContextManager(budget_tokens=3000, keep_recent=4).fit(msgs)
     assert report.changed and report.tokens_after <= 3000 < report.tokens_before
@@ -137,14 +145,24 @@ def test_compaction_protects_the_latest_task_not_just_the_first():
     cm = ContextManager(budget_tokens=1000, keep_recent=4)
     msgs = [{"role": "system", "content": "sys"}, {"role": "user", "content": "TASK ONE"}]
     for i in range(6):
-        msgs += [{"role": "assistant", "content": "",
-                  "tool_calls": [{"function": {"name": "read_file", "arguments": {"i": i}}}]},
-                 {"role": "tool", "tool_name": "read_file", "content": "x" * 400}]
+        msgs += [
+            {
+                "role": "assistant",
+                "content": "",
+                "tool_calls": [{"function": {"name": "read_file", "arguments": {"i": i}}}],
+            },
+            {"role": "tool", "tool_name": "read_file", "content": "x" * 400},
+        ]
     msgs.append({"role": "user", "content": "TASK TWO: rename foo to bar"})
     for i in range(6):
-        msgs += [{"role": "assistant", "content": "",
-                  "tool_calls": [{"function": {"name": "grep", "arguments": {"i": i}}}]},
-                 {"role": "tool", "tool_name": "grep", "content": "y" * 400}]
+        msgs += [
+            {
+                "role": "assistant",
+                "content": "",
+                "tool_calls": [{"function": {"name": "grep", "arguments": {"i": i}}}],
+            },
+            {"role": "tool", "tool_name": "grep", "content": "y" * 400},
+        ]
     fitted, _ = cm.fit(msgs)
     kept = [m["content"] for m in fitted if m.get("role") == "user"]
     assert "TASK TWO: rename foo to bar" in kept and "TASK ONE" in kept

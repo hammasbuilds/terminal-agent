@@ -12,8 +12,19 @@ from collections.abc import Callable
 
 PASSED, FAILED, SKIPPED, ERROR, XFAIL = "PASSED", "FAILED", "SKIPPED", "ERROR", "XFAIL"
 STATUSES = (PASSED, FAILED, SKIPPED, ERROR, XFAIL)
-NON_TEST_EXTS = (".json", ".png", "csv", ".txt", ".md", ".jpg", ".jpeg", ".pkl", ".yml",
-                 ".yaml", ".toml")
+NON_TEST_EXTS = (
+    ".json",
+    ".png",
+    "csv",
+    ".txt",
+    ".md",
+    ".jpg",
+    ".jpeg",
+    ".pkl",
+    ".yml",
+    ".yaml",
+    ".toml",
+)
 
 PYTEST = "pytest --no-header -rA --tb=no -p no:cacheprovider"
 PYTEST_ASTROPY = "pytest -rA -vv -o console_output_style=classic --tb=no"
@@ -51,7 +62,7 @@ def test_directives(repo: str, test_files: list[str]) -> list[str]:
         out = []
         for f in files:
             mod = f[: -len(".py")] if f.endswith(".py") else f
-            mod = mod[len("tests/"):] if mod.startswith("tests/") else mod
+            mod = mod[len("tests/") :] if mod.startswith("tests/") else mod
             out.append(mod.replace("/", "."))
         return out
     return files
@@ -62,6 +73,7 @@ def image_name(instance_id: str) -> str:
 
 
 # -- log parsers --------------------------------------------------------------------------
+
 
 def parse_pytest(log: str) -> dict[str, str]:
     out: dict[str, str] = {}
@@ -206,15 +218,18 @@ def passed(status: str | None) -> bool:
     return status in (PASSED, XFAIL)
 
 
-def grade(statuses: dict[str, str], fail_to_pass: list[str], pass_to_pass: list[str]
-          ) -> dict[str, object]:
+def grade(
+    statuses: dict[str, str], fail_to_pass: list[str], pass_to_pass: list[str]
+) -> dict[str, object]:
     """SWE-bench grading: resolved iff every F2P and every P2P test passes."""
     f2p_ok = [t for t in fail_to_pass if passed(statuses.get(t))]
     p2p_ok = [t for t in pass_to_pass if passed(statuses.get(t))]
     return {
         "resolved": len(f2p_ok) == len(fail_to_pass) and len(p2p_ok) == len(pass_to_pass),
-        "f2p_passed": len(f2p_ok), "f2p_total": len(fail_to_pass),
-        "p2p_passed": len(p2p_ok), "p2p_total": len(pass_to_pass),
+        "f2p_passed": len(f2p_ok),
+        "f2p_total": len(fail_to_pass),
+        "p2p_passed": len(p2p_ok),
+        "p2p_total": len(pass_to_pass),
         "f2p_failing": sorted(set(fail_to_pass) - set(f2p_ok)),
         "p2p_failing": sorted(set(pass_to_pass) - set(p2p_ok)),
     }

@@ -13,12 +13,30 @@ from terminal_agent.repl import make_terminal_approver, run_repl
 
 def _script(tmp_path: Path) -> Path:
     p = tmp_path / "script.json"
-    p.write_text(json.dumps([
-        {"tool_calls": [{"name": "edit", "arguments": {
-            "path": "a.py", "old_string": "x = 1", "new_string": "x = 2"}}]},
-        {"tool_calls": [{"name": "run_shell", "arguments": {"command": "git push --force"}}]},
-        {"tool_calls": [{"name": "finish", "arguments": {"summary": "x is 2"}}]},
-    ]))
+    p.write_text(
+        json.dumps(
+            [
+                {
+                    "tool_calls": [
+                        {
+                            "name": "edit",
+                            "arguments": {
+                                "path": "a.py",
+                                "old_string": "x = 1",
+                                "new_string": "x = 2",
+                            },
+                        }
+                    ]
+                },
+                {
+                    "tool_calls": [
+                        {"name": "run_shell", "arguments": {"command": "git push --force"}}
+                    ]
+                },
+                {"tool_calls": [{"name": "finish", "arguments": {"summary": "x is 2"}}]},
+            ]
+        )
+    )
     return p
 
 
@@ -27,8 +45,20 @@ def test_headless_json(tmp_path: Path, capsys):
     ws.mkdir()
     (ws / "a.py").write_bytes(b"x = 1\n")
     traj = tmp_path / "t.jsonl"
-    code = main(["-p", "set x", "-w", str(ws), "--script", str(_script(tmp_path)),
-                 "--output-format", "json", "--trajectory", str(traj)])
+    code = main(
+        [
+            "-p",
+            "set x",
+            "-w",
+            str(ws),
+            "--script",
+            str(_script(tmp_path)),
+            "--output-format",
+            "json",
+            "--trajectory",
+            str(traj),
+        ]
+    )
     out = json.loads(capsys.readouterr().out)
     assert code == 0 and out["status"] == "finished" and out["response"] == "x is 2"
     assert out["denied"] == ["git push --force"] and out["tool_calls"]["edit"] == 1
@@ -53,25 +83,40 @@ def test_usage_errors(tmp_path: Path, capsys):
 
 
 def test_headless_model_error_exit_code(tmp_path: Path, capsys):
-    code = main(["-p", "x", "-w", str(tmp_path), "--host", "http://127.0.0.1:9",
-                 "--output-format", "json", "--trajectory", str(tmp_path / "t.jsonl")])
+    code = main(
+        [
+            "-p",
+            "x",
+            "-w",
+            str(tmp_path),
+            "--host",
+            "http://127.0.0.1:9",
+            "--output-format",
+            "json",
+            "--trajectory",
+            str(tmp_path / "t.jsonl"),
+        ]
+    )
     out = json.loads(capsys.readouterr().out)
     assert code == 1 and out["status"] == "model_error" and "ollama serve" in out["error"]
 
 
 def test_repl_commands_and_approval(tmp_path: Path):
-    client = ScriptedClient([
-        ModelTurn("", [ToolCall("run_shell", {"command": "make"})]),
-        ModelTurn("", [ToolCall("finish", {"summary": "built"})]),
-    ])
+    client = ScriptedClient(
+        [
+            ModelTurn("", [ToolCall("run_shell", {"command": "make"})]),
+            ModelTurn("", [ToolCall("finish", {"summary": "built"})]),
+        ]
+    )
     lines = iter(["/help", "/tools", "/tokens", "/bogus", "", "build it", "n", "/reset", "/exit"])
     printed: list[str] = []
 
     def fake_input(prompt: str) -> str:
         return next(lines)
 
-    agent = build_agent(tmp_path, client,
-                        approver=make_terminal_approver(fake_input, printed.append))
+    agent = build_agent(
+        tmp_path, client, approver=make_terminal_approver(fake_input, printed.append)
+    )
     assert run_repl(agent, fake_input, printed.append) == 0
     text = "\n".join(printed)
     assert "/reset" in text and "read_file" in text and "unknown command /bogus" in text

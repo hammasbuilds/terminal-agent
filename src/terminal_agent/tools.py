@@ -19,8 +19,16 @@ from terminal_agent.edits import apply_edit, detect_eol
 from terminal_agent.protocol import ToolCall
 from terminal_agent.sandbox import Sandbox
 
-SKIP_DIRS = {".git", "__pycache__", ".venv", "node_modules", ".tox", ".mypy_cache",
-             ".pytest_cache", ".eggs"}
+SKIP_DIRS = {
+    ".git",
+    "__pycache__",
+    ".venv",
+    "node_modules",
+    ".tox",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".eggs",
+}
 
 
 @dataclass
@@ -49,8 +57,7 @@ class ToolConfig:
 
 
 class Toolbox:
-    def __init__(self, workspace: Path, sandbox: Sandbox, config: ToolConfig | None = None
-                 ) -> None:
+    def __init__(self, workspace: Path, sandbox: Sandbox, config: ToolConfig | None = None) -> None:
         self.workspace = workspace.resolve()
         self.sandbox = sandbox
         self.config = config or ToolConfig()
@@ -73,28 +80,41 @@ class Toolbox:
     def execute(self, call: ToolCall) -> ToolResult:
         impl = self._impl.get(call.name)
         if impl is None:
-            return ToolResult(False, f"unknown tool {call.name!r}; available: "
-                                     f"{', '.join(self.names)}", {"error": "unknown_tool"})
+            return ToolResult(
+                False,
+                f"unknown tool {call.name!r}; available: {', '.join(self.names)}",
+                {"error": "unknown_tool"},
+            )
         spec = next(s for s in TOOL_SPECS if s["function"]["name"] == call.name)["function"]
         params = spec["parameters"]
         args = call.arguments
         if "__unparsed__" in args:
-            return ToolResult(False, "tool arguments were not valid JSON",
-                              {"error": "bad_arguments"})
+            return ToolResult(
+                False, "tool arguments were not valid JSON", {"error": "bad_arguments"}
+            )
         missing = [p for p in params.get("required", []) if p not in args]
         if missing:
-            return ToolResult(False, f"missing required argument(s): {', '.join(missing)}",
-                              {"error": "bad_arguments"})
+            return ToolResult(
+                False,
+                f"missing required argument(s): {', '.join(missing)}",
+                {"error": "bad_arguments"},
+            )
         unknown = [a for a in args if a not in params["properties"]]
         if unknown:
-            return ToolResult(False, f"unknown argument(s): {', '.join(unknown)}; expected "
-                                     f"{', '.join(params['properties'])}",
-                              {"error": "bad_arguments"})
+            return ToolResult(
+                False,
+                f"unknown argument(s): {', '.join(unknown)}; expected "
+                f"{', '.join(params['properties'])}",
+                {"error": "bad_arguments"},
+            )
         for name, value in args.items():
             want = params["properties"][name]["type"]
             if not _type_ok(value, want):
-                return ToolResult(False, f"argument {name!r} must be {want}, got "
-                                         f"{type(value).__name__}", {"error": "bad_arguments"})
+                return ToolResult(
+                    False,
+                    f"argument {name!r} must be {want}, got {type(value).__name__}",
+                    {"error": "bad_arguments"},
+                )
         try:
             return impl(**args)
         except OSError as exc:
@@ -115,12 +135,14 @@ class Toolbox:
         if not target.exists():
             return ToolResult(False, f"{path} does not exist", {"error": "not_found"})
         if target.is_dir():
-            return ToolResult(False, f"{path} is a directory; use list_dir",
-                              {"error": "is_directory"})
+            return ToolResult(
+                False, f"{path} is a directory; use list_dir", {"error": "is_directory"}
+            )
         data = target.read_bytes()
         if b"\x00" in data[:8192]:
-            return ToolResult(False, f"{path} is a binary file ({len(data)} bytes)",
-                              {"error": "binary"})
+            return ToolResult(
+                False, f"{path} is a binary file ({len(data)} bytes)", {"error": "binary"}
+            )
         text = data.decode("utf-8", "replace").replace("\r\n", "\n")
         lines = text.split("\n")
         if lines and lines[-1] == "":
@@ -147,9 +169,12 @@ class Toolbox:
         end = offset + len(shown) - 1
         meta = {"total_lines": total, "first": offset, "last": end, "clipped_lines": clipped}
         if offset > 1 or end < total:
-            header = (f"[{path}: lines {offset}-{end} of {total}. "
-                      f"Call read_file with offset={end + 1} to read more.]\n"
-                      if end < total else f"[{path}: lines {offset}-{end} of {total}]\n")
+            header = (
+                f"[{path}: lines {offset}-{end} of {total}. "
+                f"Call read_file with offset={end + 1} to read more.]\n"
+                if end < total
+                else f"[{path}: lines {offset}-{end} of {total}]\n"
+            )
             meta["truncated"] = end < total
             return ToolResult(True, header + body, meta)
         return ToolResult(True, body, meta)
@@ -166,44 +191,67 @@ class Toolbox:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(content.encode("utf-8"))
         verb = "overwrote" if existed else "created"
-        return ToolResult(True, f"{verb} {self._rel(target)} ({len(content)} chars)",
-                          {"created": not existed})
+        return ToolResult(
+            True, f"{verb} {self._rel(target)} ({len(content)} chars)", {"created": not existed}
+        )
 
-    def edit(self, path: str, old_string: str, new_string: str,
-             expected_replacements: int = 1) -> ToolResult:
+    def edit(
+        self, path: str, old_string: str, new_string: str, expected_replacements: int = 1
+    ) -> ToolResult:
         target = self._path(path)
         if not target.exists():
             if old_string == "":
                 return self.write_file(path, new_string)
-            return ToolResult(False, f"{path} does not exist. To create a file pass an "
-                                     f"empty old_string, or use write_file.",
-                              {"error": "not_found"})
+            return ToolResult(
+                False,
+                f"{path} does not exist. To create a file pass an "
+                f"empty old_string, or use write_file.",
+                {"error": "not_found"},
+            )
         # surrogateescape round-trips bytes that are not UTF-8 instead of replacing them
         content = target.read_bytes().decode("utf-8", "surrogateescape")
-        outcome = apply_edit(content, old_string, new_string, expected_replacements,
-                             fuzzy=self.config.fuzzy_edit)
-        meta = {"status": outcome.status, "strategy": outcome.strategy,
-                "occurrences": outcome.occurrences}
+        outcome = apply_edit(
+            content, old_string, new_string, expected_replacements, fuzzy=self.config.fuzzy_edit
+        )
+        meta = {
+            "status": outcome.status,
+            "strategy": outcome.strategy,
+            "occurrences": outcome.occurrences,
+        }
         if outcome.status == "not_found":
-            return ToolResult(False, f"old_string not found in {path}. It must match the file "
-                                     f"exactly, including whitespace and indentation; "
-                                     f"read_file the region again and copy it.", meta)
+            return ToolResult(
+                False,
+                f"old_string not found in {path}. It must match the file "
+                f"exactly, including whitespace and indentation; "
+                f"read_file the region again and copy it.",
+                meta,
+            )
         if outcome.status == "ambiguous":
-            return ToolResult(False, f"old_string occurs {outcome.occurrences} times in {path}, "
-                                     f"expected {expected_replacements}. Include more "
-                                     f"surrounding lines so it is unique.", meta)
+            return ToolResult(
+                False,
+                f"old_string occurs {outcome.occurrences} times in {path}, "
+                f"expected {expected_replacements}. Include more "
+                f"surrounding lines so it is unique.",
+                meta,
+            )
         if outcome.status == "noop":
-            return ToolResult(False, "old_string and new_string are identical; nothing to do",
-                              meta)
+            return ToolResult(False, "old_string and new_string are identical; nothing to do", meta)
         if outcome.status == "empty_old":
-            return ToolResult(False, f"{path} already exists; an empty old_string only creates "
-                                     f"new files. Use write_file to replace it whole.", meta)
+            return ToolResult(
+                False,
+                f"{path} already exists; an empty old_string only creates "
+                f"new files. Use write_file to replace it whole.",
+                meta,
+            )
         assert outcome.content is not None
         target.write_bytes(outcome.content.encode("utf-8", "surrogateescape"))
         meta["line"] = outcome.line
-        return ToolResult(True, f"edited {self._rel(target)} at line {outcome.line}"
-                                + (f" ({outcome.strategy} match)"
-                                   if outcome.strategy != "exact" else ""), meta)
+        return ToolResult(
+            True,
+            f"edited {self._rel(target)} at line {outcome.line}"
+            + (f" ({outcome.strategy} match)" if outcome.strategy != "exact" else ""),
+            meta,
+        )
 
     def list_dir(self, path: str = ".") -> ToolResult:
         target = self._path(path)
@@ -213,8 +261,11 @@ class Toolbox:
         names = [p.name + ("/" if p.is_dir() else "") for p in entries if p.name != ".git"]
         shown = names[: self.config.list_limit]
         more = len(names) - len(shown)
-        return ToolResult(True, "\n".join(shown) + (f"\n[... {more} more]" if more else ""),
-                          {"entries": len(names)})
+        return ToolResult(
+            True,
+            "\n".join(shown) + (f"\n[... {more} more]" if more else ""),
+            {"entries": len(names)},
+        )
 
     def _walk(self, root: Path) -> list[Path]:
         out: list[Path] = []
@@ -241,23 +292,29 @@ class Toolbox:
         hits = []
         for f in self._walk(root):
             rel = f.relative_to(root).as_posix()
-            if fnmatch.fnmatchcase(rel, pat) or (
-                    pat.startswith("**/") and fnmatch.fnmatchcase(rel, pat[3:])) or (
-                    "/" not in pat and fnmatch.fnmatchcase(f.name, pat)):
+            if (
+                fnmatch.fnmatchcase(rel, pat)
+                or (pat.startswith("**/") and fnmatch.fnmatchcase(rel, pat[3:]))
+                or ("/" not in pat and fnmatch.fnmatchcase(f.name, pat))
+            ):
                 hits.append(self._rel(f))
         shown = hits[: self.config.match_limit]
         more = len(hits) - len(shown)
         if not hits:
             return ToolResult(True, f"no files match {pattern!r}", {"matches": 0})
-        return ToolResult(True, "\n".join(shown) + (f"\n[... {more} more]" if more else ""),
-                          {"matches": len(hits)})
+        return ToolResult(
+            True,
+            "\n".join(shown) + (f"\n[... {more} more]" if more else ""),
+            {"matches": len(hits)},
+        )
 
     def grep(self, pattern: str, path: str = ".", include: str | None = None) -> ToolResult:
         try:
             rx = re.compile(pattern)
         except re.error as exc:
-            return ToolResult(False, f"invalid regular expression: {exc}",
-                              {"error": "bad_arguments"})
+            return ToolResult(
+                False, f"invalid regular expression: {exc}", {"error": "bad_arguments"}
+            )
         root = self._path(path)
         files = [root] if root.is_file() else self._walk(root) if root.is_dir() else []
         if not files:
@@ -281,8 +338,11 @@ class Toolbox:
         if not hits:
             return ToolResult(True, f"no matches for {pattern!r}", {"matches": 0})
         more = total - len(hits)
-        return ToolResult(True, "\n".join(hits) + (f"\n[... {more} more matches]" if more else ""),
-                          {"matches": total})
+        return ToolResult(
+            True,
+            "\n".join(hits) + (f"\n[... {more} more matches]" if more else ""),
+            {"matches": total},
+        )
 
     # -- execution tools ------------------------------------------------------------
     def _exec(self, command: str, timeout: float) -> ToolResult:
@@ -293,14 +353,22 @@ class Toolbox:
         return ToolResult(
             res.exit_code == 0 and not res.timed_out,
             f"{status}\n{text}",
-            {"exit_code": res.exit_code, "timed_out": res.timed_out, "chars": len(res.output),
-             "elided_chars": elided, "seconds": round(res.seconds, 2)},
+            {
+                "exit_code": res.exit_code,
+                "timed_out": res.timed_out,
+                "chars": len(res.output),
+                "elided_chars": elided,
+                "seconds": round(res.seconds, 2),
+            },
         )
 
     def run_shell(self, command: str, timeout: int | None = None) -> ToolResult:
         if timeout is not None and timeout <= 0:
-            return ToolResult(False, f"timeout must be a positive number of seconds, got {timeout}",
-                              {"error": "bad_arguments"})
+            return ToolResult(
+                False,
+                f"timeout must be a positive number of seconds, got {timeout}",
+                {"error": "bad_arguments"},
+            )
         limit = float(timeout) if timeout else self.config.shell_timeout
         limit = min(limit, self.config.test_timeout)
         return self._exec(command, limit)
@@ -318,50 +386,101 @@ def _type_ok(value: Any, want: str) -> bool:
     return True
 
 
-def _fn(name: str, description: str, props: dict[str, dict[str, str]], required: list[str]
-        ) -> dict[str, Any]:
-    return {"type": "function", "function": {
-        "name": name, "description": description,
-        "parameters": {"type": "object", "properties": props, "required": required}}}
+def _fn(
+    name: str, description: str, props: dict[str, dict[str, str]], required: list[str]
+) -> dict[str, Any]:
+    return {
+        "type": "function",
+        "function": {
+            "name": name,
+            "description": description,
+            "parameters": {"type": "object", "properties": props, "required": required},
+        },
+    }
 
 
 TOOL_SPECS: list[dict[str, Any]] = [
-    _fn("read_file", "Read a text file. Long files are returned a window at a time; the "
+    _fn(
+        "read_file",
+        "Read a text file. Long files are returned a window at a time; the "
         "header says how to read the next window.",
-        {"path": {"type": "string", "description": "path relative to the workspace"},
-         "offset": {"type": "integer", "description": "1-based first line (default 1)"},
-         "limit": {"type": "integer", "description": "max lines to return"}}, ["path"]),
-    _fn("write_file", "Create a file, or replace a file's whole content.",
-        {"path": {"type": "string", "description": "path relative to the workspace"},
-         "content": {"type": "string", "description": "the full new content"}},
-        ["path", "content"]),
-    _fn("edit", "Replace an exact string in a file. old_string must match the file exactly "
+        {
+            "path": {"type": "string", "description": "path relative to the workspace"},
+            "offset": {"type": "integer", "description": "1-based first line (default 1)"},
+            "limit": {"type": "integer", "description": "max lines to return"},
+        },
+        ["path"],
+    ),
+    _fn(
+        "write_file",
+        "Create a file, or replace a file's whole content.",
+        {
+            "path": {"type": "string", "description": "path relative to the workspace"},
+            "content": {"type": "string", "description": "the full new content"},
+        },
+        ["path", "content"],
+    ),
+    _fn(
+        "edit",
+        "Replace an exact string in a file. old_string must match the file exactly "
         "(whitespace included) and be unique unless expected_replacements says otherwise. "
         "Include a few lines of context around the change.",
-        {"path": {"type": "string", "description": "path relative to the workspace"},
-         "old_string": {"type": "string", "description": "exact text to replace"},
-         "new_string": {"type": "string", "description": "replacement text"},
-         "expected_replacements": {"type": "integer",
-                                   "description": "how many occurrences to replace (default 1)"}},
-        ["path", "old_string", "new_string"]),
-    _fn("list_dir", "List a directory (directories end with /).",
-        {"path": {"type": "string", "description": "directory, default '.'"}}, []),
-    _fn("glob", "Find files by glob pattern, e.g. '**/*.py' or 'src/**/test_*.py'.",
-        {"pattern": {"type": "string", "description": "glob pattern"},
-         "path": {"type": "string", "description": "directory to search, default '.'"}},
-        ["pattern"]),
-    _fn("grep", "Search file contents with a Python regular expression. Returns path:line: text.",
-        {"pattern": {"type": "string", "description": "regular expression"},
-         "path": {"type": "string", "description": "file or directory, default '.'"},
-         "include": {"type": "string", "description": "only files whose name matches this glob"}},
-        ["pattern"]),
-    _fn("run_shell", "Run a shell command in the workspace. Output is truncated; commands that "
+        {
+            "path": {"type": "string", "description": "path relative to the workspace"},
+            "old_string": {"type": "string", "description": "exact text to replace"},
+            "new_string": {"type": "string", "description": "replacement text"},
+            "expected_replacements": {
+                "type": "integer",
+                "description": "how many occurrences to replace (default 1)",
+            },
+        },
+        ["path", "old_string", "new_string"],
+    ),
+    _fn(
+        "list_dir",
+        "List a directory (directories end with /).",
+        {"path": {"type": "string", "description": "directory, default '.'"}},
+        [],
+    ),
+    _fn(
+        "glob",
+        "Find files by glob pattern, e.g. '**/*.py' or 'src/**/test_*.py'.",
+        {
+            "pattern": {"type": "string", "description": "glob pattern"},
+            "path": {"type": "string", "description": "directory to search, default '.'"},
+        },
+        ["pattern"],
+    ),
+    _fn(
+        "grep",
+        "Search file contents with a Python regular expression. Returns path:line: text.",
+        {
+            "pattern": {"type": "string", "description": "regular expression"},
+            "path": {"type": "string", "description": "file or directory, default '.'"},
+            "include": {"type": "string", "description": "only files whose name matches this glob"},
+        },
+        ["pattern"],
+    ),
+    _fn(
+        "run_shell",
+        "Run a shell command in the workspace. Output is truncated; commands that "
         "are destructive or leave the workspace need approval.",
-        {"command": {"type": "string", "description": "the command"},
-         "timeout": {"type": "integer", "description": "seconds (default 120)"}}, ["command"]),
-    _fn("run_tests", "Run the project's test command, optionally on a target such as a file "
-        "or test id.",
-        {"target": {"type": "string", "description": "test file, directory or test id"}}, []),
-    _fn("finish", "Call when the task is complete, with a short summary of what changed.",
-        {"summary": {"type": "string", "description": "what you did"}}, ["summary"]),
+        {
+            "command": {"type": "string", "description": "the command"},
+            "timeout": {"type": "integer", "description": "seconds (default 120)"},
+        },
+        ["command"],
+    ),
+    _fn(
+        "run_tests",
+        "Run the project's test command, optionally on a target such as a file or test id.",
+        {"target": {"type": "string", "description": "test file, directory or test id"}},
+        [],
+    ),
+    _fn(
+        "finish",
+        "Call when the task is complete, with a short summary of what changed.",
+        {"summary": {"type": "string", "description": "what you did"}},
+        ["summary"],
+    ),
 ]

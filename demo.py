@@ -58,14 +58,22 @@ def sample_bugfix(tmp: Path) -> Path:
     print(f"hidden tests that must flip: {', '.join(task.fail_to_pass)}")
     rec = validate_local_task(task, tmp / "runs", tmp / "logs")
     b, g = rec["baseline"], rec["gold"]
-    print(f"before the fix: {b['f2p_passed']}/{b['f2p_total']} FAIL_TO_PASS pass, "
-          f"{b['p2p_passed']}/{b['p2p_total']} PASS_TO_PASS pass")
-    print(f"agent: {rec['agent']['status']} in {rec['agent']['steps']} steps, tool calls "
-          f"{rec['agent']['tool_calls']}")
-    print(f"hunks: {[h['final_status'] for h in rec['hunks']]}; byte-identical to git apply: "
-          f"{not rec['byte_mismatch']}")
-    print(f"after the fix:  {g['f2p_passed']}/{g['f2p_total']} FAIL_TO_PASS pass, "
-          f"{g['p2p_passed']}/{g['p2p_total']} PASS_TO_PASS pass")
+    print(
+        f"before the fix: {b['f2p_passed']}/{b['f2p_total']} FAIL_TO_PASS pass, "
+        f"{b['p2p_passed']}/{b['p2p_total']} PASS_TO_PASS pass"
+    )
+    print(
+        f"agent: {rec['agent']['status']} in {rec['agent']['steps']} steps, tool calls "
+        f"{rec['agent']['tool_calls']}"
+    )
+    print(
+        f"hunks: {[h['final_status'] for h in rec['hunks']]}; byte-identical to git apply: "
+        f"{not rec['byte_mismatch']}"
+    )
+    print(
+        f"after the fix:  {g['f2p_passed']}/{g['f2p_total']} FAIL_TO_PASS pass, "
+        f"{g['p2p_passed']}/{g['p2p_total']} PASS_TO_PASS pass"
+    )
     print(f"verdict: {rec['verdict']}")
     return tmp / "runs" / DEMO_TASK.replace("@", "_") / "trajectory.jsonl"
 
@@ -82,8 +90,10 @@ def sample_policy() -> None:
     for cmd in COMMANDS:
         d, a = default.check_command(cmd), auto.check_command(cmd)
         headless = "run" if d.decision is Decision.ALLOW else "DENY"
-        print(f"{cmd:<52} {labels.get(cmd, '?'):<9} {d.decision.value:<7} "
-              f"{a.decision.value:<6} {headless}")
+        print(
+            f"{cmd:<52} {labels.get(cmd, '?'):<9} {d.decision.value:<7} "
+            f"{a.decision.value:<6} {headless}"
+        )
         if d.risk == "dangerous":
             print(f"{'':<52} reason: {d.reason}")
 
@@ -95,14 +105,15 @@ def sample_edit(tmp: Path) -> None:
     pre = load_preimages(ROOT / "data" / "gold_preimages.jsonl.gz")[DEMO_HUNK][fp.path]
     hunk = fp.hunks[0]
     core_old, core_new = hunk.core()
-    for label, old, new in (("removed lines only", core_old, core_new),
-                            ("git's 3-line context", hunk.old_text, hunk.new_text)):
+    for label, old, new in (
+        ("removed lines only", core_old, core_new),
+        ("git's 3-line context", hunk.old_text, hunk.new_text),
+    ):
         ws = tmp / label.replace(" ", "_").replace("'", "")
         (ws / fp.path).parent.mkdir(parents=True, exist_ok=True)
         (ws / fp.path).write_bytes(pre.encode("utf-8", "surrogateescape"))
         box = Toolbox(ws, LocalSandbox(ws))
-        res = box.execute(ToolCall("edit", {"path": fp.path, "old_string": old,
-                                            "new_string": new}))
+        res = box.execute(ToolCall("edit", {"path": fp.path, "old_string": old, "new_string": new}))
         print(f"-- old_string = {label}:")
         print("   " + old.rstrip("\n").replace("\n", "\n   "))
         print(f"   => {res.render()}")

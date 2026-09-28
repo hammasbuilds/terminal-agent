@@ -59,14 +59,26 @@ def test_validation_catches_a_task_whose_tests_do_not_fail(mined, tmp_path: Path
 
 
 def _fix_script() -> ScriptedClient:
-    return ScriptedClient([
-        ModelTurn("", [ToolCall("read_file", {"path": "src/calc.py"})]),
-        ModelTurn("", [ToolCall("edit", {"path": "src/calc.py",
-                                         "old_string": "(len(xs) - 1)",
-                                         "new_string": "len(xs)"})]),
-        ModelTurn("", [ToolCall("run_tests", {"target": "tests/test_calc.py"})]),
-        ModelTurn("", [ToolCall("finish", {"summary": "fixed mean"})]),
-    ])
+    return ScriptedClient(
+        [
+            ModelTurn("", [ToolCall("read_file", {"path": "src/calc.py"})]),
+            ModelTurn(
+                "",
+                [
+                    ToolCall(
+                        "edit",
+                        {
+                            "path": "src/calc.py",
+                            "old_string": "(len(xs) - 1)",
+                            "new_string": "len(xs)",
+                        },
+                    )
+                ],
+            ),
+            ModelTurn("", [ToolCall("run_tests", {"target": "tests/test_calc.py"})]),
+            ModelTurn("", [ToolCall("finish", {"summary": "fixed mean"})]),
+        ]
+    )
 
 
 def test_model_run_grades_and_classifies(mined, tmp_path: Path):
@@ -75,20 +87,32 @@ def test_model_run_grades_and_classifies(mined, tmp_path: Path):
     assert good["outcome"] == "resolved" and good["agent"]["steps"] == 4
     assert good["agent"]["tool_errors"] == {}  # run_tests found and ran the tests
     assert good["edit_status"] == {"ok": 1}
-    wrong_place = ScriptedClient([
-        ModelTurn("", [ToolCall("write_file", {"path": "src/other.py", "content": "x = 1\n"})]),
-        ModelTurn("", [ToolCall("finish", {"summary": "done"})]),
-    ])
+    wrong_place = ScriptedClient(
+        [
+            ModelTurn("", [ToolCall("write_file", {"path": "src/other.py", "content": "x = 1\n"})]),
+            ModelTurn("", [ToolCall("finish", {"summary": "done"})]),
+        ]
+    )
     rec = model_run.run_local_task(task, wrong_place, tmp_path / "m2", 10, 12000)
     assert rec["outcome"] == "wrong_file"
-    gave_up = model_run.run_local_task(task, ScriptedClient([ModelTurn("I cannot.")]),
-                                       tmp_path / "m3", 10, 12000)
+    gave_up = model_run.run_local_task(
+        task, ScriptedClient([ModelTurn("I cannot.")]), tmp_path / "m3", 10, 12000
+    )
     assert gave_up["outcome"] == "gave_up"
-    cheat = ScriptedClient([
-        ModelTurn("", [ToolCall("write_file", {"path": "tests/test_calc.py",
-                                               "content": "def test_mean():\n    pass\n"})]),
-        ModelTurn("", [ToolCall("finish", {"summary": "tests pass"})]),
-    ])
+    cheat = ScriptedClient(
+        [
+            ModelTurn(
+                "",
+                [
+                    ToolCall(
+                        "write_file",
+                        {"path": "tests/test_calc.py", "content": "def test_mean():\n    pass\n"},
+                    )
+                ],
+            ),
+            ModelTurn("", [ToolCall("finish", {"summary": "tests pass"})]),
+        ]
+    )
     rec = model_run.run_local_task(task, cheat, tmp_path / "m4", 10, 12000)
     assert rec["outcome"] == "wrong_file" and not rec["grade"]["resolved"]
     summary = model_run.aggregate([good, rec, gave_up])
@@ -114,8 +138,9 @@ def test_git_commands_in_a_local_workspace_cannot_touch_the_enclosing_repo(tmp_p
     from terminal_agent.sandbox import LocalSandbox
 
     def _git(repo, *args):
-        return subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True,
-                              text=True).stdout
+        return subprocess.run(
+            ["git", "-C", str(repo), *args], check=True, capture_output=True, text=True
+        ).stdout
 
     outer = tmp_path / "harness"
     outer.mkdir()
@@ -150,10 +175,18 @@ def test_model_errors_are_retried_not_persisted_and_not_scored(tmp_path):
         calls[job.instance_id] += 1
         # fail twice with a model_error, then succeed
         if calls[job.instance_id] < 3:
-            return {"instance_id": job.instance_id, "repo": "x", "outcome": "model_error",
-                    "agent": {"steps": 0, "error": "cannot reach Ollama"}}
-        return {"instance_id": job.instance_id, "repo": "x", "outcome": "resolved",
-                "agent": {"steps": 4}}
+            return {
+                "instance_id": job.instance_id,
+                "repo": "x",
+                "outcome": "model_error",
+                "agent": {"steps": 0, "error": "cannot reach Ollama"},
+            }
+        return {
+            "instance_id": job.instance_id,
+            "repo": "x",
+            "outcome": "resolved",
+            "agent": {"steps": 4},
+        }
 
     jobs = [SimpleNamespace(instance_id="a@1")]
     out = tmp_path / "mr"
@@ -164,9 +197,17 @@ def test_model_errors_are_retried_not_persisted_and_not_scored(tmp_path):
 
 def test_persistent_model_error_counts_as_unsolved_and_both_rates_reported():
     def rec(outcome, steps):
-        return {"outcome": outcome, "repo": "x",
-                "agent": {"steps": steps, "tokens": {"prompt": 1, "completion": 1},
-                          "tool_calls": {}, "denied": [], "compactions": 0}}
+        return {
+            "outcome": outcome,
+            "repo": "x",
+            "agent": {
+                "steps": steps,
+                "tokens": {"prompt": 1, "completion": 1},
+                "tool_calls": {},
+                "denied": [],
+                "compactions": 0,
+            },
+        }
 
     agg = model_run.aggregate([rec("resolved", 3), rec("wrong_fix", 5), rec("model_error", 0)])
     assert agg["tasks"] == 3 and agg["completed"] == 2 and agg["model_errors"] == 1

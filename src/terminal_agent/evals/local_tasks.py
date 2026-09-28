@@ -67,11 +67,18 @@ class LocalTask:
                     target.write_bytes(fh.read() if fh else b"")
 
     def as_record(self) -> dict[str, Any]:
-        return {"instance_id": self.instance_id, "repo": self.repo,
-                "base_commit": self.base_commit, "commit": self.commit,
-                "problem_statement": self.problem_statement, "patch": self.patch,
-                "test_patch": self.test_patch, "FAIL_TO_PASS": self.fail_to_pass,
-                "PASS_TO_PASS": self.pass_to_pass, "tree_b64": self.tree_b64}
+        return {
+            "instance_id": self.instance_id,
+            "repo": self.repo,
+            "base_commit": self.base_commit,
+            "commit": self.commit,
+            "problem_statement": self.problem_statement,
+            "patch": self.patch,
+            "test_patch": self.test_patch,
+            "FAIL_TO_PASS": self.fail_to_pass,
+            "PASS_TO_PASS": self.pass_to_pass,
+            "tree_b64": self.tree_b64,
+        }
 
 
 def load_local_tasks(path: Path = LOCAL_DATA) -> list[LocalTask]:
@@ -81,9 +88,20 @@ def load_local_tasks(path: Path = LOCAL_DATA) -> list[LocalTask]:
     with gzip.open(path, "rt", encoding="utf-8") as fh:
         for line in fh:
             r = json.loads(line)
-            out.append(LocalTask(r["instance_id"], r["repo"], r["base_commit"], r["commit"],
-                                 r["problem_statement"], r["patch"], r["test_patch"],
-                                 r["FAIL_TO_PASS"], r["PASS_TO_PASS"], r["tree_b64"]))
+            out.append(
+                LocalTask(
+                    r["instance_id"],
+                    r["repo"],
+                    r["base_commit"],
+                    r["commit"],
+                    r["problem_statement"],
+                    r["patch"],
+                    r["test_patch"],
+                    r["FAIL_TO_PASS"],
+                    r["PASS_TO_PASS"],
+                    r["tree_b64"],
+                )
+            )
     return out
 
 
@@ -95,6 +113,7 @@ def save_local_tasks(tasks: list[LocalTask], path: Path = LOCAL_DATA) -> None:
 
 
 # -- running tests locally ----------------------------------------------------------------
+
 
 def test_env(workspace: Path) -> dict[str, str]:
     env = {k: v for k, v in os.environ.items() if k not in ("VIRTUAL_ENV", "PYTHONPATH")}
@@ -111,12 +130,37 @@ def test_env(workspace: Path) -> dict[str, str]:
 
 def git_init_isolated(workspace: Path) -> None:
     """Make the workspace its own git repo so git commands are contained, not the harness's."""
-    env = {**os.environ, "GIT_CEILING_DIRECTORIES": str(workspace.resolve().parent),
-           "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull}
-    for args in (["init", "-q"], ["-c", "user.name=ta", "-c", "user.email=ta@localhost",
-                                  "-c", "commit.gpgsign=false", "add", "-A"],
-                 ["-c", "user.name=ta", "-c", "user.email=ta@localhost",
-                  "-c", "commit.gpgsign=false", "commit", "-q", "-m", "task base"]):
+    env = {
+        **os.environ,
+        "GIT_CEILING_DIRECTORIES": str(workspace.resolve().parent),
+        "GIT_CONFIG_GLOBAL": os.devnull,
+        "GIT_CONFIG_SYSTEM": os.devnull,
+    }
+    for args in (
+        ["init", "-q"],
+        [
+            "-c",
+            "user.name=ta",
+            "-c",
+            "user.email=ta@localhost",
+            "-c",
+            "commit.gpgsign=false",
+            "add",
+            "-A",
+        ],
+        [
+            "-c",
+            "user.name=ta",
+            "-c",
+            "user.email=ta@localhost",
+            "-c",
+            "commit.gpgsign=false",
+            "commit",
+            "-q",
+            "-m",
+            "task base",
+        ],
+    ):
         subprocess.run(["git", *args], cwd=workspace, env=env, capture_output=True, check=False)
 
 
@@ -134,8 +178,14 @@ def git_apply(workspace: Path, patch: str) -> tuple[bool, str]:
     code 0, nothing changed. The ceiling stops git from discovering an enclosing repo.
     """
     env = {**os.environ, "GIT_CEILING_DIRECTORIES": str(workspace.resolve().parent)}
-    proc = subprocess.run(["git", "apply", "--whitespace=nowarn", "-"], cwd=workspace, env=env,
-                          input=patch.encode("utf-8"), capture_output=True, check=False)
+    proc = subprocess.run(
+        ["git", "apply", "--whitespace=nowarn", "-"],
+        cwd=workspace,
+        env=env,
+        input=patch.encode("utf-8"),
+        capture_output=True,
+        check=False,
+    )
     return proc.returncode == 0, (proc.stdout + proc.stderr).decode("utf-8", "replace")
 
 
@@ -148,6 +198,7 @@ def local_test_command() -> str:
 
 
 # -- mining --------------------------------------------------------------------------------
+
 
 def _git(repo: Path, *args: str, binary: bool = False) -> Any:
     proc = subprocess.run(["git", "-C", str(repo), *args], capture_output=True, check=False)
@@ -166,8 +217,10 @@ def _keep(path: str, size: int) -> bool:
 def _filtered_tree(repo: Path, commit: str) -> bytes:
     raw = _git(repo, "archive", "--format=tar", commit, binary=True)
     out = io.BytesIO()
-    with tarfile.open(fileobj=io.BytesIO(raw)) as src, \
-            tarfile.open(fileobj=out, mode="w:gz") as dst:
+    with (
+        tarfile.open(fileobj=io.BytesIO(raw)) as src,
+        tarfile.open(fileobj=out, mode="w:gz") as dst,
+    ):
         for m in src.getmembers():
             if m.isfile() and _keep(m.name, m.size):
                 fh = src.extractfile(m)
@@ -204,16 +257,22 @@ def candidate_commits(repo: Path, limit: int = 400) -> list[str]:
     return out
 
 
-def mine_commit(repo: Path, repo_name: str, sha: str, scratch: Path,
-                max_patch_lines: int = 120) -> LocalTask | None:
+def mine_commit(
+    repo: Path, repo_name: str, sha: str, scratch: Path, max_patch_lines: int = 120
+) -> LocalTask | None:
     try:
         parent = _git(repo, "rev-parse", f"{sha}^").strip()
     except RuntimeError:
         return None
     names = _git(repo, "diff", "--name-only", parent, sha).split()
     tests = [f for f in names if TEST_RE.search(f) and f.endswith(".py")]
-    code = [f for f in names if not TEST_RE.search(f) and f.endswith(".py")
-            and not any(p in SKIP_PARTS for p in f.split("/")[:-1])]
+    code = [
+        f
+        for f in names
+        if not TEST_RE.search(f)
+        and f.endswith(".py")
+        and not any(p in SKIP_PARTS for p in f.split("/")[:-1])
+    ]
     if not tests or not code:
         return None
     patch = _git(repo, "diff", "--no-color", parent, sha, "--", *code)
@@ -223,9 +282,18 @@ def mine_commit(repo: Path, repo_name: str, sha: str, scratch: Path,
     tree = _filtered_tree(repo, parent)
     if _mentions_forbidden(tree):
         return None
-    task = LocalTask(f"{repo.name}@{sha[:10]}", repo_name, parent, sha,
-                     _git(repo, "log", "-1", "--format=%B", sha).strip(), patch, test_patch,
-                     [], [], base64.b64encode(tree).decode())
+    task = LocalTask(
+        f"{repo.name}@{sha[:10]}",
+        repo_name,
+        parent,
+        sha,
+        _git(repo, "log", "-1", "--format=%B", sha).strip(),
+        patch,
+        test_patch,
+        [],
+        [],
+        base64.b64encode(tree).decode(),
+    )
     runnable = [f for f in task.test_files if f.endswith(".py")]
     if not runnable:
         return None
@@ -258,9 +326,14 @@ def mine(repos: list[tuple[Path, str]], limit: int = 400, log: Any = print) -> l
         for repo, name in repos:
             for sha in candidate_commits(repo, limit):
                 task = mine_commit(repo, name, sha, Path(tmp))
-                log(f"{repo.name}@{sha[:10]}: {'TASK' if task else '-'}"
-                    + (f" f2p={len(task.fail_to_pass)} p2p={len(task.pass_to_pass)}"
-                       if task else ""))
+                log(
+                    f"{repo.name}@{sha[:10]}: {'TASK' if task else '-'}"
+                    + (
+                        f" f2p={len(task.fail_to_pass)} p2p={len(task.pass_to_pass)}"
+                        if task
+                        else ""
+                    )
+                )
                 if task:
                     tasks.append(task)
     return tasks

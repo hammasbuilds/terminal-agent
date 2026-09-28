@@ -20,14 +20,14 @@ MODES: tuple[TruncateMode, ...] = ("head", "tail", "head_tail", "digest")
 FAILING = ("FAILED", "ERROR")
 
 
-def visible_failures(text: str, parser: Callable[[str], dict[str, str]],
-                     tests: list[str]) -> int:
+def visible_failures(text: str, parser: Callable[[str], dict[str, str]], tests: list[str]) -> int:
     statuses = parser(text)
     return sum(1 for t in tests if statuses.get(t) in FAILING)
 
 
-def study_log(log: str, parser: Callable[[str], dict[str, str]], f2p: list[str]
-              ) -> dict[str, Any] | None:
+def study_log(
+    log: str, parser: Callable[[str], dict[str, str]], f2p: list[str]
+) -> dict[str, Any] | None:
     """Per budget and mode, how many of the F2P tests the full log shows failing stay visible."""
     shown = [t for t in f2p if parser(log).get(t) in FAILING]
     if not shown:
@@ -36,8 +36,10 @@ def study_log(log: str, parser: Callable[[str], dict[str, str]], f2p: list[str]
     for mode in MODES:
         for budget in BUDGETS:
             cut, _ = truncate(log, budget, mode)
-            cells[f"{mode}@{budget}"] = {"visible": visible_failures(cut, parser, shown),
-                                         "total": len(shown)}
+            cells[f"{mode}@{budget}"] = {
+                "visible": visible_failures(cut, parser, shown),
+                "total": len(shown),
+            }
     return {"chars": len(log), "f2p_failing_in_full_log": len(shown), "cells": cells}
 
 
@@ -45,14 +47,18 @@ def aggregate(per_log: dict[str, dict[str, Any]]) -> dict[str, Any]:
     out: dict[str, Any] = {"logs": len(per_log)}
     lengths = sorted(r["chars"] for r in per_log.values())
     if lengths:
-        out["log_chars"] = {"median": lengths[len(lengths) // 2], "max": lengths[-1],
-                            "over_8000": sum(1 for n in lengths if n > 8000)}
+        out["log_chars"] = {
+            "median": lengths[len(lengths) // 2],
+            "max": lengths[-1],
+            "over_8000": sum(1 for n in lengths if n > 8000),
+        }
     table: dict[str, Any] = {}
     for mode in MODES:
         for budget in BUDGETS:
             key = f"{mode}@{budget}"
-            groups = [(r["cells"][key]["visible"], r["cells"][key]["total"])
-                      for r in per_log.values()]
+            groups = [
+                (r["cells"][key]["visible"], r["cells"][key]["total"]) for r in per_log.values()
+            ]
             table[key] = cluster_rate(groups)
     out["visible_rate"] = table
     return out

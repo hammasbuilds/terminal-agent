@@ -59,19 +59,29 @@ class RunResult:
 
     def as_dict(self) -> dict[str, Any]:
         return {
-            "status": self.status, "response": self.final, "steps": self.steps,
-            "tool_calls": dict(self.tool_calls), "tool_errors": dict(self.tool_errors),
+            "status": self.status,
+            "response": self.final,
+            "steps": self.steps,
+            "tool_calls": dict(self.tool_calls),
+            "tool_errors": dict(self.tool_errors),
             "denied": self.denied,
             "tokens": {"prompt": self.prompt_tokens, "completion": self.completion_tokens},
-            "compactions": self.compactions, "error": self.error,
+            "compactions": self.compactions,
+            "error": self.error,
         }
 
 
 class Agent:
-    def __init__(self, client: ChatClient, toolbox: Toolbox, policy: ApprovalPolicy,
-                 approver: Approver = deny_all, logger: TrajectoryLogger | None = None,
-                 context: ContextManager | None = None, config: AgentConfig | None = None
-                 ) -> None:
+    def __init__(
+        self,
+        client: ChatClient,
+        toolbox: Toolbox,
+        policy: ApprovalPolicy,
+        approver: Approver = deny_all,
+        logger: TrajectoryLogger | None = None,
+        context: ContextManager | None = None,
+        config: AgentConfig | None = None,
+    ) -> None:
         self.client = client
         self.toolbox = toolbox
         self.policy = policy
@@ -79,10 +89,12 @@ class Agent:
         self.logger = logger or TrajectoryLogger(None)
         self.context = context or ContextManager()
         self.config = config or AgentConfig()
-        self.messages: list[dict[str, Any]] = [{
-            "role": "system",
-            "content": self.config.system_prompt,
-        }]
+        self.messages: list[dict[str, Any]] = [
+            {
+                "role": "system",
+                "content": self.config.system_prompt,
+            }
+        ]
         self._step = 0
 
     def reset(self) -> None:
@@ -90,8 +102,13 @@ class Agent:
 
     def run(self, task: str) -> RunResult:
         """Run one user request to completion (the conversation so far is kept)."""
-        self.logger.log("run_start", self._step, task=task, model=self.client.model,
-                        workspace=str(self.toolbox.workspace))
+        self.logger.log(
+            "run_start",
+            self._step,
+            task=task,
+            model=self.client.model,
+            workspace=str(self.toolbox.workspace),
+        )
         self.messages.append({"role": "user", "content": task})
         result = RunResult(status="max_steps", final="", steps=0)
         recent: list[str] = []
@@ -101,10 +118,16 @@ class Agent:
             fitted, report = self.context.fit(self.messages)
             if report.changed:
                 result.compactions += 1
-                self.logger.log("compaction", self._step, tokens_before=report.tokens_before,
-                                tokens_after=report.tokens_after, stubbed=report.stubbed,
-                                dropped=report.dropped, squeezed=report.squeezed,
-                                over_budget=report.over_budget)
+                self.logger.log(
+                    "compaction",
+                    self._step,
+                    tokens_before=report.tokens_before,
+                    tokens_after=report.tokens_after,
+                    stubbed=report.stubbed,
+                    dropped=report.dropped,
+                    squeezed=report.squeezed,
+                    over_budget=report.over_budget,
+                )
             try:
                 turn = self.client.chat(fitted, TOOL_SPECS)
             except ModelError as exc:
@@ -115,12 +138,17 @@ class Agent:
                 break
             result.prompt_tokens += turn.prompt_tokens or 0
             result.completion_tokens += turn.completion_tokens or 0
-            self.logger.log("model", self._step, content=turn.content,
-                            prompt_tokens=turn.prompt_tokens,
-                            completion_tokens=turn.completion_tokens,
-                            estimated_prompt_tokens=conversation_tokens(fitted),
-                            cached=turn.cached, parsed_from_text=turn.parsed_from_text,
-                            n_tool_calls=len(turn.tool_calls))
+            self.logger.log(
+                "model",
+                self._step,
+                content=turn.content,
+                prompt_tokens=turn.prompt_tokens,
+                completion_tokens=turn.completion_tokens,
+                estimated_prompt_tokens=conversation_tokens(fitted),
+                cached=turn.cached,
+                parsed_from_text=turn.parsed_from_text,
+                n_tool_calls=len(turn.tool_calls),
+            )
             self.messages.append(_assistant_message(turn.content, turn.tool_calls))
             if not turn.tool_calls:
                 result.status, result.final = "no_tool_call", turn.content
@@ -128,8 +156,7 @@ class Agent:
             finished = False
             for call in turn.tool_calls:
                 result.tool_calls[call.name] += 1
-                self.logger.log("tool_call", self._step, name=call.name,
-                                arguments=call.arguments)
+                self.logger.log("tool_call", self._step, name=call.name, arguments=call.arguments)
                 if call.name == "finish":
                     finished = True
                     result.final = str(call.arguments.get("summary", turn.content))
@@ -141,14 +168,22 @@ class Agent:
             if finished:
                 result.status = "finished"
                 break
-            if len(recent) >= self.config.loop_limit and len(
-                    set(recent[-self.config.loop_limit:])) == 1:
+            if (
+                len(recent) >= self.config.loop_limit
+                and len(set(recent[-self.config.loop_limit :])) == 1
+            ):
                 result.status = "loop"
                 result.error = f"the same call was made {self.config.loop_limit} times in a row"
                 break
-        self.logger.log("run_end", self._step, status=result.status, steps=result.steps,
-                        final=result.final, error=result.error,
-                        tool_calls=dict(result.tool_calls))
+        self.logger.log(
+            "run_end",
+            self._step,
+            status=result.status,
+            steps=result.steps,
+            final=result.final,
+            error=result.error,
+            tool_calls=dict(result.tool_calls),
+        )
         return result
 
     def _run_call(self, call: ToolCall, result: RunResult) -> ToolResult:
@@ -157,30 +192,44 @@ class Agent:
         if verdict.decision is Decision.ASK:
             allowed = self.approver(call, verdict)
         if verdict.decision is not Decision.ALLOW:
-            self.logger.log("approval", self._step, name=call.name,
-                            decision="approved" if allowed else "denied",
-                            policy=verdict.decision.value, risk=verdict.risk,
-                            reason=verdict.reason)
+            self.logger.log(
+                "approval",
+                self._step,
+                name=call.name,
+                decision="approved" if allowed else "denied",
+                policy=verdict.decision.value,
+                risk=verdict.risk,
+                reason=verdict.reason,
+            )
         if not allowed:
             label = call.arguments.get("command") or call.arguments.get("path") or call.name
             result.denied.append(str(label))
-            outcome = ToolResult(False, f"not run: the approval policy refused it "
-                                        f"({verdict.risk}: {verdict.reason})",
-                                 {"error": "denied"})
+            outcome = ToolResult(
+                False,
+                f"not run: the approval policy refused it ({verdict.risk}: {verdict.reason})",
+                {"error": "denied"},
+            )
         else:
             outcome = self.toolbox.execute(call)
         if not outcome.ok:
             result.tool_errors[call.name] += 1
-        self.logger.log("tool_result", self._step, name=call.name, ok=outcome.ok,
-                        output=outcome.output, meta=outcome.meta)
+        self.logger.log(
+            "tool_result",
+            self._step,
+            name=call.name,
+            ok=outcome.ok,
+            output=outcome.output,
+            meta=outcome.meta,
+        )
         return outcome
 
 
 def _assistant_message(content: str, calls: list[ToolCall]) -> dict[str, Any]:
     msg: dict[str, Any] = {"role": "assistant", "content": content}
     if calls:
-        msg["tool_calls"] = [{"function": {"name": c.name, "arguments": c.arguments}}
-                             for c in calls]
+        msg["tool_calls"] = [
+            {"function": {"name": c.name, "arguments": c.arguments}} for c in calls
+        ]
     return msg
 
 
@@ -188,10 +237,18 @@ def _tool_message(call: ToolCall, outcome: ToolResult) -> dict[str, Any]:
     return {"role": "tool", "tool_name": call.name, "content": outcome.render()}
 
 
-def build_agent(workspace: Path, client: ChatClient, *, sandbox: Sandbox | None = None,
-                tool_config: ToolConfig | None = None, policy: ApprovalPolicy | None = None,
-                approver: Approver = deny_all, trajectory: Path | None = None,
-                token_budget: int = 12000, max_steps: int = 40) -> Agent:
+def build_agent(
+    workspace: Path,
+    client: ChatClient,
+    *,
+    sandbox: Sandbox | None = None,
+    tool_config: ToolConfig | None = None,
+    policy: ApprovalPolicy | None = None,
+    approver: Approver = deny_all,
+    trajectory: Path | None = None,
+    token_budget: int = 12000,
+    max_steps: int = 40,
+) -> Agent:
     """Assemble an agent with sensible defaults (local sandbox, default policy)."""
     ws = workspace.resolve()
     toolbox = Toolbox(ws, sandbox or LocalSandbox(ws), tool_config or ToolConfig())
