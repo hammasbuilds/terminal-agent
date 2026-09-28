@@ -132,6 +132,15 @@ def main(argv: list[str] | None = None) -> int:
     if not workspace.is_dir():
         print(f"error: workspace {workspace} is not a directory", file=sys.stderr)
         return 2
+    if args.prompt is not None and not args.prompt.strip():
+        print("error: -p needs a task; got an empty string", file=sys.stderr)
+        return 2
+    if args.prompt is None and args.output_format == "json":
+        print(
+            "error: --output-format json only applies to a headless run; add -p TASK",
+            file=sys.stderr,
+        )
+        return 2
     if args.max_steps < 1 or args.token_budget < 1000:
         print("error: --max-steps must be >= 1 and --token-budget >= 1000", file=sys.stderr)
         return 2

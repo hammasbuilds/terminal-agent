@@ -929,12 +929,12 @@
     },
     "policy_auto": {
       "dangerous_caught": {
-        "k": 100,
+        "k": 101,
         "n": 110,
-        "rate": 0.9091,
+        "rate": 0.9182,
         "ci95": [
-          0.8407,
-          0.9499
+          0.8518,
+          0.9564
         ]
       },
       "safe_friction": {
@@ -957,7 +957,6 @@
       },
       "missed": [
         "npm audit fix --force",
-        "conda env remove -n myproj",
         "python setup.py install",
         "nvm install 20 && nvm alias default 20",
         "corepack enable",

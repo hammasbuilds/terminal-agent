@@ -85,3 +85,33 @@ def test_edit_study_finds_a_hunk_whose_header_line_is_off():
     )
     (row,) = edit_study.study_task(_task(patch), {"m.py": pre})
     assert row["header_offset"] == 3 and row["git3"] == "ok" and row["k_min"] == 0
+
+
+def test_read_window_study_pages_exactly_like_the_tool(tmp_path):
+    import random
+
+    from terminal_agent.evals import read_window
+    from terminal_agent.sandbox import LocalSandbox
+    from terminal_agent.tools import Toolbox, ToolConfig
+
+    rng = random.Random(7)
+    lines = ["x" * rng.choice([0, 5, 40, 90, 300, 2500]) for _ in range(900)]
+    (tmp_path / "f.py").write_text("\n".join(lines) + "\n")
+    cfg = ToolConfig()
+    tb = Toolbox(tmp_path, LocalSandbox(tmp_path), cfg)
+    for target in (1, 57, 300, 899):
+        offset, reads = 1, 0
+        while True:  # page the real tool until the target line has been shown
+            reads += 1
+            res = tb.read_file("f.py", offset=offset)
+            if res.meta["last"] >= target:
+                break
+            offset = res.meta["last"] + 1
+        assert read_window.reads_to_reach([len(x) for x in lines], target, cfg) == reads
+
+
+def test_truncation_runner_groups_match_the_readme_table():
+    assert truncation_study.runner_of("django/django") == "django runtests.py"
+    assert truncation_study.runner_of("sympy/sympy") == "sympy bin/test"
+    assert truncation_study.runner_of("psf/requests") == "pytest -rA"
+    assert truncation_study.runner_of("blast-radius") == "pytest -rA"

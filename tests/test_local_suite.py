@@ -83,7 +83,7 @@ def _fix_script() -> ScriptedClient:
 
 def test_model_run_grades_and_classifies(mined, tmp_path: Path):
     task = _task(mined)
-    good = model_run.run_local_task(task, _fix_script(), tmp_path / "m", 10, 12000)
+    good = model_run.run_local_task(task, _fix_script(), tmp_path / "m", 10, 12000, "host")
     assert good["outcome"] == "resolved" and good["agent"]["steps"] == 4
     assert good["agent"]["tool_errors"] == {}  # run_tests found and ran the tests
     assert good["edit_status"] == {"ok": 1}
@@ -93,10 +93,10 @@ def test_model_run_grades_and_classifies(mined, tmp_path: Path):
             ModelTurn("", [ToolCall("finish", {"summary": "done"})]),
         ]
     )
-    rec = model_run.run_local_task(task, wrong_place, tmp_path / "m2", 10, 12000)
+    rec = model_run.run_local_task(task, wrong_place, tmp_path / "m2", 10, 12000, "host")
     assert rec["outcome"] == "wrong_file"
     gave_up = model_run.run_local_task(
-        task, ScriptedClient([ModelTurn("I cannot.")]), tmp_path / "m3", 10, 12000
+        task, ScriptedClient([ModelTurn("I cannot.")]), tmp_path / "m3", 10, 12000, "host"
     )
     assert gave_up["outcome"] == "gave_up"
     cheat = ScriptedClient(
@@ -113,7 +113,7 @@ def test_model_run_grades_and_classifies(mined, tmp_path: Path):
             ModelTurn("", [ToolCall("finish", {"summary": "tests pass"})]),
         ]
     )
-    rec = model_run.run_local_task(task, cheat, tmp_path / "m4", 10, 12000)
+    rec = model_run.run_local_task(task, cheat, tmp_path / "m4", 10, 12000, "host")
     assert rec["outcome"] == "wrong_file" and not rec["grade"]["resolved"]
     summary = model_run.aggregate([good, rec, gave_up])
     assert summary["solve_rate"]["k"] == 1 and summary["tasks"] == 3
@@ -215,3 +215,78 @@ def test_persistent_model_error_counts_as_unsolved_and_both_rates_reported():
     assert agg["solve_rate"]["k"] == 1 and agg["solve_rate"]["n"] == 3
     # reported beside it: completed runs only
     assert agg["solve_rate_completed_only"]["n"] == 2
+
+
+def test_a_crashing_task_is_a_harness_error_and_the_run_goes_on(tmp_path):
+    from types import SimpleNamespace
+
+    def runner(job):
+        if job.instance_id == "a@1":
+            raise RuntimeError("docker exec failed")
+        return {
+            "instance_id": job.instance_id,
+            "repo": "x",
+            "outcome": "resolved",
+            "agent": {
+                "steps": 2,
+                "tokens": {"prompt": 1, "completion": 1},
+                "tool_calls": {},
+                "denied": [],
+                "compactions": 0,
+            },
+        }
+
+    jobs = [
+        SimpleNamespace(instance_id="a@1", repo="x"),
+        SimpleNamespace(instance_id="b@2", repo="x"),
+    ]
+    logs: list[str] = []
+    recs = model_run.run_all(jobs, runner, tmp_path / "mr", log=logs.append, retries=1)
+    assert [r["outcome"] for r in recs] == ["harness_error", "resolved"]
+    assert "RuntimeError: docker exec failed" in recs[0]["agent"]["error"]
+    assert not (tmp_path / "mr" / "a_1.json").exists()  # retried on resume, not persisted
+    assert any("retry 1/1" in line for line in logs)
+    agg = model_run.aggregate(recs)
+    assert agg["harness_errors"] == 1 and agg["solve_rate"]["n"] == 2
+
+
+def test_call_bound_counts_every_retry():
+    assert model_run.call_bound(tasks=15, max_steps=30, retries=2) == 1350
+    assert model_run.call_bound(tasks=15, max_steps=30, retries=0) == 450
+
+
+def test_local_model_run_defaults_to_a_container_and_refuses_without_its_image(monkeypatch, capsys):
+    import inspect
+
+    from terminal_agent.evals import cli, local_container
+
+    sig = inspect.signature(model_run.run_local_task)
+    assert sig.parameters["isolation"].default == "container"
+    monkeypatch.setattr(cli, "valid_ids", lambda suite: ["t@1"])
+    monkeypatch.setattr(local_container, "image_present", lambda image=None: False)
+    assert cli.main(["model-run", "--suite", "local"]) == 2
+    assert "is not available" in capsys.readouterr().err
+    assert cli.main(["model-run", "--suite", "local", "--dry-run"]) == 0
+    out = capsys.readouterr().out
+    assert "at most 90 model calls (1 tasks x 30 steps x 3 attempts)" in out
+    assert "offline python:3.11-bookworm container" in out
+
+
+@pytest.mark.docker
+def test_local_task_runs_and_grades_inside_an_offline_container(mined, tmp_path: Path):
+    from terminal_agent.evals import local_container
+
+    if not local_container.image_present():
+        pytest.skip(f"{local_container.LOCAL_IMAGE} not pulled")
+    task = _task(mined)
+    shell = ScriptedClient(
+        [
+            # /.dockerenv exists only inside a container: on the host this call would fail
+            ModelTurn("", [ToolCall("run_shell", {"command": "test -f /.dockerenv"})]),
+            *_fix_script()._turns,
+        ]
+    )
+    rec = model_run.run_local_task(task, shell, tmp_path / "c", 10, 12000)
+    assert rec["outcome"] == "resolved" and rec["grade"]["isolation"] == "container"
+    # both the shell probe and run_tests succeeded, i.e. both ran inside the container
+    assert rec["agent"]["tool_errors"] == {} and rec["agent"]["steps"] == 5

@@ -18,6 +18,13 @@ from terminal_agent.evals.stats import cluster_rate
 BUDGETS = (1000, 2000, 4000, 8000, 16000, 32000)
 MODES: tuple[TruncateMode, ...] = ("head", "tail", "head_tail", "digest")
 FAILING = ("FAILED", "ERROR")
+# which test runner writes each repository's log: the README's table is grouped by runner
+RUNNERS = {"django/django": "django runtests.py", "sympy/sympy": "sympy bin/test"}
+
+
+def runner_of(repo: str) -> str:
+    """The runner behind a log: Django's and sympy's own, pytest -rA for everything else."""
+    return RUNNERS.get(repo, "pytest -rA")
 
 
 def visible_failures(text: str, parser: Callable[[str], dict[str, str]], tests: list[str]) -> int:

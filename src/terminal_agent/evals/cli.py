@@ -14,7 +14,9 @@ from typing import Any
 
 from terminal_agent.evals import (
     edit_study,
+    local_container,
     model_run,
+    read_window,
     safety_study,
     specs,
     truncation_study,
@@ -22,7 +24,6 @@ from terminal_agent.evals import (
 )
 from terminal_agent.evals.local_tasks import LOCAL_DATA, load_local_tasks, mine, save_local_tasks
 from terminal_agent.evals.patches import parse_patch
-from terminal_agent.evals.stats import rate
 from terminal_agent.evals.tasks import load_tasks, select, test_section
 from terminal_agent.llm import DEFAULT_HOST, DEFAULT_MODEL, OllamaClient
 
@@ -30,6 +31,7 @@ ROOT = Path(__file__).resolve().parents[3]
 RESULTS = ROOT / "results"
 RUNS = ROOT / "runs"
 PREIMAGES = ROOT / "data" / "gold_preimages.jsonl.gz"
+LINE_LENGTHS = ROOT / "data" / "lite_line_lengths.json.gz"
 
 
 def _write(path: Path, data: Any) -> None:
@@ -162,33 +164,13 @@ def cmd_edit_study(args: argparse.Namespace) -> int:
 
 
 def cmd_read_window(args: argparse.Namespace) -> int:
-    """Where in the file SWE-bench Lite's gold edits sit, from the patch headers alone."""
-    tasks = load_tasks()
-    windows = (250, 500, 1000, 2000)
-    last_lines = []
-    for t in tasks:
-        ends = [h.old_start + max(h.old_len, 1) - 1 for f in parse_patch(t.patch) for h in f.hunks]
-        last_lines.append(max(ends) if ends else 0)
-    preimages = edit_study.load_preimages(PREIMAGES)
-    long_line_files = [
-        f"{iid}:{p}"
-        for iid, files in preimages.items()
-        for p, c in files.items()
-        if any(len(line) > 2000 for line in c.split("\n"))
-    ]
-    _write(
-        RESULTS / "read_window.json",
-        {
-            "tasks": len(tasks),
-            "edit_beyond_first_window": {
-                str(w): rate(sum(1 for n in last_lines if n > w), len(tasks)) for w in windows
-            },
-            "median_last_edited_line": sorted(last_lines)[len(last_lines) // 2],
-            "max_last_edited_line": max(last_lines),
-            "preimage_files_with_lines_over_2000_chars": long_line_files,
-            "preimage_files": sum(len(v) for v in preimages.values()),
-        },
-    )
+    """How many char-capped read_file calls reach SWE-bench Lite's edit sites."""
+    if not LINE_LENGTHS.exists():
+        raise FileNotFoundError(
+            f"{LINE_LENGTHS} is missing; run scripts/fetch_lite_line_lengths.py first"
+        )
+    lengths = read_window.load_line_lengths(LINE_LENGTHS)
+    _write(RESULTS / "read_window.json", read_window.study(load_tasks(), lengths))
     return 0
 
 
@@ -216,14 +198,23 @@ def cmd_truncation_study(args: argparse.Namespace) -> int:
             if row is not None:
                 per_log[task.instance_id] = {**row, "repo": task.repo}
     by_repo: dict[str, dict[str, Any]] = {}
+    by_runner: dict[str, dict[str, Any]] = {}
     for iid, row in per_log.items():
         by_repo.setdefault(row["repo"], {})[iid] = row
+        by_runner.setdefault(truncation_study.runner_of(row["repo"]), {})[iid] = row
     _write(
         RESULTS / "truncation_study.json",
         {
             "summary": truncation_study.aggregate(per_log),
             "by_repo": {
                 repo: truncation_study.aggregate(rows) for repo, rows in sorted(by_repo.items())
+            },
+            "by_runner": {
+                runner: {
+                    "repos": sorted({r["repo"] for r in rows.values()}),
+                    **truncation_study.aggregate(rows),
+                }
+                for runner, rows in sorted(by_runner.items())
             },
             "per_log": per_log,
         },
@@ -268,11 +259,20 @@ def cmd_model_run(args: argparse.Namespace) -> int:
         ids = [i for i in ids if i in set(args.ids)]
     if args.limit:
         ids = ids[: args.limit]
-    upper = len(ids) * args.max_steps
+    upper = model_run.call_bound(len(ids), args.max_steps, args.retries)
+    isolation = "host" if args.local_on_host else "container"
     print(
-        f"model arm: {args.model} on {len(ids)} validated {args.suite} task(s); "
-        f"at most {upper} model calls ({args.max_steps} steps x {len(ids)} tasks)"
+        f"model arm: {args.model} on {len(ids)} validated {args.suite} task(s); at most "
+        f"{upper} model calls ({len(ids)} tasks x {args.max_steps} steps x "
+        f"{1 + args.retries} attempts)"
     )
+    if args.suite == "local":
+        where = (
+            "THE HOST (--local-on-host)"
+            if args.local_on_host
+            else f"an offline {local_container.LOCAL_IMAGE} container"
+        )
+        print(f"local tasks run in: {where}")
     if args.dry_run:
         for i in ids:
             print(f"  {i}")
@@ -280,6 +280,20 @@ def cmd_model_run(args: argparse.Namespace) -> int:
     if not ids:
         print("nothing to run: validate the suite first (ta-eval validate)", file=sys.stderr)
         return 1
+    if args.suite == "local" and args.local_on_host:
+        print(
+            "WARNING: auto approval mode lets the model run mutating commands (python "
+            "x.py, make) unasked on THIS machine; the policy is a filter, not a sandbox.",
+            file=sys.stderr,
+        )
+    elif args.suite == "local" and not local_container.image_present():
+        print(
+            f"error: docker image {local_container.LOCAL_IMAGE} is not available; run "
+            f"'docker pull {local_container.LOCAL_IMAGE}' (or accept the risk with "
+            "--local-on-host)",
+            file=sys.stderr,
+        )
+        return 2
     client = OllamaClient(
         model=args.model,
         host=args.host,
@@ -289,24 +303,31 @@ def cmd_model_run(args: argparse.Namespace) -> int:
     runs = RUNS / "model" / args.suite
     if args.suite == "swebench":
         by_id = {t.instance_id: t for t in load_tasks()}
-        jobs: list[Any] = [by_id[i] for i in ids]
-
-        def runner(job: Any) -> dict[str, Any]:
-            return model_run.run_swebench_task(job, client, runs, args.max_steps, args.token_budget)
+        records = model_run.run_all(
+            [by_id[i] for i in ids],
+            lambda job: model_run.run_swebench_task(
+                job, client, runs, args.max_steps, args.token_budget
+            ),
+            out_dir,
+            retries=args.retries,
+        )
     else:
         by_local = {t.instance_id: t for t in load_local_tasks()}
-        jobs = [by_local[i] for i in ids]
-
-        def runner(job: Any) -> dict[str, Any]:
-            return model_run.run_local_task(job, client, runs, args.max_steps, args.token_budget)
-
-    records = model_run.run_all(jobs, runner, out_dir)
+        records = model_run.run_all(
+            [by_local[i] for i in ids],
+            lambda job: model_run.run_local_task(
+                job, client, runs, args.max_steps, args.token_budget, isolation
+            ),
+            out_dir,
+            retries=args.retries,
+        )
     _write(
         RESULTS / f"model_run_{args.model.replace(':', '_')}_{args.suite}.json",
         {
             "model": args.model,
             "max_steps": args.max_steps,
             "token_budget": args.token_budget,
+            "isolation": isolation if args.suite == "local" else "container",
             "summary": model_run.aggregate(records),
         },
     )
@@ -364,6 +385,18 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--token-budget", type=int, default=12000)
     r.add_argument("--ids", nargs="*")
     r.add_argument("--limit", type=int, default=0, help="only the first N tasks")
+    r.add_argument(
+        "--retries",
+        type=int,
+        default=2,
+        help="re-runs of a task whose run ended in a model or harness error",
+    )
+    r.add_argument(
+        "--local-on-host",
+        action="store_true",
+        help="run local tasks' shell on this machine instead of an offline "
+        "container (auto mode: the model's commands run unasked)",
+    )
     r.add_argument("--dry-run", action="store_true", help="list the jobs and exit")
     r.set_defaults(fn=cmd_model_run)
     return p

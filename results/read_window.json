@@ -1,6 +1,116 @@
 {
   "tasks": 300,
-  "edit_beyond_first_window": {
+  "tasks_measured": 300,
+  "unmeasured": [],
+  "default_read_max_chars": 6000,
+  "read_max_lines": 1000,
+  "by_char_cap": {
+    "3000": {
+      "edit_beyond_first_read": {
+        "k": 264,
+        "n": 300,
+        "rate": 0.88,
+        "ci95": [
+          0.8383,
+          0.912
+        ]
+      },
+      "needs_more_than_3_reads": {
+        "k": 184,
+        "n": 300,
+        "rate": 0.6133,
+        "ci95": [
+          0.5571,
+          0.6667
+        ]
+      },
+      "reads_to_reach_edit": {
+        "median": 5.0,
+        "mean": 8.0,
+        "p90": 19,
+        "max": 50
+      }
+    },
+    "6000": {
+      "edit_beyond_first_read": {
+        "k": 213,
+        "n": 300,
+        "rate": 0.71,
+        "ci95": [
+          0.6563,
+          0.7584
+        ]
+      },
+      "needs_more_than_3_reads": {
+        "k": 116,
+        "n": 300,
+        "rate": 0.3867,
+        "ci95": [
+          0.3333,
+          0.4429
+        ]
+      },
+      "reads_to_reach_edit": {
+        "median": 3.0,
+        "mean": 4.22,
+        "p90": 10,
+        "max": 25
+      }
+    },
+    "12000": {
+      "edit_beyond_first_read": {
+        "k": 153,
+        "n": 300,
+        "rate": 0.51,
+        "ci95": [
+          0.4537,
+          0.5661
+        ]
+      },
+      "needs_more_than_3_reads": {
+        "k": 67,
+        "n": 300,
+        "rate": 0.2233,
+        "ci95": [
+          0.1799,
+          0.2738
+        ]
+      },
+      "reads_to_reach_edit": {
+        "median": 2.0,
+        "mean": 2.39,
+        "p90": 5,
+        "max": 13
+      }
+    },
+    "24000": {
+      "edit_beyond_first_read": {
+        "k": 96,
+        "n": 300,
+        "rate": 0.32,
+        "ci95": [
+          0.2698,
+          0.3748
+        ]
+      },
+      "needs_more_than_3_reads": {
+        "k": 17,
+        "n": 300,
+        "rate": 0.0567,
+        "ci95": [
+          0.0357,
+          0.0889
+        ]
+      },
+      "reads_to_reach_edit": {
+        "median": 1.0,
+        "mean": 1.54,
+        "p90": 3,
+        "max": 7
+      }
+    }
+  },
+  "legacy_line_windows": {
     "250": {
       "k": 188,
       "n": 300,
@@ -39,7 +149,5 @@
     }
   },
   "median_last_edited_line": 353,
-  "max_last_edited_line": 5954,
-  "preimage_files_with_lines_over_2000_chars": [],
-  "preimage_files": 39
+  "max_last_edited_line": 5954
 }

@@ -127,3 +127,14 @@ def test_repl_commands_and_approval(tmp_path: Path):
 def test_ta_eval_reports_unknown_ids_without_a_traceback(capsys):
     assert ta_eval(["validate", "--suite", "swebench", "--ids", "no__such-1"]) == 2
     assert "unknown instance id(s): no__such-1" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("prompt", ["", "   "])
+def test_empty_headless_prompt_is_rejected(tmp_path, capsys, prompt):
+    assert main(["-p", prompt, "-w", str(tmp_path), "--script", str(_script(tmp_path))]) == 2
+    assert "empty" in capsys.readouterr().err
+
+
+def test_json_output_without_a_prompt_is_an_error_not_silently_ignored(tmp_path, capsys):
+    assert main(["-w", str(tmp_path), "--output-format", "json"]) == 2
+    assert "add -p TASK" in capsys.readouterr().err

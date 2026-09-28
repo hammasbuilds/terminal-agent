@@ -5,13 +5,23 @@
 #   scripts/run_models.sh              check resources, then run (resumable: re-run to continue)
 #
 # Environment: MODEL (default qwen2.5-coder:14b), OLLAMA_HOST (default http://127.0.0.1:11434),
-# MAX_STEPS (default 30), MIN_FREE_GB (default 5), MIN_FREE_VRAM_MB (default 11000).
+# MAX_STEPS (default 30), RETRIES (default 2), MIN_FREE_GB (default 5),
+# MIN_FREE_VRAM_MB (default 11000), LOCAL_ON_HOST (default 0).
+#
+# RISK: the agent runs in `auto` approval mode, where the policy lets mutating commands run
+# unasked - including `python x.py`, `make`, and tests whose conftest.py the model just
+# wrote. The policy is a filter, not a sandbox. Every task's shell therefore runs in a
+# network-less container (the SWE-bench image, or python:3.11-bookworm for the local
+# suite); this script refuses to run the local suite without Docker unless you set
+# LOCAL_ON_HOST=1, which runs the model's commands on THIS machine.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 MODEL="${MODEL:-qwen2.5-coder:14b}"
 HOST="${OLLAMA_HOST:-http://127.0.0.1:11434}"
 MAX_STEPS="${MAX_STEPS:-30}"
+RETRIES="${RETRIES:-2}"
+LOCAL_ON_HOST="${LOCAL_ON_HOST:-0}"
 MIN_FREE_GB="${MIN_FREE_GB:-5}"
 MIN_FREE_VRAM_MB="${MIN_FREE_VRAM_MB:-11000}"
 DRY=0
@@ -19,10 +29,12 @@ DRY=0
 unset VIRTUAL_ENV
 
 run() { uv run --offline ta-eval "$@"; }
+HOST_FLAG=()
+[[ "$LOCAL_ON_HOST" == "1" ]] && HOST_FLAG=(--local-on-host)
 
 echo "== job list"
-run model-run --suite local --model "$MODEL" --max-steps "$MAX_STEPS" --dry-run
-run model-run --suite swebench --model "$MODEL" --max-steps "$MAX_STEPS" --dry-run
+run model-run --suite local --model "$MODEL" --max-steps "$MAX_STEPS" --retries "$RETRIES"   "${HOST_FLAG[@]}" --dry-run
+run model-run --suite swebench --model "$MODEL" --max-steps "$MAX_STEPS" --retries "$RETRIES"   --dry-run
 if [[ $DRY -eq 1 ]]; then
   echo "(dry run: nothing executed)"
   exit 0
@@ -59,14 +71,25 @@ for t in load_tasks():
         print("pulling", t.image, flush=True)
         subprocess.run(["docker", "pull", "-q", t.image], check=True)
 PY
+  if ! docker image inspect python:3.11-bookworm >/dev/null 2>&1; then
+    echo "pulling python:3.11-bookworm (the local suite's offline container)"
+    docker pull -q python:3.11-bookworm
+  fi
   SUITES="local swebench"
-else
-  echo "docker is not running: SWE-bench suite skipped"
+elif [[ "$LOCAL_ON_HOST" == "1" ]]; then
+  echo "docker is not running: SWE-bench suite skipped; LOCAL_ON_HOST=1, so the local suite"
+  echo "runs the model's commands ON THIS MACHINE"
   SUITES="local"
+else
+  echo "docker is not running: nothing can run isolated. Start Docker, or set LOCAL_ON_HOST=1" >&2
+  echo "to run the local suite on this machine (auto mode runs the model's commands unasked)." >&2
+  exit 1
 fi
 
 for suite in $SUITES; do
   echo "== model arm: $suite"
-  OLLAMA_HOST="$HOST" run model-run --suite "$suite" --model "$MODEL" --host "$HOST" --max-steps "$MAX_STEPS"
+  extra=()
+  [[ "$suite" == "local" ]] && extra=("${HOST_FLAG[@]}")
+  OLLAMA_HOST="$HOST" run model-run --suite "$suite" --model "$MODEL" --host "$HOST"     --max-steps "$MAX_STEPS" --retries "$RETRIES" "${extra[@]}"
 done
 echo "done: results/model_run_*.json"

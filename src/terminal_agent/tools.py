@@ -60,6 +60,27 @@ class ToolConfig:
     match_limit: int = 200
 
 
+TRUNCATED_MARK = " [line truncated]"
+
+
+def window_size(line_lengths: list[int], config: ToolConfig) -> int:
+    """How many of these lines (the window's candidates, in order) one read returns.
+
+    Lines longer than ``read_max_line_chars`` are clipped (plus a marker). The window stops
+    before the running size would pass ``read_max_chars``, so a dense window cannot blow
+    the token budget, but always keeps the first line so a huge single line still returns
+    something. The read-window study calls this too, so it measures the tool as it is.
+    """
+    used = 0
+    for n, length in enumerate(line_lengths):
+        if length > config.read_max_line_chars:
+            length = config.read_max_line_chars + len(TRUNCATED_MARK)
+        if n and used + length + 1 > config.read_max_chars:
+            return n
+        used += length + 1
+    return len(line_lengths)
+
+
 class Toolbox:
     def __init__(self, workspace: Path, sandbox: Sandbox, config: ToolConfig | None = None) -> None:
         self.workspace = workspace.resolve()
@@ -154,21 +175,14 @@ class Toolbox:
         total = len(lines)
         offset = max(1, offset)
         limit = self.config.read_max_lines if limit is None else max(1, limit)
-        window = lines[offset - 1 : offset - 1 + limit]
-        clipped = 0
-        shown = []
-        budget = self.config.read_max_chars
-        used = 0
-        for line in window:
+        candidates = lines[offset - 1 : offset - 1 + limit]
+        count = window_size([len(line) for line in candidates], self.config)
+        shown, clipped = [], 0
+        for line in candidates[:count]:
             if len(line) > self.config.read_max_line_chars:
                 clipped += 1
-                line = line[: self.config.read_max_line_chars] + " [line truncated]"
-            # stop before the char budget so a dense window cannot exceed the token budget;
-            # always keep at least the first line so a huge single line still returns something
-            if shown and used + len(line) + 1 > budget:
-                break
+                line = line[: self.config.read_max_line_chars] + TRUNCATED_MARK
             shown.append(line)
-            used += len(line) + 1
         body = "\n".join(shown)
         end = offset + len(shown) - 1
         meta = {"total_lines": total, "first": offset, "last": end, "clipped_lines": clipped}
