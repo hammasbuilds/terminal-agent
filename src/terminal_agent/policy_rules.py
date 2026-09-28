@@ -71,7 +71,6 @@ READ_ONLY = {
     "cmp",
     "diff",
     "hexdump",
-    "xxd",
     "od",
     "strings",
     "printenv",
@@ -87,7 +86,6 @@ READ_ONLY = {
     "id",
     "groups",
     "tty",
-    "hostname",
     "arch",
     "nproc",
     "getconf",
@@ -97,7 +95,6 @@ READ_ONLY = {
     "pushd",
     "popd",
     "dirs",
-    "date",
 }
 # text utilities that read stdin/files but can also *write* a named output file
 TEXTUTIL_WRITE_OPT = {
@@ -206,7 +203,31 @@ ALWAYS_DANGEROUS = {
     "npx": "downloads and runs a package",
     "uvx": "downloads and runs a package",
     "bunx": "downloads and runs a package",
+    # Windows living-off-the-land binaries and PowerShell cmdlets that download, run or
+    # change permissions (the review found them rated merely 'unknown')
+    "certutil": "downloads or decodes files",
+    "bitsadmin": "downloads files",
+    "mshta": "runs a remote script",
+    "rundll32": "runs code from a DLL",
+    "regsvr32": "runs code from a DLL",
+    "wmic": "starts processes / changes the system",
+    "icacls": "changes file permissions",
+    "takeown": "takes ownership of files",
+    "cipher": "wipes free space",
+    "invoke-webrequest": "downloads files",
+    "iwr": "downloads files",
+    "start-process": "starts a process",
+    "set-content": "writes files",
+    "out-file": "writes files",
+    # database clients act on a server, not on the workspace
+    "psql": "runs SQL against a database server",
+    "mysql": "runs SQL against a database server",
+    "redis-cli": "runs commands against a Redis server",
+    "mongosh": "runs commands against a database server",
+    "mongo": "runs commands against a database server",
 }
+# container engines: only their read-only subcommands are safe
+CONTAINER_ENGINES = {"docker", "podman", "nerdctl"}
 INFRA = {"kubectl", "terraform", "aws", "gcloud", "az", "helm", "pulumi", "doctl", "gsutil"}
 INFRA_DESTRUCTIVE = {
     "delete",
@@ -341,7 +362,43 @@ GIT_READ = {
     "whatchanged",
     "version",
 }
-GIT_EXEC_OPT = {"-O", "--open-files-in-pager", "--ext-diff"}  # run a pager / external diff
+GIT_EXEC_OPT = {  # run a pager, an external diff or a tool
+    "-O",
+    "--open-files-in-pager",
+    "--ext-diff",
+    "--extcmd",
+    "--tool",
+}
+# global options that point git at another repository, work tree or program directory
+GIT_REDIRECT_OPT = {"--git-dir", "--work-tree", "--exec-path"}
+# git config keys an agent may set in auto mode; every other key could name a program
+# (core.fsmonitor, alias.x = !cmd, filter.*.clean, diff.*.textconv, credential.helper, ...)
+GIT_CONFIG_SAFE_KEYS = (
+    "user.name",
+    "user.email",
+    "core.autocrlf",
+    "core.filemode",
+    "core.ignorecase",
+    "core.eol",
+    "core.safecrlf",
+    "init.defaultbranch",
+    "pull.rebase",
+    "pull.ff",
+    "merge.ff",
+    "color.",
+    "advice.",
+    "commit.gpgsign",
+)
+GIT_CONFIG_READ_FLAGS = {
+    "--get",
+    "--get-all",
+    "--get-regexp",
+    "--get-urlmatch",
+    "--list",
+    "-l",
+    "--show-origin",
+    "--show-scope",
+}
 GIT_WRITE_OPT = {"-o", "--output"}
 # ── inline-code red flags and executed environment variables ─────────────────────────
 CODE_RED_FLAGS = (
@@ -350,7 +407,24 @@ CODE_RED_FLAGS = (
     "unlink",
     "rmsync",
     "rmdir",
-    "system(",
+    "system",
+    "from os",
+    "import os as",
+    "from subprocess",
+    "from shutil",
+    "from pty",
+    "pty.",
+    "__builtins__",
+    "builtins",
+    "globals(",
+    "setattr(",
+    "write_text",
+    "write_bytes",
+    "file.delete",
+    "fileutils",
+    "fs.rm",
+    "fs.write",
+    "writefile",
     "subprocess",
     "popen",
     "exec(",
@@ -407,7 +481,18 @@ ENV_EXEC = {
     "GIT_ATTR_SOURCE",
     "GIT_ALTERNATE_OBJECT_DIRECTORIES",
     "GIT_INDEX_FILE",
+    # point git at another repository (whose config can run a program) or program dir
+    "GIT_DIR",
+    "GIT_WORK_TREE",
+    "GIT_COMMON_DIR",
+    "GIT_EXEC_PATH",
+    "GIT_CONFIG_PARAMETERS",
+    "GIT_CONFIG_COUNT",
 }
+# GIT_CONFIG_KEY_<n>=core.fsmonitor / GIT_CONFIG_VALUE_<n>=cmd inject config the same way
+ENV_EXEC_PATTERN = re.compile(r"^GIT_CONFIG_(KEY|VALUE)_\d+$")
+# shell builtins that assign (and may export) variables, like `export`
+DECLARERS = {"export", "declare", "typeset", "readonly", "local"}
 ENV_HIJACK = re.compile(
     r"^(PATH|LD_PRELOAD|LD_LIBRARY_PATH|PYTHONPATH|PYTHONSTARTUP|"
     r"BASH_ENV|ENV|PROMPT_COMMAND|NODE_OPTIONS|DYLD_INSERT_LIBRARIES)="
@@ -434,8 +519,50 @@ def mutating(reason: str) -> Rating:
 
 
 def writes_into_git(target: str) -> bool:
-    parts = target.replace("\\", "/").split("/")
-    return ".git" in parts
+    """True for a write inside ``.git`` or one that makes a directory look like a git dir.
+
+    git treats any directory holding ``HEAD``, ``objects/`` and ``refs/`` as a repository
+    (``git --git-dir=d``, ``cd d && git status``), and runs the programs its ``config``
+    names. Writing a file called ``HEAD`` is the one step no ordinary edit needs.
+    """
+    parts = target.replace("\\", "/").rstrip("/").split("/")
+    return ".git" in parts or parts[-1].lower() == "head"
+
+
+def opt_value(args: list[str], i: int) -> tuple[str, int]:
+    """The value of the option at ``args[i]`` and how many tokens option+value take.
+
+    ``--out=x`` and ``-o=x`` -> (x, 1); ``-ox`` (short option, value attached) -> (x, 1);
+    ``--out x`` / ``-o x`` -> (x, 2). A missing value is "".
+    """
+    tok = args[i]
+    nxt = args[i + 1] if i + 1 < len(args) else ""
+    if tok.startswith("--"):
+        return (tok.split("=", 1)[1], 1) if "=" in tok else (nxt, 2)
+    if len(tok) > 2:
+        attached = tok[2:]
+        return (attached[1:] if attached.startswith("=") else attached), 1
+    return nxt, 2
+
+
+def option_values(args: list[str], names: set[str]) -> list[tuple[str, str]]:
+    """(option, value) for every occurrence of an option in ``names``, spelled exactly.
+
+    Unlike :func:`opt` this does not shorten ``-coverprofile`` to ``-c``: single-dash long
+    options (go's ``-coverprofile=f``) are matched whole, and a one-letter name also
+    matches its attached form (``-o../x``).
+    """
+    out = []
+    for i, tok in enumerate(args):
+        head = tok.split("=", 1)[0]
+        if head in names:
+            if "=" in tok:
+                out.append((head, tok.split("=", 1)[1]))
+            else:
+                out.append((head, args[i + 1] if i + 1 < len(args) else ""))
+        elif len(tok) > 2 and tok[0] == "-" and tok[1] != "-" and tok[:2] in names:
+            out.append((tok[:2], opt_value(args, i)[0]))
+    return out
 
 
 def opt(token: str) -> str:
@@ -461,7 +588,7 @@ def command_name(word: str) -> str:
 def skip_options(args: list[str], takes_value: set[str]) -> list[str]:
     rest = list(args)
     while rest and rest[0].startswith("-"):
-        opt = rest.pop(0)
-        if opt in takes_value and rest:
+        tok = rest.pop(0)
+        if tok in takes_value and rest:
             rest.pop(0)
     return rest

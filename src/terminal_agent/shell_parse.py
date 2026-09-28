@@ -8,6 +8,7 @@ commands at ``; && || | & ( )`` and newlines, separating redirections from words
 from __future__ import annotations
 
 import shlex
+from itertools import pairwise
 from typing import NamedTuple
 
 from terminal_agent.policy_rules import OPERATORS, PLACEHOLDER, REDIRECTS, SUBST
@@ -60,6 +61,59 @@ def tokenize(stripped: str) -> list[str]:
     lexer.whitespace_split = True
     lexer.commenters = ""
     return list(lexer)
+
+
+MAX_BRACE_WORDS = 256
+
+
+def _brace_alternatives(word: str) -> tuple[str, list[str], str] | None:
+    """(prefix, alternatives, suffix) of the first comma brace group in ``word``, if any.
+
+    ``${VAR}`` and ``{a..z}`` sequences are left alone: a sequence only yields letters or
+    numbers, and a parameter expansion is not a brace expansion.
+    """
+    i = 0
+    while i < len(word):
+        if word[i] == "{" and (i == 0 or word[i - 1] != "$"):
+            depth, j, cuts = 1, i + 1, []
+            while j < len(word) and depth:
+                ch = word[j]
+                if ch == "{":
+                    depth += 1
+                elif ch == "}":
+                    depth -= 1
+                elif ch == "," and depth == 1:
+                    cuts.append(j)
+                j += 1
+            if depth == 0 and cuts:
+                bounds = [i, *cuts, j - 1]
+                alts = [word[a + 1 : b] for a, b in pairwise(bounds)]
+                return word[:i], alts, word[j:]
+        i += 1
+    return None
+
+
+def expand_braces(words: list[str]) -> list[str] | None:
+    """Bash brace expansion of each word (``{rm,-rf,..}`` -> ``rm -rf ..``).
+
+    ``shlex`` has already removed quotes, so a quoted ``'{a,b}'`` is expanded too; callers
+    rate both the original and the expanded words and keep the worse, which can only make a
+    rating stricter. Returns None when the expansion exceeds ``MAX_BRACE_WORDS``.
+    """
+    out: list[str] = []
+    for word in words:
+        pending = [word]
+        while pending:
+            w = pending.pop(0)
+            found = _brace_alternatives(w)
+            if found is None:
+                out.append(w)
+            else:
+                prefix, alts, suffix = found
+                pending[:0] = [prefix + a + suffix for a in alts]
+            if len(out) + len(pending) > MAX_BRACE_WORDS:
+                return None
+    return out
 
 
 def split_units(tokens: list[str]) -> list[Unit]:

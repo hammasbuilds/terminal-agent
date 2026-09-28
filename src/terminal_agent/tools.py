@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import fnmatch
 import re
+import shlex
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -19,6 +20,9 @@ from terminal_agent.edits import apply_edit, detect_eol
 from terminal_agent.protocol import ToolCall
 from terminal_agent.sandbox import Sandbox
 
+# a test target made only of these characters needs no shell quoting (and stays readable
+# under cmd.exe, where single quotes are not quotes)
+_PLAIN_ARG = re.compile(r"^[\w./:\[\]@+,=-]+$")
 SKIP_DIRS = {
     ".git",
     "__pycache__",
@@ -374,6 +378,17 @@ class Toolbox:
         return self._exec(command, limit)
 
     def run_tests(self, target: str = "") -> ToolResult:
+        """Run the test command, with ``target`` passed as ONE argument (never as shell)."""
+        target = target.strip()
+        if target.startswith("-"):
+            return ToolResult(
+                False,
+                f"target must be a test file, directory or id, not an "
+                f"option ({target!r}); use run_shell for options",
+                {"error": "bad_arguments"},
+            )
+        if target and not _PLAIN_ARG.match(target):
+            target = shlex.quote(target)  # `x; rm -rf ~` stays one argument
         command = self.config.test_command + (f" {target}" if target else "")
         return self._exec(command, self.config.test_timeout)
 

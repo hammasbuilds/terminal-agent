@@ -26,9 +26,12 @@ from terminal_agent import rules_exec, rules_files, rules_git
 from terminal_agent.policy_rules import (
     ALWAYS_DANGEROUS,
     CODE_RED_FLAGS,
+    CONTAINER_ENGINES,
+    DECLARERS,
     DELETERS,
     EDITORS,
     ENV_EXEC,
+    ENV_EXEC_PATTERN,
     ENV_HIJACK,
     EXEC_PROCESS_SUBST,
     HEREDOC_TO_INTERPRETER,
@@ -57,7 +60,7 @@ from terminal_agent.policy_rules import (
     skip_options,
     writes_into_git,
 )
-from terminal_agent.shell_parse import split_units, substitutions, tokenize
+from terminal_agent.shell_parse import expand_braces, split_units, substitutions, tokenize
 
 OUTSIDE = "\x00outside"  # _resolve's answer for a path that is certainly outside (C:\, \\host)
 
@@ -77,7 +80,8 @@ class CommandClassifier:
             return self.root  # a harmless pseudo-file; treat as "inside"
         if "$" in word or "`" in word or word.startswith("~"):
             return None
-        if re.match(r"^[A-Za-z]:[\\/]", word) or word.startswith("\\\\"):
+        # C:\x, C:/x, C:x (what shlex leaves of an unquoted C:\x), or \\host\share
+        if re.match(r"^[A-Za-z]:", word) or word.startswith("\\\\"):
             return OUTSIDE
         w = word.replace("\\", "/")
         if w.startswith("/"):
@@ -126,6 +130,9 @@ class CommandClassifier:
             hit = next((f for f in CODE_RED_FLAGS if f in command.lower()), None)
             if hit:
                 rating = dangerous(f"heredoc code calls {hit.rstrip('(.')}")
+        if re.search(r"(^|[\s=\"'])\.\.\\", command):
+            # bash reads `..\x` as `..x`, but cmd.exe and PowerShell read a parent path
+            rating = rating.worse(dangerous("a Windows-style ..\\ path leaves the workspace"))
         bodies, stripped = substitutions(command)
         for inner in bodies:
             rating = rating.worse(self.rate(inner, depth + 1))
@@ -180,6 +187,17 @@ class CommandClassifier:
         name_raw = words[0]
         if "$" in name_raw or "`" in name_raw or PLACEHOLDER in name_raw:
             return dangerous("the command name is computed at run time")
+        expanded = expand_braces(words)
+        if expanded is None:
+            return dangerous("brace expansion produces too many words to inspect")
+        if expanded != words:
+            # bash expands `{rm,-rf,..}` into three words; rate both readings, keep the worse
+            name_x = expanded[0]
+            if "$" in name_x or "`" in name_x or PLACEHOLDER in name_x:
+                return dangerous("the command name is computed at run time")
+            rating = rating.worse(
+                self._rate_named(command_name(name_x), expanded[1:], piped, depth, cwd)
+            )
         name = command_name(name_raw)
         return rating.worse(self._rate_named(name, words[1:], piped, depth, cwd))
 
@@ -187,8 +205,8 @@ class CommandClassifier:
         name = token.split("=", 1)[0]
         if ENV_HIJACK.match(token):
             return dangerous(f"overrides {name}")
-        if name in ENV_EXEC:
-            return dangerous(f"{name} names a program that gets executed")
+        if name in ENV_EXEC or ENV_EXEC_PATTERN.match(name):
+            return dangerous(f"{name} names a program or repository git or a pager executes")
         return SAFE
 
     def _rate_named(self, name: str, args: list[str], piped: bool, depth: int, cwd: str) -> Rating:
@@ -205,7 +223,7 @@ class CommandClassifier:
             return rules_exec.rate_interpreter(self, name, args, piped, cwd)
         verb0 = next((a for a in args if not a.startswith("-")), "")
         if (name, verb0) in TEST_VERBS:
-            return rules_exec.rate_test_verb(name, verb0, args)
+            return rules_exec.rate_test_verb(self, name, verb0, args, cwd)
         if name in INFRA:
             if any(a in INFRA_DESTRUCTIVE for a in args):
                 return dangerous(f"{name} changes or destroys remote infrastructure")
@@ -222,7 +240,7 @@ class CommandClassifier:
             return dangerous(ALWAYS_DANGEROUS[name])
         if name == "env":
             return self._rate_env(args, piped, depth, cwd)
-        if name == "export":
+        if name in DECLARERS:  # export / declare -x / typeset -x / readonly / local
             rating = SAFE
             for a in args:
                 if "=" in a:
@@ -260,13 +278,9 @@ class CommandClassifier:
         if name == "uv":
             return rules_exec.rate_uv(args)
         if name == "git":
-            return rules_git.rate_git(self, args, cwd)
-        if name == "date":
-            return (
-                dangerous("date -s sets the system clock")
-                if any(a in ("-s", "--set") or a.startswith("--set=") for a in args)
-                else SAFE
-            )
+            return rules_git.rate_git(self, args, cwd, depth)
+        if name in ("date", "hostname", "xxd", "less", "more", "man"):
+            return rules_files.rate_quirky_reader(self, name, args, cwd)
         if name == "mypy":
             return (
                 dangerous("mypy --install-types installs packages")
@@ -283,11 +297,11 @@ class CommandClassifier:
             return rules_files.paths_rating(self, args, f"{name} deletes", cwd)
         if name == "find":
             return rules_files.rate_find(self, args, depth, cwd)
-        if name == "docker":
+        if name in CONTAINER_ENGINES:
             sub = next((a for a in args if not a.startswith("-")), "")
             if sub in ("ps", "images", "logs", "inspect", "version", "info"):
                 return SAFE
-            return dangerous(f"docker {sub} changes containers or the host")
+            return dangerous(f"{name} {sub} changes containers or the host")
         if name in ("curl", "wget"):
             return rules_files.rate_download(self, name, args, cwd)
         if name == "tar":
@@ -320,6 +334,26 @@ class CommandClassifier:
             return rules_exec.rate_pytest(self, args, cwd)
         if name in READ_ONLY:
             return SAFE
+        return self._rate_unknown(name, args, cwd)
+
+    def _rate_unknown(self, name: str, args: list[str], cwd: str) -> Rating:
+        """A command it has no rule for: mutating, unless an argument points outside.
+
+        Any argument (or ``--opt=value``) that looks like a path is checked as if it were a
+        write target: an unknown tool given ``../x``, ``/etc/x``, ``~``, ``$VAR/x`` or a
+        ``.git``/``HEAD`` path is rated dangerous. It cannot know which arguments the tool
+        writes, so it fails closed on all of them.
+        """
+        for a in args:
+            value = a.split("=", 1)[1] if a.startswith("-") and "=" in a else a
+            if not _path_like(value):
+                continue
+            if self.outside(value, cwd):
+                return dangerous(
+                    f"unknown command '{name}' is given a path outside the workspace ({value})"
+                )
+            if writes_into_git(value):
+                return dangerous(f"unknown command '{name}' is given a path inside .git")
         return mutating(f"'{name}' is not a known read-only command")
 
     # -- unwrappers ----------------------------------------------------------------
@@ -397,3 +431,14 @@ class CommandClassifier:
         if name == "exec" and not rest:
             return rating
         return rating.worse(self.rate_words(rest, piped, depth + 1, cwd)) if rest else rating
+
+
+def _path_like(word: str) -> bool:
+    """Does an argument look like a filesystem path (so it can be checked as a target)?"""
+    return bool(word) and (
+        "/" in word
+        or "\\" in word
+        or word.startswith(("~", "$", "..", ".git"))
+        or PLACEHOLDER in word
+        or bool(re.match(r"^[A-Za-z]:", word))
+    )

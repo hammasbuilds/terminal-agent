@@ -15,6 +15,8 @@ from terminal_agent.policy_rules import (
     dangerous,
     mutating,
     opt,
+    opt_value,
+    writes_into_git,
 )
 
 if TYPE_CHECKING:
@@ -25,7 +27,67 @@ def paths_rating(c: CommandClassifier, args: list[str], what: str, cwd: str) -> 
     outside = [a for a in args if c.outside(a, cwd)]
     if outside:
         return dangerous(f"{what} outside the workspace ({outside[0]})")
+    if any(writes_into_git(a) for a in args if not a.startswith("-")):
+        return dangerous(f"{what} inside .git or a git-dir-shaped path (a hook or config runs)")
     return mutating(what)
+
+
+def write_target(c: CommandClassifier, name: str, target: str, cwd: str) -> Rating:
+    """Rating of a command writing one named file."""
+    if c.outside(target, cwd):
+        return dangerous(f"{name} writes outside the workspace ({target})")
+    if writes_into_git(target):
+        return dangerous(f"{name} writes inside .git or a git-dir-shaped path ({target})")
+    return mutating(f"{name} writes {target}")
+
+
+def rate_quirky_reader(c: CommandClassifier, name: str, args: list[str], cwd: str) -> Rating:
+    """Read-only tools with a writing or executing form: date, hostname, xxd, less, man."""
+    positionals = _positionals(args, _VALUE_OPTS.get(name, set()))
+    if name == "date":
+        if any(a in ("-s", "--set") or a.startswith(("--set=", "-s")) for a in args):
+            return dangerous("date -s sets the system clock")
+        if any(not p.startswith("+") for p in positionals):  # date MMDDhhmm[[CC]YY]
+            return dangerous("date with a time argument sets the system clock")
+        return SAFE
+    if name == "hostname":
+        if positionals or any(opt(a) in ("-F", "--file", "-b", "--boot") for a in args):
+            return dangerous("hostname NAME changes the machine's host name")
+        return SAFE
+    if name == "xxd":  # xxd [opts] [infile [outfile]]; -r turns a hexdump back into bytes
+        return write_target(c, name, positionals[1], cwd) if len(positionals) >= 2 else SAFE
+    if name in ("less", "more"):
+        # `less +'!cmd'` / `+|cmd` runs a shell command from a less command line
+        if any(a.startswith("+") and ("!" in a or "|" in a) for a in args):
+            return dangerous(f"{name} runs a shell command from its command line")
+        return SAFE
+    # man -P/--pager and -H/--html name a program that man runs
+    if any(opt(a) in ("-P", "--pager", "-H", "--html") for a in args):
+        return dangerous("man -P / -H names a program that man runs")
+    return SAFE
+
+
+_VALUE_OPTS = {
+    "date": {"-d", "--date", "-r", "--reference", "-f", "--file", "-I"},
+    "xxd": {"-c", "-g", "-l", "-s", "-o", "-n", "-cols", "-len", "-seek", "-name"},
+}
+
+
+def _positionals(args: list[str], value_opts: set[str]) -> list[str]:
+    out = []
+    i = 0
+    while i < len(args):
+        a = args[i]
+        if a == "--":
+            out.extend(args[i + 1 :])
+            break
+        if a in value_opts:
+            i += 2
+            continue
+        if not a.startswith("-") or a == "-":
+            out.append(a)
+        i += 1
+    return out
 
 
 def rate_textutil(c: CommandClassifier, name: str, args: list[str], cwd: str) -> Rating:
@@ -39,12 +101,7 @@ def rate_textutil(c: CommandClassifier, name: str, args: list[str], cwd: str) ->
             break
         base = opt(a)
         if base in write_opts:
-            val = a.split("=", 1)[1] if "=" in a else (args[i + 1] if i + 1 < len(args) else "")
-            return (
-                dangerous(f"{name} writes outside the workspace ({val})")
-                if c.outside(val, cwd)
-                else mutating(f"{name} writes {val}")
-            )
+            return write_target(c, name, opt_value(args, i)[0], cwd)
         if a.startswith("-"):
             i += 1
             continue
@@ -52,12 +109,7 @@ def rate_textutil(c: CommandClassifier, name: str, args: list[str], cwd: str) ->
         i += 1
     # uniq/split take an OUTPUT positional (the last one, when there are two)
     if name in ("uniq", "split") and len(positionals) >= 2:
-        out = positionals[-1]
-        return (
-            dangerous(f"{name} writes outside the workspace ({out})")
-            if c.outside(out, cwd)
-            else mutating(f"{name} writes {out}")
-        )
+        return write_target(c, name, positionals[-1], cwd)
     return SAFE
 
 
@@ -130,11 +182,7 @@ def rate_find(c: CommandClassifier, args: list[str], depth: int, cwd: str) -> Ra
     for w in ("-fprint", "-fprint0", "-fprintf", "-fls"):
         if w in args:
             target = args[args.index(w) + 1] if args.index(w) + 1 < len(args) else ""
-            return (
-                dangerous(f"find {w} writes outside the workspace")
-                if c.outside(target, cwd)
-                else mutating(f"find {w} writes {target}")
-            )
+            return write_target(c, f"find {w}", target, cwd)
     for flag in ("-exec", "-execdir", "-ok", "-okdir"):
         if flag in args:
             start = args.index(flag) + 1
@@ -169,10 +217,12 @@ def rate_download(c: CommandClassifier, name: str, args: list[str], cwd: str) ->
         return dangerous(f"{name} sends data computed by another command")
     out_flags = {"-o", "--output", "-O", "--output-document", "-P", "--directory-prefix"}
     for i, a in enumerate(args):
-        flag, _, val = a.partition("=")
-        target = val if val else (args[i + 1] if i + 1 < len(args) else "")
-        if opt(flag) in out_flags and c.outside(target, cwd):
-            return dangerous(f"{name} writes a download outside the workspace ({target})")
+        if a.startswith("-") and opt(a) in out_flags:
+            target = opt_value(args, i)[0]
+            if c.outside(target, cwd):
+                return dangerous(f"{name} writes a download outside the workspace ({target})")
+            if writes_into_git(target):
+                return dangerous(f"{name} writes a download inside .git ({target})")
     for a in args:
         flag = a.split("=", 1)[0]
         if flag in upload or (a.startswith("-d") and len(a) > 2 and name == "curl"):

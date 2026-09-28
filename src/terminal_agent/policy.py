@@ -61,8 +61,10 @@ class ApprovalPolicy:
 
     def check(self, call: ToolCall) -> Verdict:
         name = call.name
-        if name in READ_TOOLS or name in ("run_tests", "finish"):
+        if name in READ_TOOLS or name == "finish":
             return Verdict(Decision.ALLOW, "safe", "read-only tool")
+        if name == "run_tests":
+            return self._check_test_target(str(call.arguments.get("target", "") or ""))
         if name in WRITE_TOOLS:
             return self._check_write(str(call.arguments.get("path", "")))
         if name == "run_shell":
@@ -76,9 +78,51 @@ class ApprovalPolicy:
             return Verdict(Decision.DENY, "dangerous", f"unusable path {raw!r}")
         if not target.is_relative_to(self.workspace):
             return Verdict(Decision.ASK, "dangerous", f"writes outside the workspace: {target}")
-        if ".git" in target.relative_to(self.workspace).parts:
-            return Verdict(Decision.DENY, "dangerous", "writes inside .git")
+        shaped = self._git_shaped(target)
+        if shaped:
+            return Verdict(Decision.DENY, "dangerous", shaped)
         return Verdict(Decision.ALLOW, "mutating", "write inside the workspace")
+
+    def _git_shaped(self, target: Path) -> str:
+        """Why writing ``target`` could plant git config or hooks ("" if it cannot).
+
+        git runs programs named in a repository's config (``core.fsmonitor``, aliases,
+        filters) and hooks, and treats any directory holding ``HEAD``, ``objects/`` and
+        ``refs/`` as a repository (``git --git-dir=d status``, ``cd d && git status``). So
+        besides ``.git`` itself, a ``HEAD`` file anywhere, and the ``config`` of a directory
+        that already looks like a git dir, are refused. Windows ignores trailing dots and
+        spaces in names (``.git.`` is ``.git``), so those are stripped before comparing.
+        """
+        parts = [p.rstrip(". ").lower() for p in target.relative_to(self.workspace).parts]
+        if ".git" in parts:
+            return "writes inside .git"
+        name = parts[-1] if parts else ""
+        if name == "head":
+            return "writes a HEAD file, which makes its directory a git dir whose config runs"
+        parent = target.parent
+        looks_like_git_dir = (parent / "HEAD").exists() or (
+            (parent / "objects").is_dir() and (parent / "refs").is_dir()
+        )
+        if name in ("config", "packed-refs", "commondir", "gitdir") and looks_like_git_dir:
+            return f"writes {name} in a git-dir-shaped directory (its config can run a program)"
+        return ""
+
+    def _check_test_target(self, target: str) -> Verdict:
+        """run_tests is always allowed, but its target is an argument to the test command."""
+        if not target:
+            return Verdict(Decision.ALLOW, "safe", "runs the test command")
+        if target.lstrip().startswith("-"):
+            return Verdict(
+                Decision.ASK,
+                "dangerous",
+                f"run_tests target {target!r} is an option, not a test path",
+            )
+        path = target.split("::", 1)[0]
+        if self.classifier.outside(path):
+            return Verdict(
+                Decision.ASK, "dangerous", f"run_tests target {target!r} is outside the workspace"
+            )
+        return Verdict(Decision.ALLOW, "safe", "runs the test command on a workspace target")
 
     def check_command(self, command: str) -> Verdict:
         rating = self.classifier.rate(command)
