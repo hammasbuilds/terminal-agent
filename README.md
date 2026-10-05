@@ -7,15 +7,13 @@
   <a href="#input--output">Input / Output</a> &middot;
   <a href="#quick-start">Quick start</a> &middot;
   <a href="#what-this-does-not-do">What it does NOT do</a> &middot;
-  <a href="#problems-hit-while-building-this">Problems hit</a> &middot;
-  <a href="STATUS.md">Status</a>
+  <a href="#problems-hit-while-building-this">Problems hit</a>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-0-brightgreen" alt="zero dependencies">
   <img src="https://img.shields.io/badge/tests-227%20(223%2B4%20docker)-brightgreen" alt="tests">
-  <img src="https://img.shields.io/badge/model-qwen2.5--coder%3A14b%20(queued)-orange" alt="model">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
 
@@ -27,6 +25,8 @@ headless `-p` mode with JSON output, file tools with gemini-cli's exact-match `e
 tool with a timeout and output truncation, an approval policy, context compaction, a JSONL
 trajectory for every run and a replay viewer, and an Ollama client for `qwen2.5-coder:14b`.
 
+**Status:** harness, task suites and every number below: done. Model arm: built and tested against a fake; GPU run pending.
+
 ## The through-line
 
 ```mermaid
@@ -37,7 +37,7 @@ flowchart LR
     C2 --> C3{"all tests pass<br/>after it?"}
     C3 -->|"every check"| V["valid task"]
     C3 -->|"any check fails"| B["harness bug or<br/>task defect -<br/>fixed or excluded"]
-    V --> M["model arm<br/>(queued)"]
+    V --> M["model arm<br/>(GPU run pending)"]
 
     style G fill:#2563eb,color:#fff
     style B fill:#b91c1c,color:#fff
@@ -67,10 +67,10 @@ failing to passing.
 | **4** | **No single truncation cut works for every test runner.** At 8,000 chars, keeping head+tail showed Django's failing test **7 of 18** times; pytest's, 60 of 60. Keeping only the head showed pytest's **8 of 60** at 2,000 chars. | a failure-line digest showed 99/103 at 2,000 chars - with a caveat below |
 | **5** | **The read cap that keeps a window inside the token budget hides the edit site from the first read in 71% of SWE-bench Lite.** A read returns at most 6,000 characters. Replayed with the tool's own window rule over the real line lengths of all 300 edited files; the edit site takes a median of 3 reads from the top of the file. | 213/300 beyond the first read (95% CI 65.6-75.8%); 116/300 need more than 3 reads; p90 10 reads. The old 1,000-line window missed 66/300 but could not fit the budget |
 | **6** | **A name-based command policy is trivially bypassed; a flag/env/cd-aware one is not.** An independent reviewer's exploit corpus (read-only tools with a writing flag, `git -c`, exec env vars, `cd ..` then a relative write, wrapper fronts) defeated v3; the rewritten classifier catches all of them. | on a held-out set written blind, **111/121** dangerous caught by the classifier alone (auto mode); in default mode **120/121** stopped, **1 ran unasked** (`GIT_CONFIG_GLOBAL=...`); codex's forced-rm rule 6/121 (5.0%), a tutorial blocklist 32/121 (26.4%) |
-| **7** | **Model arm: built, tested with fakes, queued.** `qwen2.5-coder:14b` on the 50 valid tasks. It runs in `auto` mode, so every task's shell runs in an offline container (the SWE-bench image; `python:3.11-bookworm` for the local suite), never on the host unless `--local-on-host` is given. Model and harness errors are retried; one that persists counts as unsolved. | at most 4,500 model calls (50 tasks x 30 steps x 3 attempts; 1,500 if nothing is retried) - `scripts/run_models.sh --dry-run` |
+| **7** | **Model arm: built and tested against a fake; GPU run pending.** `qwen2.5-coder:14b` on the 50 valid tasks. It runs in `auto` mode, so every task's shell runs in an offline container (the SWE-bench image; `python:3.11-bookworm` for the local suite), never on the host unless `--local-on-host` is given. Model and harness errors are retried; one that persists counts as unsolved. | at most 4,500 model calls (50 tasks x 30 steps x 3 attempts; 1,500 if nothing is retried) - `scripts/run_models.sh --dry-run` |
 
-Every number is read from a file in [`results/`](results/) produced on this machine; the
-commands that regenerate each one are in [STATUS.md](STATUS.md).
+Every number is read from a file in [`results/`](results/); the commands that regenerate
+each one are under [Quick start](#quick-start).
 
 ### The task suites
 
@@ -383,8 +383,11 @@ uv run ta-eval read-window                  # reads needed to reach Lite's edit 
 uv run ta-eval validate --suite local       # gold replay on the mined suite (no Docker)
 uv run ta-eval validate --suite swebench --pulled-only    # needs Docker + pulled images
 uv run ta-eval edit-study && uv run ta-eval truncation-study
-scripts/run_models.sh --dry-run             # the queued model arm: jobs and call bound
+scripts/run_models.sh --dry-run             # the model arm: jobs and call bound
 ```
+
+`results/safety_policy_v{1,2,4}*.json` are the blind scores of the policy at the commit each
+held-out set was introduced; `results/safety.json` is the current policy on all four sets.
 
 ## Layout
 
@@ -419,7 +422,7 @@ src/terminal_agent/
 data/             SWE-bench Lite (300), mined local tasks (17), gold pre-images, Lite line lengths,
                   4 command corpora
 results/          every number in this README
-scripts/          run_models.sh (the queued model arm), export_swebench_lite.py,
+scripts/          run_models.sh (the model arm), export_swebench_lite.py,
                   fetch_lite_line_lengths.py
 examples/         a two-file bug and a scripted fix for trying the CLI without a model
 ```
@@ -446,8 +449,8 @@ were each checked to fail against the code before the fix.
 
 ## What this does NOT do
 
-- **It has not been run with a model.** The model arm is built, tested with scripted clients
-  and queued; there is no solve rate here yet, and the README does not guess one.
+- **It has not been run with a model.** The model arm is built and tested with scripted
+  clients, but its GPU run is pending; there is no solve rate here yet, and the README does not guess one.
 - **It does not cover SWE-bench Lite.** 39 of 300 tasks from 5 of 12 repositories; the rest
   were not downloaded (below). Validity rates are for these 39.
 - **The local suite is easy and small.** 17 tasks from 4 of my own repositories, with commit
