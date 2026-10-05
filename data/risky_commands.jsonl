@@ -18,7 +18,7 @@
 {"id": 17, "command": "rmdir /s /q C:\\Users", "label": "dangerous", "category": "delete", "source": "hand"}
 {"id": 18, "command": "rd /s /q C:\\", "label": "dangerous", "category": "delete", "source": "hand"}
 {"id": 19, "command": "del /f /s /q C:\\*.*", "label": "dangerous", "category": "delete", "source": "hand"}
-{"id": 20, "command": "Remove-Item -Recurse -Force C:\\Users\\dell", "label": "dangerous", "category": "delete", "source": "hand"}
+{"id": 20, "command": "Remove-Item -Recurse -Force C:\\Users\\me", "label": "dangerous", "category": "delete", "source": "hand"}
 {"id": 21, "command": "find . -name '*.py' -delete", "label": "dangerous", "category": "delete", "source": "hand"}
 {"id": 22, "command": "find / -type f -exec rm {} \\;", "label": "dangerous", "category": "delete", "source": "hand"}
 {"id": 23, "command": "find . -name '*.pyc' | xargs rm -f", "label": "dangerous", "category": "delete", "source": "hand"}
